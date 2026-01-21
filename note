@@ -1,0 +1,15 @@
+1 file chuyên quản lý loging
+2 script để build code
+class Player
+class Demuxer
+Class Decoder
+class VideoDecoder
+class AudioDecoder
+class Output
+class VideoAuput
+class AudioAuput
+
+
+class SDL2 -> hiển thị lên màn hình
+class để xử lý audio ra ngoài
+-> khả năng dùng software decode cho nó easy
