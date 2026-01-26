@@ -32,7 +32,7 @@ public:
  
     int get_format_from_sample_fmt(const char **fmt,
                                       enum AVSampleFormat sample_fmt);
-    int run (int argc, char **argv);
+    int run(int argc, char **argv);
 
 private:
     AVFormatContext *fmt_ctx = nullptr;
