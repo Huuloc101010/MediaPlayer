@@ -13,3 +13,13 @@ class AudioAuput
 class SDL2 -> hiển thị lên màn hình
 class để xử lý audio ra ngoài
 -> khả năng dùng software decode cho nó easy
+
+
+sudo apt install ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev
+
+Open file
+ → Find stream
+   → Find decoder
+     → Read packet
+       → Send packet to decoder
+         → Receive frame
