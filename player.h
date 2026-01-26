@@ -37,24 +37,24 @@ public:
  
 int run (int argc, char **argv);
 private:
-     AVFormatContext *fmt_ctx = NULL;
-     AVCodecContext *video_dec_ctx = NULL, *audio_dec_ctx;
+     AVFormatContext *fmt_ctx = nullptr;
+     AVCodecContext *video_dec_ctx = nullptr, *audio_dec_ctx;
      int width, height;
      enum AVPixelFormat pix_fmt;
-     AVStream *video_stream = NULL, *audio_stream = NULL;
-     const char *src_filename = NULL;
-     const char *video_dst_filename = NULL;
-     const char *audio_dst_filename = NULL;
-     FILE *video_dst_file = NULL;
-     FILE *audio_dst_file = NULL;
+     AVStream *video_stream = nullptr, *audio_stream = nullptr;
+     const char *src_filename = nullptr;
+     const char *video_dst_filename = nullptr;
+     const char *audio_dst_filename = nullptr;
+     FILE *video_dst_file = nullptr;
+     FILE *audio_dst_file = nullptr;
     
-     uint8_t *video_dst_data[4] = {NULL};
+     uint8_t *video_dst_data[4] = {nullptr};
      int      video_dst_linesize[4];
      int video_dst_bufsize;
     
      int video_stream_idx = -1, audio_stream_idx = -1;
-     AVFrame *frame = NULL;
-     AVPacket *pkt = NULL;
+     AVFrame *frame = nullptr;
+     AVPacket *pkt = nullptr;
      int video_frame_count = 0;
      int audio_frame_count = 0;
 };
