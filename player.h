@@ -19,21 +19,12 @@ public:
  
     const char* err2str(int errnum);
     const char* ts2timestr(int64_t ts, AVRational tb);
-
     int output_video_frame(AVFrame *frame);
-
- 
     int output_audio_frame(AVFrame *frame);
- 
     int decode_packet(AVCodecContext *dec, const AVPacket *pkt);
- 
-    int open_codec_context(int *stream_idx,
-                              AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type);
- 
-    int get_format_from_sample_fmt(const char **fmt,
-                                      enum AVSampleFormat sample_fmt);
+    int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type);
+    int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     int run(int argc, char **argv);
-
 private:
     AVFormatContext *fmt_ctx = nullptr;
     AVCodecContext *video_dec_ctx = nullptr, *audio_dec_ctx;

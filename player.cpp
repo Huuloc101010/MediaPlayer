@@ -1,18 +1,18 @@
 #include "player.h"
 
- inline const char* player::err2str(int errnum)
+const char* player::err2str(int errnum)
 {
     thread_local  char buf[AV_ERROR_MAX_STRING_SIZE];
     av_strerror(errnum, buf, sizeof(buf));
     return buf;
 }
- inline const char* player::ts2timestr(int64_t ts, AVRational tb)
+const char* player::ts2timestr(int64_t ts, AVRational tb)
 {
     thread_local  char buf[AV_TS_MAX_STRING_SIZE];
     av_ts_make_time_string(buf, ts, &tb);
     return buf;
 }
- int player::output_video_frame(AVFrame *frame)
+int player::output_video_frame(AVFrame *frame)
 {
     if (frame->width != width || frame->height != height ||
         frame->format != pix_fmt) {
@@ -158,7 +158,7 @@ int player::open_codec_context(int *stream_idx,
     return 0;
 }
 
- int player::get_format_from_sample_fmt(const char **fmt,
+int player::get_format_from_sample_fmt(const char **fmt,
                                       enum AVSampleFormat sample_fmt)
 {
     int i;
