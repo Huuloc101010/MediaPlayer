@@ -1,5 +1,7 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
+
+#include <vector>
 extern "C"
 {
 #define __STDC_CONSTANT_MACROS
@@ -11,6 +13,12 @@ extern "C"
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 }
+struct data
+{
+    std::vector<uint8_t> Y;
+    std::vector<uint8_t> U;
+    std::vector<uint8_t> V;
+};
 class player
 {
 public:
@@ -46,6 +54,7 @@ private:
     AVPacket *pkt = nullptr;
     int video_frame_count = 0;
     int audio_frame_count = 0;
+    data m_data = {};
 };
 
 #endif /*_PLAYER_H_*/

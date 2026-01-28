@@ -1,3 +1,4 @@
+#include <iostream>
 #include "player.h"
 
 const char* player::err2str(int errnum)
@@ -14,37 +15,41 @@ const char* player::ts2timestr(int64_t ts, AVRational tb)
 }
 int player::output_video_frame(AVFrame *frame)
 {
-    if (frame->width != width || frame->height != height ||
-        frame->format != pix_fmt) {
-        /* To handle this change, one could call av_image_alloc again and
-         * decode the following frames into another rawvideo file. */
-        fprintf(stderr, "Error: Width, height and pixel format have to be "
-                "constant in a rawvideo file, but the width, height or "
-                "pixel format of the input video changed:\n"
-                "old: width = %d, height = %d, format = %s\n"
-                "new: width = %d, height = %d, format = %s\n",
-                width, height, av_get_pix_fmt_name(pix_fmt),
-                frame->width, frame->height,
-                av_get_pix_fmt_name((AVPixelFormat)frame->format));
-        return -1;
+    if(frame->format == AV_PIX_FMT_YUV420P)
+    {
+        std::cout << "YUV420" << std::endl;
     }
+    // if (frame->width != width || frame->height != height ||
+    //     frame->format != pix_fmt) {
+    //     /* To handle this change, one could call av_image_alloc again and
+    //      * decode the following frames into another rawvideo file. */
+    //     fprintf(stderr, "Error: Width, height and pixel format have to be "
+    //             "constant in a rawvideo file, but the width, height or "
+    //             "pixel format of the input video changed:\n"
+    //             "old: width = %d, height = %d, format = %s\n"
+    //             "new: width = %d, height = %d, format = %s\n",
+    //             width, height, av_get_pix_fmt_name(pix_fmt),
+    //             frame->width, frame->height,
+    //             av_get_pix_fmt_name((AVPixelFormat)frame->format));
+    //     return -1;
+    // }
  
-    printf("video_frame n:%d\n",
-           video_frame_count++);
+    // printf("video_frame n:%d\n",
+    //        video_frame_count++);
  
-    /* copy decoded frame to destination buffer:
-     * this is required since rawvideo expects non aligned data */
-    // fail build nen comment
-    //av_image_copy(video_dst_data, video_dst_linesize,
-                   //frame->data, frame->linesize,
-                   //pix_fmt, width, height);
+    // /* copy decoded frame to destination buffer:
+    //  * this is required since rawvideo expects non aligned data */
+    // // fail build nen comment
+    // //av_image_copy(video_dst_data, video_dst_linesize,
+    //                //frame->data, frame->linesize,
+    //                //pix_fmt, width, height);
  
-    av_image_copy(video_dst_data, video_dst_linesize,
-                  (const uint8_t**)frame->data, frame->linesize,
-                  pix_fmt, width, height);
+    // av_image_copy(video_dst_data, video_dst_linesize,
+    //               (const uint8_t**)frame->data, frame->linesize,
+    //               pix_fmt, width, height);
  
-    /* write to rawvideo file */
-    fwrite(video_dst_data[0], 1, video_dst_bufsize, video_dst_file);
+    // /* write to rawvideo file */
+    // fwrite(video_dst_data[0], 1, video_dst_bufsize, video_dst_file);
     return 0;
 }
 
