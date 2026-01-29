@@ -2,6 +2,7 @@
 #define _VIDEO_OUTPUT_
 
 #include <mutex>
+#include <thread>
 #include <shared_mutex>
 #include <SDL2/SDL.h>
 #include <iostream>
@@ -12,10 +13,10 @@ class videooutput
 public:
     videooutput(const int width,const int height);
     ~videooutput();
-    int init();
+    bool init();
     void destroy();
-    int show(const yuv& ndata);
-    int checkevent();
+    bool show(const yuv& ndata);
+    bool checkevent();
 private:
     int width;
     int height;

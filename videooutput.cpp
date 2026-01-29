@@ -13,12 +13,12 @@ videooutput::~videooutput()
     destroy();
 }
 
-int videooutput::init()
+bool videooutput::init()
 {
     if(SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         std::cerr << "SDL_Init failed: " << SDL_GetError() << std::endl;
-        return -1;
+        return false;
     }
 
     window = SDL_CreateWindow("YUV Dynamic Video",
@@ -26,14 +26,14 @@ int videooutput::init()
     if(window == nullptr)
     {
         std::cerr << "Create window SDL fail: " << SDL_GetError() << std::endl;
-        return -1;
+        return false;
     }
     std::cout << "Create windows success" << std::endl;
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if(renderer == nullptr)
     {
         std::cerr << "Create renderer SDL fail: " << SDL_GetError() << std::endl;
-        return -1;
+        return false;
     }
     std::cout << "create render success" << std::endl;
     texture = SDL_CreateTexture(renderer, 
@@ -41,26 +41,38 @@ int videooutput::init()
     if (texture == nullptr)
     {
         std::cerr << "Create texture SDL fail: " << SDL_GetError() << std::endl;
-        return -1;
+        return false;
     }
     std::cout << "Create texture success " << std::endl;
-    return 0;
+    return true;
 }
 
-int videooutput::show(const yuv& ndata)
+bool videooutput::show(const yuv& ndata)
 {
         if(!checkevent())
         {
-            return false;
+            exit(0);
         }
         // Push data to GPU
-        SDL_UpdateYUVTexture(texture, NULL, 
+        if(SDL_UpdateYUVTexture(texture, NULL, 
             ndata.plane_y, width,           
             ndata.plane_u, width / 2,       
-            ndata.plane_v, width / 2);      
+            ndata.plane_v, width / 2) < 0)
+        {
+            std::cerr << "update YUV texture fail" << std::endl;
+            return false;
+        }     
 
-        SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        if(SDL_RenderClear(renderer) < 0)
+        {
+            std::cerr << "render clear fail" << std::endl;
+            return false;
+        }
+        if(SDL_RenderCopy(renderer, texture, NULL, NULL) < 0)
+        {
+            std::cerr << "Render copy fail" << std::endl;
+            return false;
+        }
         SDL_RenderPresent(renderer);
         return true;
 }
@@ -85,7 +97,7 @@ void videooutput::destroy()
     SDL_Quit();
 }
 
-int videooutput::checkevent()
+bool videooutput::checkevent()
 {
     while(SDL_PollEvent(&e))
     {
