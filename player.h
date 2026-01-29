@@ -2,6 +2,8 @@
 #define _PLAYER_H_
 
 #include <vector>
+#include "define.h"
+
 extern "C"
 {
 #define __STDC_CONSTANT_MACROS

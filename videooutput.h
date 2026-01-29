@@ -5,13 +5,7 @@
 #include <shared_mutex>
 #include <SDL2/SDL.h>
 #include <iostream>
-
-struct yuv
-{
-    std::vector<uint8_t> plane_y;
-    std::vector<uint8_t> plane_u;
-    std::vector<uint8_t> plane_v;
-};
+#include "define.h"
 
 class videooutput
 {
