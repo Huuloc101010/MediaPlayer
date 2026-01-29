@@ -9,6 +9,9 @@ struct yuv
     uint8_t* plane_y;
     uint8_t* plane_u;
     uint8_t* plane_v;
+    int linesize_y;
+    int linesize_u;
+    int linesize_v;
 };
 
 #endif /*_DEFINE_*/

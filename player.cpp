@@ -19,7 +19,15 @@ int player::output_video_frame(AVFrame *frame)
     if(frame->format == AV_PIX_FMT_YUV420P)
     {
         std::cout << "YUV420" << std::endl;
-        yuv lyuv = {frame->data[0], frame->data[1], frame->data[2]};
+        yuv lyuv =
+        {
+            frame->data[0],
+            frame->data[1],
+            frame->data[2],
+            frame->linesize[0],
+            frame->linesize[1],
+            frame->linesize[2]
+        };
         
         if(m_videooutput)
         {

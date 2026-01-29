@@ -55,9 +55,9 @@ bool videooutput::show(const yuv& ndata)
         }
         // Push data to GPU
         if(SDL_UpdateYUVTexture(texture, NULL, 
-            ndata.plane_y, width,           
-            ndata.plane_u, width / 2,       
-            ndata.plane_v, width / 2) < 0)
+            ndata.plane_y, ndata.linesize_y,           
+            ndata.plane_u, ndata.linesize_u,       
+            ndata.plane_v, ndata.linesize_v) < 0)
         {
             std::cerr << "update YUV texture fail" << std::endl;
             return false;
