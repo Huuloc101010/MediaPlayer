@@ -15,18 +15,16 @@ extern "C"
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 }
-struct data
-{
-    std::vector<uint8_t> Y;
-    std::vector<uint8_t> U;
-    std::vector<uint8_t> V;
-};
+
 class player
 {
 public:
     player() = default;
     ~player() = default;
  
+    int run(int argc, char **argv);
+
+private:
     const char* err2str(int errnum);
     const char* ts2timestr(int64_t ts, AVRational tb);
     int output_video_frame(AVFrame *frame);
@@ -34,8 +32,7 @@ public:
     int decode_packet(AVCodecContext *dec, const AVPacket *pkt);
     int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
-    int run(int argc, char **argv);
-private:
+
     AVFormatContext *fmt_ctx = nullptr;
     AVCodecContext *video_dec_ctx = nullptr, *audio_dec_ctx;
     int width, height;
@@ -56,7 +53,6 @@ private:
     AVPacket *pkt = nullptr;
     int video_frame_count = 0;
     int audio_frame_count = 0;
-    data m_data = {};
 };
 
 #endif /*_PLAYER_H_*/
