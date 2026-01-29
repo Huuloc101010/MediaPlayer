@@ -1,13 +1,12 @@
 #ifndef _DEFINE_
 #define _DEFINE_
-#include <vector>
 #include <cstdint>
 
 struct yuv
 {
-    std::vector<uint8_t> plane_y;
-    std::vector<uint8_t> plane_u;
-    std::vector<uint8_t> plane_v;
+    uint8_t* plane_y;
+    uint8_t* plane_u;
+    uint8_t* plane_v;
 };
 
 #endif /*_DEFINE_*/

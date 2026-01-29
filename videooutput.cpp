@@ -15,30 +15,33 @@ videooutput::~videooutput()
 
 int videooutput::init()
 {
-    
-    SDL_Init(SDL_INIT_VIDEO);
+    if(SDL_Init(SDL_INIT_VIDEO) != 0)
+    {
+        std::cerr << "SDL_Init failed: " << SDL_GetError() << std::endl;
+        return -1;
+    }
 
-    window = SDL_CreateWindow("YUV Dynamic Video", 
+    window = SDL_CreateWindow("YUV Dynamic Video",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
     if(window == nullptr)
     {
-        std::cerr << "Create windows SDL fail" << std::endl;
-        return false;
+        std::cerr << "Create window SDL fail: " << SDL_GetError() << std::endl;
+        return -1;
     }
     std::cout << "Create windows success" << std::endl;
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if(renderer == nullptr)
     {
-        std::cerr << "Create renderer SDL fail" << std::endl;
-        return false;
+        std::cerr << "Create renderer SDL fail: " << SDL_GetError() << std::endl;
+        return -1;
     }
     std::cout << "create render success" << std::endl;
     texture = SDL_CreateTexture(renderer, 
         SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, width, height);
-    if(texture == nullptr)
+    if (texture == nullptr)
     {
-        std::cerr << "Create texture SDL fail" << std::endl;
-        return false;
+        std::cerr << "Create texture SDL fail: " << SDL_GetError() << std::endl;
+        return -1;
     }
     std::cout << "Create texture success " << std::endl;
     return 0;
@@ -52,9 +55,9 @@ int videooutput::show(const yuv& ndata)
         }
         // Push data to GPU
         SDL_UpdateYUVTexture(texture, NULL, 
-            ndata.plane_y.data(), width,           
-            ndata.plane_u.data(), width / 2,       
-            ndata.plane_v.data(), width / 2);      
+            ndata.plane_y, width,           
+            ndata.plane_u, width / 2,       
+            ndata.plane_v, width / 2);      
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -64,9 +67,21 @@ int videooutput::show(const yuv& ndata)
 
 void videooutput::destroy()
 {
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    if (texture)
+    {
+        SDL_DestroyTexture(texture);
+        texture = nullptr;
+    }
+    if (renderer)
+    {
+        SDL_DestroyRenderer(renderer);
+        renderer = nullptr;
+    }
+    if (window)
+    {
+        SDL_DestroyWindow(window);
+        window = nullptr;
+    }
     SDL_Quit();
 }
 

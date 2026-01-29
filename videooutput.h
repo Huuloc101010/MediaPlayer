@@ -19,9 +19,9 @@ public:
 private:
     int width;
     int height;
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    SDL_Texture* texture;
+    SDL_Window* window = nullptr;
+    SDL_Renderer* renderer = nullptr;
+    SDL_Texture* texture = nullptr;
     SDL_Event e;
 };
 
