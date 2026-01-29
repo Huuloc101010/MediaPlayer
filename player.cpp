@@ -1,5 +1,6 @@
 #include <iostream>
 #include "player.h"
+#include "videooutput.h"
 
 const char* player::err2str(int errnum)
 {
@@ -18,6 +19,12 @@ int player::output_video_frame(AVFrame *frame)
     if(frame->format == AV_PIX_FMT_YUV420P)
     {
         std::cout << "YUV420" << std::endl;
+        yuv lyuv = {frame->data[0], frame->data[1], frame->data[2]};
+        
+        if(m_videooutput)
+        {
+            m_videooutput->show(lyuv);
+        }
     }
     // if (frame->width != width || frame->height != height ||
     //     frame->format != pix_fmt) {
@@ -101,10 +108,15 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         }
  
         // write the frame data to output file
-        if (dec->codec->type == AVMEDIA_TYPE_VIDEO)
+        if(dec->codec->type == AVMEDIA_TYPE_VIDEO)
+        {
             ret = output_video_frame(frame);
+        }
         else
-            ret = output_audio_frame(frame);
+        {
+            // TBD
+            //ret = output_audio_frame(frame);
+        }
  
         av_frame_unref(frame);
     }
@@ -195,7 +207,6 @@ int player::get_format_from_sample_fmt(const char **fmt,
 int player::run(int argc, char **argv)
 {
     int ret = 0;
- 
     if (argc != 4) {
         fprintf(stderr, "usage: %s  input_file video_output_file audio_output_file\n"
                 "API example program to show how to read frames from an input file.\n"
@@ -224,17 +235,20 @@ int player::run(int argc, char **argv)
     if ( open_codec_context(&video_stream_idx, &video_dec_ctx, fmt_ctx, AVMEDIA_TYPE_VIDEO) >= 0)
     {
         video_stream = fmt_ctx->streams[video_stream_idx];
- 
+        
         video_dst_file = fopen(video_dst_filename, "wb");
         if (!video_dst_file) {
             fprintf(stderr, "Could not open destination file %s\n", video_dst_filename);
             ret = 1;
             goto end;
         }
- 
+        
         /* allocate image where the decoded image will be put */
         width = video_dec_ctx->width;
         height = video_dec_ctx->height;
+        // Create windows
+        m_videooutput = std::make_unique<videooutput>(width, height);
+
         pix_fmt = video_dec_ctx->pix_fmt;
         ret = av_image_alloc(video_dst_data, video_dst_linesize,
                              width, height, pix_fmt, 1);

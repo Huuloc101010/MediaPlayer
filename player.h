@@ -2,6 +2,7 @@
 #define _PLAYER_H_
 
 #include <vector>
+#include <memory>
 #include "define.h"
 
 extern "C"
@@ -16,6 +17,7 @@ extern "C"
 #include <libavformat/avformat.h>
 }
 
+class videooutput;
 class player
 {
 public:
@@ -33,6 +35,7 @@ private:
     int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
 
+    std::unique_ptr<videooutput> m_videooutput = nullptr;
     AVFormatContext *fmt_ctx = nullptr;
     AVCodecContext *video_dec_ctx = nullptr, *audio_dec_ctx;
     int width, height;

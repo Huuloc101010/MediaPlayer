@@ -21,7 +21,7 @@ bool videooutput::init()
         return false;
     }
 
-    window = SDL_CreateWindow("YUV Dynamic Video",
+    window = SDL_CreateWindow(NAME_WINDOW,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
     if(window == nullptr)
     {
