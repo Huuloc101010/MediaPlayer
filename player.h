@@ -42,10 +42,6 @@ private:
     enum AVPixelFormat pix_fmt;
     AVStream *video_stream = nullptr, *audio_stream = nullptr;
     const char *src_filename = nullptr;
-    const char *video_dst_filename = nullptr;
-    const char *audio_dst_filename = nullptr;
-    FILE *video_dst_file = nullptr;
-    FILE *audio_dst_file = nullptr;
 
     uint8_t *video_dst_data[4] = {nullptr};
     int      video_dst_linesize[4];

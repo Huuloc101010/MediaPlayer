@@ -87,8 +87,6 @@ int player::output_audio_frame(AVFrame *frame)
      * in these cases.
      * You should use libswresample or libavfilter to convert the frame
      * to packed data. */
-    fwrite(frame->extended_data[0], 1, unpadded_linesize, audio_dst_file);
- 
     return 0;
 }
 int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
@@ -215,7 +213,7 @@ int player::get_format_from_sample_fmt(const char **fmt,
 int player::run(int argc, char **argv)
 {
     int ret = 0;
-    if (argc != 4) {
+    if (argc != 2) {
         fprintf(stderr, "usage: %s  input_file video_output_file audio_output_file\n"
                 "API example program to show how to read frames from an input file.\n"
                 "This program reads frames from a file, decodes them, and writes decoded\n"
@@ -225,9 +223,6 @@ int player::run(int argc, char **argv)
         exit(1);
     }
     src_filename = argv[1];
-    video_dst_filename = argv[2];
-    audio_dst_filename = argv[3];
- 
     /* open input file, and allocate format context */
     if (avformat_open_input(&fmt_ctx, src_filename, NULL, NULL) < 0) {
         fprintf(stderr, "Could not open source file %s\n", src_filename);
@@ -244,12 +239,6 @@ int player::run(int argc, char **argv)
     {
         video_stream = fmt_ctx->streams[video_stream_idx];
         
-        video_dst_file = fopen(video_dst_filename, "wb");
-        if (!video_dst_file) {
-            fprintf(stderr, "Could not open destination file %s\n", video_dst_filename);
-            ret = 1;
-            goto end;
-        }
         
         /* allocate image where the decoded image will be put */
         width = video_dec_ctx->width;
@@ -267,14 +256,9 @@ int player::run(int argc, char **argv)
         video_dst_bufsize = ret;
     }
  
-    if (open_codec_context(&audio_stream_idx, &audio_dec_ctx, fmt_ctx, AVMEDIA_TYPE_AUDIO) >= 0) {
+    if (open_codec_context(&audio_stream_idx, &audio_dec_ctx, fmt_ctx, AVMEDIA_TYPE_AUDIO) >= 0)
+    {
         audio_stream = fmt_ctx->streams[audio_stream_idx];
-        audio_dst_file = fopen(audio_dst_filename, "wb");
-        if (!audio_dst_file) {
-            fprintf(stderr, "Could not open destination file %s\n", audio_dst_filename);
-            ret = 1;
-            goto end;
-        }
     }
  
     /* dump input information to stderr */
@@ -300,11 +284,6 @@ int player::run(int argc, char **argv)
         goto end;
     }
  
-    if (video_stream)
-        printf("Demuxing video from file '%s' into '%s'\n", src_filename, video_dst_filename);
-    if (audio_stream)
-        printf("Demuxing audio from file '%s' into '%s'\n", src_filename, audio_dst_filename);
- 
     /* read frames from the file */
     while (av_read_frame(fmt_ctx, pkt) >= 0) {
         // check if the packet belongs to a stream we are interested in, otherwise
@@ -328,9 +307,8 @@ int player::run(int argc, char **argv)
  
     if (video_stream) {
         printf("Play the output video file with the command:\n"
-               "ffplay -f rawvideo -pix_fmt %s -video_size %dx%d %s\n",
-               av_get_pix_fmt_name(pix_fmt), width, height,
-               video_dst_filename);
+               "ffplay -f rawvideo -pix_fmt %s -video_size %dx%d\n",
+               av_get_pix_fmt_name(pix_fmt), width, height);
     }
  
     if (audio_stream) {
@@ -356,19 +334,14 @@ int player::run(int argc, char **argv)
             goto end;
  
         printf("Play the output audio file with the command:\n"
-               "ffplay -f %s -ac %d -ar %d %s\n",
-               fmt, n_channels, audio_dec_ctx->sample_rate,
-               audio_dst_filename);
+               "ffplay -f %s -ac %d -ar %d\n",
+               fmt, n_channels, audio_dec_ctx->sample_rate);
     }
  
 end:
     avcodec_free_context(&video_dec_ctx);
     avcodec_free_context(&audio_dec_ctx);
     avformat_close_input(&fmt_ctx);
-    if (video_dst_file)
-        fclose(video_dst_file);
-    if (audio_dst_file)
-        fclose(audio_dst_file);
     av_packet_free(&pkt);
     av_frame_free(&frame);
     av_free(video_dst_data[0]);
