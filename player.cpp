@@ -76,7 +76,8 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
     }
  
     // get all the available frames from the decoder
-    while (ret >= 0) {
+    while (ret >= 0)
+    {
         ret = avcodec_receive_frame(dec, frame);
         if (ret < 0)
         {
@@ -205,7 +206,6 @@ int player::run(int argc, char **argv)
     /* retrieve stream information */
     if (avformat_find_stream_info(fmt_ctx, NULL) < 0)
     {
-        fprintf(stderr, "Could not find stream information\n");
         std::cerr << "Could not find stream information" << std::endl;
         exit(1);
     }
@@ -247,7 +247,7 @@ int player::run(int argc, char **argv)
     }
  
     frame = av_frame_alloc();
-    if (!frame)
+    if(!frame)
     {
         fprintf(stderr, "Could not allocate frame\n");
         ret = AVERROR(ENOMEM);
@@ -255,7 +255,7 @@ int player::run(int argc, char **argv)
     }
  
     pkt = av_packet_alloc();
-    if (!pkt)
+    if(!pkt)
     {
         fprintf(stderr, "Could not allocate packet\n");
         ret = AVERROR(ENOMEM);
