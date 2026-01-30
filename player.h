@@ -27,8 +27,8 @@ public:
     int run(int argc, char **argv);
 
 private:
-    const char* err2str(int errnum);
-    const char* ts2timestr(int64_t ts, AVRational tb);
+    std::string err2str(int errnum);
+    std::string ts2timestr(int64_t ts, AVRational tb);
     int output_video_frame(AVFrame *frame);
     int output_audio_frame(AVFrame *frame);
     int decode_packet(AVCodecContext *dec, const AVPacket *pkt);

@@ -2,20 +2,25 @@
 #include "player.h"
 #include "videooutput.h"
 
-const char* player::err2str(int errnum)
+std::string player::err2str(int errnum)
 {
-    thread_local  char buf[AV_ERROR_MAX_STRING_SIZE];
-    av_strerror(errnum, buf, sizeof(buf));
+    std::string buf(AV_ERROR_MAX_STRING_SIZE, '\0');
+    av_strerror(errnum, buf.data(), buf.size());
     return buf;
 }
-const char* player::ts2timestr(int64_t ts, AVRational tb)
+std::string player::ts2timestr(int64_t ts, AVRational tb)
 {
-    thread_local  char buf[AV_TS_MAX_STRING_SIZE];
-    av_ts_make_time_string(buf, ts, &tb);
+    std::string buf(AV_TS_MAX_STRING_SIZE, '\0');
+    av_ts_make_time_string(buf.data(), ts, &tb);
     return buf;
 }
 int player::output_video_frame(AVFrame *frame)
 {
+    if(frame == nullptr)
+    {
+        std::cerr << "fail to show video frame" << std::endl;
+        return -1;
+    }
     if(frame->format == AV_PIX_FMT_YUV420P)
     {
         std::cout << "YUV420" << std::endl;
@@ -34,37 +39,6 @@ int player::output_video_frame(AVFrame *frame)
             m_videooutput->show(lyuv);
         }
     }
-    // if (frame->width != width || frame->height != height ||
-    //     frame->format != pix_fmt) {
-    //     /* To handle this change, one could call av_image_alloc again and
-    //      * decode the following frames into another rawvideo file. */
-    //     fprintf(stderr, "Error: Width, height and pixel format have to be "
-    //             "constant in a rawvideo file, but the width, height or "
-    //             "pixel format of the input video changed:\n"
-    //             "old: width = %d, height = %d, format = %s\n"
-    //             "new: width = %d, height = %d, format = %s\n",
-    //             width, height, av_get_pix_fmt_name(pix_fmt),
-    //             frame->width, frame->height,
-    //             av_get_pix_fmt_name((AVPixelFormat)frame->format));
-    //     return -1;
-    // }
- 
-    // printf("video_frame n:%d\n",
-    //        video_frame_count++);
- 
-    // /* copy decoded frame to destination buffer:
-    //  * this is required since rawvideo expects non aligned data */
-    // // fail build nen comment
-    // //av_image_copy(video_dst_data, video_dst_linesize,
-    //                //frame->data, frame->linesize,
-    //                //pix_fmt, width, height);
- 
-    // av_image_copy(video_dst_data, video_dst_linesize,
-    //               (const uint8_t**)frame->data, frame->linesize,
-    //               pix_fmt, width, height);
- 
-    // /* write to rawvideo file */
-    // fwrite(video_dst_data[0], 1, video_dst_bufsize, video_dst_file);
     return 0;
 }
 
@@ -77,7 +51,7 @@ int player::output_audio_frame(AVFrame *frame)
  
     printf("audio_frame n:%d nb_samples:%d pts:%s\n",
            audio_frame_count++, frame->nb_samples,
-           ts2timestr(frame->pts, audio_dec_ctx->time_base));
+           ts2timestr(frame->pts, audio_dec_ctx->time_base).c_str());
  
     /* Write the raw audio data samples of the first plane. This works
      * fine for packed formats (e.g. AV_SAMPLE_FMT_S16). However,
@@ -95,21 +69,23 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
  
     // submit the packet to the decoder
     ret = avcodec_send_packet(dec, pkt);
-    if (ret < 0) {
-        fprintf(stderr, "Error submitting a packet for decoding (%s)\n", err2str(ret));
+    if (ret < 0)
+    {
+        fprintf(stderr, "Error submitting a packet for decoding (%s)\n", err2str(ret).c_str());
         return ret;
     }
  
     // get all the available frames from the decoder
     while (ret >= 0) {
         ret = avcodec_receive_frame(dec, frame);
-        if (ret < 0) {
+        if (ret < 0)
+        {
             // those two return values are special and mean there is no output
             // frame available, but there were no errors during decoding
             if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN))
                 return 0;
  
-            fprintf(stderr, "Error during decoding (%s)\n", err2str(ret));
+            fprintf(stderr, "Error during decoding (%s)\n", err2str(ret).c_str());
             return ret;
         }
  
@@ -213,29 +189,28 @@ int player::get_format_from_sample_fmt(const char **fmt,
 int player::run(int argc, char **argv)
 {
     int ret = 0;
-    if (argc != 2) {
-        fprintf(stderr, "usage: %s  input_file video_output_file audio_output_file\n"
-                "API example program to show how to read frames from an input file.\n"
-                "This program reads frames from a file, decodes them, and writes decoded\n"
-                "video frames to a rawvideo file named video_output_file, and decoded\n"
-                "audio frames to a rawaudio file named audio_output_file.\n",
-                argv[0]);
+    if (argc != 2)
+    {
+        std::cerr << "In valid parameter: usage " << argv[0] << " video.mp4" << std::endl;
         exit(1);
     }
     src_filename = argv[1];
     /* open input file, and allocate format context */
-    if (avformat_open_input(&fmt_ctx, src_filename, NULL, NULL) < 0) {
-        fprintf(stderr, "Could not open source file %s\n", src_filename);
+    if (avformat_open_input(&fmt_ctx, src_filename, NULL, NULL) < 0)
+    {
+        std::cerr << "Could not open source file" << src_filename << std::endl;
         exit(1);
     }
  
     /* retrieve stream information */
-    if (avformat_find_stream_info(fmt_ctx, NULL) < 0) {
+    if (avformat_find_stream_info(fmt_ctx, NULL) < 0)
+    {
         fprintf(stderr, "Could not find stream information\n");
+        std::cerr << "Could not find stream information" << std::endl;
         exit(1);
     }
  
-    if ( open_codec_context(&video_stream_idx, &video_dec_ctx, fmt_ctx, AVMEDIA_TYPE_VIDEO) >= 0)
+    if(open_codec_context(&video_stream_idx, &video_dec_ctx, fmt_ctx, AVMEDIA_TYPE_VIDEO) >= 0)
     {
         video_stream = fmt_ctx->streams[video_stream_idx];
         
@@ -247,9 +222,9 @@ int player::run(int argc, char **argv)
         m_videooutput = std::make_unique<videooutput>(width, height);
 
         pix_fmt = video_dec_ctx->pix_fmt;
-        ret = av_image_alloc(video_dst_data, video_dst_linesize,
-                             width, height, pix_fmt, 1);
-        if (ret < 0) {
+        ret = av_image_alloc(video_dst_data, video_dst_linesize, width, height, pix_fmt, 1);
+        if (ret < 0)
+        {
             fprintf(stderr, "Could not allocate raw video buffer\n");
             goto end;
         }
@@ -264,28 +239,32 @@ int player::run(int argc, char **argv)
     /* dump input information to stderr */
     av_dump_format(fmt_ctx, 0, src_filename, 0);
  
-    if (!audio_stream && !video_stream) {
+    if (!audio_stream && !video_stream)
+    {
         fprintf(stderr, "Could not find audio or video stream in the input, aborting\n");
         ret = 1;
         goto end;
     }
  
     frame = av_frame_alloc();
-    if (!frame) {
+    if (!frame)
+    {
         fprintf(stderr, "Could not allocate frame\n");
         ret = AVERROR(ENOMEM);
         goto end;
     }
  
     pkt = av_packet_alloc();
-    if (!pkt) {
+    if (!pkt)
+    {
         fprintf(stderr, "Could not allocate packet\n");
         ret = AVERROR(ENOMEM);
         goto end;
     }
  
     /* read frames from the file */
-    while (av_read_frame(fmt_ctx, pkt) >= 0) {
+    while (av_read_frame(fmt_ctx, pkt) >= 0)
+    {
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it
         if (pkt->stream_index == video_stream_idx)
@@ -305,13 +284,15 @@ int player::run(int argc, char **argv)
  
     printf("Demuxing succeeded.\n");
  
-    if (video_stream) {
+    if (video_stream)
+    {
         printf("Play the output video file with the command:\n"
                "ffplay -f rawvideo -pix_fmt %s -video_size %dx%d\n",
                av_get_pix_fmt_name(pix_fmt), width, height);
     }
  
-    if (audio_stream) {
+    if (audio_stream)
+    {
         enum AVSampleFormat sfmt = audio_dec_ctx->sample_fmt;
         int n_channels = /*audio_dec_ctx->ch_layout.nb_channels;*/ 1;
        
