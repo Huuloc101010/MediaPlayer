@@ -23,7 +23,10 @@ int player::output_video_frame(AVFrame *frame)
     }
     if(frame->format == AV_PIX_FMT_YUV420P)
     {
-        std::cout << "YUV420" << std::endl;
+        // std::cout << "YUV420" << std::endl;
+        // std::cout << "Timestamp:" << frame->best_effort_timestamp << std::endl;
+        double pts = frame->best_effort_timestamp * av_q2d(video_stream->time_base);
+        std::cout << "video pts:" << pts << std::endl;
         yuv lyuv =
         {
             frame->data[0],
@@ -45,14 +48,12 @@ int player::output_video_frame(AVFrame *frame)
 int player::output_audio_frame(AVFrame *frame)
 {
     size_t unpadded_linesize = frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)frame->format);
+ 
     // printf("audio_frame n:%d nb_samples:%d pts:%s\n",
     //        audio_frame_count++, frame->nb_samples,
-    //        av_ts2timestr(frame->pts, &audio_dec_ctx->time_base));
- 
-    printf("audio_frame n:%d nb_samples:%d pts:%s\n",
-           audio_frame_count++, frame->nb_samples,
-           ts2timestr(frame->pts, audio_dec_ctx->time_base).c_str());
- 
+    //        ts2timestr(frame->pts, audio_dec_ctx->time_base).c_str());
+    double pts = frame->best_effort_timestamp * av_q2d(audio_stream->time_base);
+    std::cout << "Audio pts:" << pts << std::endl;
     /* Write the raw audio data samples of the first plane. This works
      * fine for packed formats (e.g. AV_SAMPLE_FMT_S16). However,
      * most audio decoders output planar audio, which uses a separate
@@ -98,7 +99,7 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         else
         {
             // TBD
-            //ret = output_audio_frame(frame);
+            ret = output_audio_frame(frame);
         }
  
         av_frame_unref(frame);
@@ -302,7 +303,8 @@ int player::run(int argc, char **argv)
  
         const char *fmt;
  
-        if (av_sample_fmt_is_planar(sfmt)) {
+        if (av_sample_fmt_is_planar(sfmt))
+        {
             const char *packed = av_get_sample_fmt_name(sfmt);
             printf("Warning: the sample format the decoder produced is planar "
                    "(%s). This example will output the first channel only.\n",
