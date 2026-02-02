@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_map>
 #include "player.h"
 #include "videooutput.h"
 
@@ -54,6 +55,14 @@ int player::output_audio_frame(AVFrame *frame)
     //        ts2timestr(frame->pts, audio_dec_ctx->time_base).c_str());
     double pts = frame->best_effort_timestamp * av_q2d(audio_stream->time_base);
     std::cout << "Audio pts:" << pts << std::endl;
+    // std::unordered_map<uint8_t, std::string> table =
+    // {
+    //     {0, "No Audio"},
+    //     {1, "Mono"},
+    //     {2, "Stereo"},
+    //     {3, "Suround"},
+    // };
+    // std::cout << "Channels:" << table[frame->channels] << std::endl;
     /* Write the raw audio data samples of the first plane. This works
      * fine for packed formats (e.g. AV_SAMPLE_FMT_S16). However,
      * most audio decoders output planar audio, which uses a separate
@@ -96,10 +105,14 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         {
             ret = output_video_frame(frame);
         }
-        else
+        else if(dec->codec->type == AVMEDIA_TYPE_AUDIO)
         {
             // TBD
             ret = output_audio_frame(frame);
+        }
+        else
+        {
+            std::cout << "Not support this packet" << std::endl;
         }
  
         av_frame_unref(frame);
