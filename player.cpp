@@ -26,6 +26,7 @@ int player::output_video_frame(AVFrame *frame)
     {
         // std::cout << "YUV420" << std::endl;
         // std::cout << "Timestamp:" << frame->best_effort_timestamp << std::endl;
+        
         double pts = frame->best_effort_timestamp * av_q2d(video_stream->time_base);
         std::cout << "video pts:" << pts << std::endl;
         yuv lyuv =
@@ -63,6 +64,11 @@ int player::output_audio_frame(AVFrame *frame)
     //     {3, "Suround"},
     // };
     // std::cout << "Channels:" << table[frame->channels] << std::endl;
+    // Need check:
+    // sample rate 44000 Hz
+    // sample format s16, each sample use signed int data
+    // sample channel : mono -> single, stereo -> double channel
+    // plannar or packed -> plannar (separate channel left right), packed (data packed in format R L R L R L)
     /* Write the raw audio data samples of the first plane. This works
      * fine for packed formats (e.g. AV_SAMPLE_FMT_S16). However,
      * most audio decoders output planar audio, which uses a separate
