@@ -19,6 +19,8 @@ extern "C"
 }
 
 class videooutput;
+class audiooutput;
+
 class player
 {
 public:
@@ -37,6 +39,7 @@ private:
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
 
     std::unique_ptr<videooutput> m_videooutput = nullptr;
+    std::unique_ptr<audiooutput> m_audiooutput = nullptr;
     AVFormatContext *fmt_ctx = nullptr;
     AVCodecContext *video_dec_ctx = nullptr, *audio_dec_ctx;
     int width, height;
