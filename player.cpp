@@ -254,6 +254,9 @@ int player::run(int argc, char **argv)
     if (open_codec_context(&audio_stream_idx, &audio_dec_ctx, fmt_ctx, AVMEDIA_TYPE_AUDIO) >= 0)
     {
         audio_stream = fmt_ctx->streams[audio_stream_idx];
+        std::cout << "sample rate: " << audio_dec_ctx->sample_rate << std::endl;
+        std::cout << "format: " << audio_dec_ctx->get_format << std::endl;
+        std::cout << "channel layout: " << audio_dec_ctx->channel_layout << std::endl;
     }
  
     /* dump input information to stderr */

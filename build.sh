@@ -5,6 +5,7 @@ g++ \
 main.cpp \
 player.cpp \
 videooutput.cpp \
+audiooutput.cpp \
 --std=c++20 `pkg-config --cflags --libs libavformat libavcodec libavutil` \
 `pkg-config --cflags --libs sdl2` \
 -o a.out
