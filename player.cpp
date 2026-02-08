@@ -4,6 +4,11 @@
 #include "videooutput.h"
 #include "audiooutput.h"
 
+player::~player()
+{
+    swr_free(&swr);
+}
+
 std::string player::err2str(int errnum)
 {
     std::string buf(AV_ERROR_MAX_STRING_SIZE, '\0');
@@ -57,52 +62,21 @@ int player::output_audio_frame(AVFrame *frame)
     //        ts2timestr(frame->pts, audio_dec_ctx->time_base).c_str());
     double pts = frame->best_effort_timestamp * av_q2d(audio_stream->time_base);
     std::cout << "Audio pts:" << pts << std::endl;
-
-    struct AudioS16Buffer
+    std::cout << "Audio frame->nb_samples=" << frame->nb_samples << std::endl;
+    std::call_once(m_once_flag,
+    [&](void)->void
     {
-        uint8_t* data = nullptr;
-        int      size = 0;   // bytes
-    };
-    static bool inited = false;
-    static SwrContext* swr = nullptr;
-    AudioS16Buffer out{};
-    uint64_t ch_layout =
-        frame->channel_layout ?
-        frame->channel_layout :
-        av_get_default_channel_layout(frame->channels);
-    if(inited == false)
-    {
-        m_audiooutput = std::make_unique<audiooutput>();
-        if(m_audiooutput != nullptr)
+        std::cout << "Config autio output" << std::endl;
+        if(!config_audio_output(frame))
         {
-            if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS))
-            {
-                std::cerr << "config audio error" << std::endl;
-                return -1;
-            }
-            m_audiooutput->start();
+            std::cerr << "config audio fail" << std::endl;
         }
-        // init software context
-        
-        swr = swr_alloc_set_opts(
-        nullptr,
-        ch_layout,
-        AV_SAMPLE_FMT_S16,
-        frame->sample_rate,
-        frame->channel_layout,
-        (AVSampleFormat)frame->format,
-        frame->sample_rate,
-
-        0, nullptr);
-        if(!swr || swr_init(swr))
+        else
         {
-            swr_free(&swr);
-            return -1;
+            std::cerr << "config audio success" << std::endl;
         }
-        // update flag
-        inited = true;
+    });
 
-    }
     int out_samples = av_rescale_rnd(
         swr_get_delay(swr, frame->sample_rate) + frame->nb_samples,
         frame->sample_rate,
@@ -111,6 +85,11 @@ int player::output_audio_frame(AVFrame *frame)
     );
     /* 4. Cấp buffer output */
     int out_linesize = 0;
+    AudioS16Buffer out{};
+    uint64_t ch_layout =
+        frame->channel_layout ?
+        frame->channel_layout :
+        av_get_default_channel_layout(frame->channels);
     int out_channels = av_get_channel_layout_nb_channels(ch_layout);
     av_samples_alloc(
         &out.data,
@@ -134,7 +113,7 @@ int player::output_audio_frame(AVFrame *frame)
     {
         av_freep(&out.data);
         std::cerr << "fail to convert data" << std::endl;
-        return -1;
+        return false;
     }
     out.size = samples * out_channels * sizeof(int16_t);
 
@@ -143,8 +122,6 @@ int player::output_audio_frame(AVFrame *frame)
         m_audiooutput->push(out.data, out.size);
         av_freep(&out.data);
     }
-    // TOTO free resorce swr_free(&swr);
-
     // std::unordered_map<uint8_t, std::string> table =
     // {
     //     {0, "No Audio"},
@@ -168,6 +145,54 @@ int player::output_audio_frame(AVFrame *frame)
      * to packed data. */
     return 0;
 }
+
+bool player::config_audio_output(AVFrame* frame)
+{
+    
+    static bool inited = false;
+    
+    
+    uint64_t ch_layout =
+        frame->channel_layout ?
+        frame->channel_layout :
+        av_get_default_channel_layout(frame->channels);
+    if(inited == false)
+    {
+        m_audiooutput = std::make_unique<audiooutput>();
+        if(m_audiooutput != nullptr)
+        {
+            if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS, frame->nb_samples))
+            {
+                std::cerr << "config audio error" << std::endl;
+                return false;
+            }
+            m_audiooutput->start();
+        }
+        // init software context
+        
+        swr = swr_alloc_set_opts(
+        nullptr,
+        ch_layout,
+        AV_SAMPLE_FMT_S16,
+        frame->sample_rate,
+        frame->channel_layout,
+        (AVSampleFormat)frame->format,
+        frame->sample_rate,
+
+        0, nullptr);
+        if(!swr || swr_init(swr))
+        {
+            swr_free(&swr);
+            return false;
+        }
+        // update flag
+        inited = true;
+
+    }
+    
+    return true;
+}
+
 int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
 {
     int ret = 0;
@@ -212,7 +237,7 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         std::this_thread::sleep_for(std::chrono::microseconds(5000));
         av_frame_unref(frame);
     }
- 
+    
     return ret;
 }
 
@@ -395,7 +420,7 @@ int player::run(int argc, char **argv)
         decode_packet(audio_dec_ctx, NULL);
  
     printf("Demuxing succeeded.\n");
- 
+    while(true);
     if (video_stream)
     {
         printf("Play the output video file with the command:\n"

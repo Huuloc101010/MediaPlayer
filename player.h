@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <mutex>
 #include "define.h"
 
 extern "C"
@@ -25,7 +26,7 @@ class player
 {
 public:
     player() = default;
-    ~player() = default;
+    ~player();
  
     int run(int argc, char **argv);
 
@@ -37,9 +38,12 @@ private:
     int decode_packet(AVCodecContext *dec, const AVPacket *pkt);
     int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
+    bool config_audio_output(AVFrame* frame);
 
     std::unique_ptr<videooutput> m_videooutput = nullptr;
     std::unique_ptr<audiooutput> m_audiooutput = nullptr;
+    std::once_flag m_once_flag;
+    SwrContext* swr = nullptr;
     AVFormatContext *fmt_ctx = nullptr;
     AVCodecContext *video_dec_ctx = nullptr, *audio_dec_ctx;
     int width, height;

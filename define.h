@@ -14,4 +14,10 @@ struct yuv
     int linesize_v;
 };
 
+struct AudioS16Buffer
+{
+    uint8_t* data = nullptr;
+    int      size = 0;   // bytes
+};
+
 #endif /*_DEFINE_*/
