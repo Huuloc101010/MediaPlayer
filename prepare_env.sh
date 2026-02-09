@@ -3,7 +3,7 @@
 sudo -v
 sudo apt update
 sudo apt install -y \
-build-essential \
+g++-13 \
 pkg-config \
 libsdl2-dev \
 ffmpeg \

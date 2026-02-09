@@ -149,47 +149,37 @@ int player::output_audio_frame(AVFrame *frame)
 bool player::config_audio_output(AVFrame* frame)
 {
     
-    static bool inited = false;
-    
-    
     uint64_t ch_layout =
-        frame->channel_layout ?
-        frame->channel_layout :
-        av_get_default_channel_layout(frame->channels);
-    if(inited == false)
+    frame->channel_layout ?
+    frame->channel_layout :
+    av_get_default_channel_layout(frame->channels);
+    m_audiooutput = std::make_unique<audiooutput>();
+    if(m_audiooutput != nullptr)
     {
-        m_audiooutput = std::make_unique<audiooutput>();
-        if(m_audiooutput != nullptr)
+        if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS/*, frame->nb_samples*/))
         {
-            if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS, frame->nb_samples))
-            {
-                std::cerr << "config audio error" << std::endl;
-                return false;
-            }
-            m_audiooutput->start();
-        }
-        // init software context
-        
-        swr = swr_alloc_set_opts(
-        nullptr,
-        ch_layout,
-        AV_SAMPLE_FMT_S16,
-        frame->sample_rate,
-        frame->channel_layout,
-        (AVSampleFormat)frame->format,
-        frame->sample_rate,
-
-        0, nullptr);
-        if(!swr || swr_init(swr))
-        {
-            swr_free(&swr);
+            std::cerr << "config audio error" << std::endl;
             return false;
         }
-        // update flag
-        inited = true;
-
+        m_audiooutput->start();
     }
+    // init software context
     
+    swr = swr_alloc_set_opts(
+    nullptr,
+    ch_layout,
+    AV_SAMPLE_FMT_S16,
+    frame->sample_rate,
+    frame->channel_layout,
+    (AVSampleFormat)frame->format,
+    frame->sample_rate,
+
+    0, nullptr);
+    if(!swr || swr_init(swr))
+    {
+        swr_free(&swr);
+        return false;
+    }
     return true;
 }
 

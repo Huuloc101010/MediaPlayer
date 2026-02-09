@@ -1,7 +1,7 @@
 # This is temp build script, this script will be refactor
 
 #!/bin/bash
-g++ \
+g++-13 \
 main.cpp \
 player.cpp \
 videooutput.cpp \
