@@ -2,6 +2,12 @@
 #include <unordered_map>
 #include "player.h"
 #include "videooutput.h"
+#include "audiooutput.h"
+
+player::~player()
+{
+    swr_free(&swr);
+}
 
 std::string player::err2str(int errnum)
 {
@@ -26,6 +32,7 @@ int player::output_video_frame(AVFrame *frame)
     {
         // std::cout << "YUV420" << std::endl;
         // std::cout << "Timestamp:" << frame->best_effort_timestamp << std::endl;
+        
         double pts = frame->best_effort_timestamp * av_q2d(video_stream->time_base);
         std::cout << "video pts:" << pts << std::endl;
         yuv lyuv =
@@ -55,6 +62,66 @@ int player::output_audio_frame(AVFrame *frame)
     //        ts2timestr(frame->pts, audio_dec_ctx->time_base).c_str());
     double pts = frame->best_effort_timestamp * av_q2d(audio_stream->time_base);
     std::cout << "Audio pts:" << pts << std::endl;
+    std::cout << "Audio frame->nb_samples=" << frame->nb_samples << std::endl;
+    std::call_once(m_once_flag,
+    [&](void)->void
+    {
+        std::cout << "Config autio output" << std::endl;
+        if(!config_audio_output(frame))
+        {
+            std::cerr << "config audio fail" << std::endl;
+        }
+        else
+        {
+            std::cerr << "config audio success" << std::endl;
+        }
+    });
+
+    int out_samples = av_rescale_rnd(
+        swr_get_delay(swr, frame->sample_rate) + frame->nb_samples,
+        frame->sample_rate,
+        frame->sample_rate,
+        AV_ROUND_UP
+    );
+    /* 4. Cấp buffer output */
+    int out_linesize = 0;
+    AudioS16Buffer out{};
+    uint64_t ch_layout =
+        frame->channel_layout ?
+        frame->channel_layout :
+        av_get_default_channel_layout(frame->channels);
+    int out_channels = av_get_channel_layout_nb_channels(ch_layout);
+    av_samples_alloc(
+        &out.data,
+        &out_linesize,
+        out_channels,
+        out_samples,
+        AV_SAMPLE_FMT_S16,
+        0
+    );
+
+    /* 5. Convert */
+    int samples = swr_convert(
+        swr,
+        &out.data,
+        out_samples,
+        (const uint8_t**)frame->data,
+        frame->nb_samples
+    );
+
+    if (samples <= 0)
+    {
+        av_freep(&out.data);
+        std::cerr << "fail to convert data" << std::endl;
+        return false;
+    }
+    out.size = samples * out_channels * sizeof(int16_t);
+
+    if(out.data && out.size > 0)
+    {
+        m_audiooutput->push(out.data, out.size);
+        av_freep(&out.data);
+    }
     // std::unordered_map<uint8_t, std::string> table =
     // {
     //     {0, "No Audio"},
@@ -63,6 +130,11 @@ int player::output_audio_frame(AVFrame *frame)
     //     {3, "Suround"},
     // };
     // std::cout << "Channels:" << table[frame->channels] << std::endl;
+    // Need check:
+    // sample rate 44000 Hz
+    // sample format s16, each sample use signed int data
+    // sample channel : mono -> single, stereo -> double channel
+    // plannar or packed -> plannar (separate channel left right), packed (data packed in format R L R L R L)
     /* Write the raw audio data samples of the first plane. This works
      * fine for packed formats (e.g. AV_SAMPLE_FMT_S16). However,
      * most audio decoders output planar audio, which uses a separate
@@ -73,6 +145,44 @@ int player::output_audio_frame(AVFrame *frame)
      * to packed data. */
     return 0;
 }
+
+bool player::config_audio_output(AVFrame* frame)
+{
+    
+    uint64_t ch_layout =
+    frame->channel_layout ?
+    frame->channel_layout :
+    av_get_default_channel_layout(frame->channels);
+    m_audiooutput = std::make_unique<audiooutput>();
+    if(m_audiooutput != nullptr)
+    {
+        if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS/*, frame->nb_samples*/))
+        {
+            std::cerr << "config audio error" << std::endl;
+            return false;
+        }
+        m_audiooutput->start();
+    }
+    // init software context
+    
+    swr = swr_alloc_set_opts(
+    nullptr,
+    ch_layout,
+    AV_SAMPLE_FMT_S16,
+    frame->sample_rate,
+    frame->channel_layout,
+    (AVSampleFormat)frame->format,
+    frame->sample_rate,
+
+    0, nullptr);
+    if(!swr || swr_init(swr))
+    {
+        swr_free(&swr);
+        return false;
+    }
+    return true;
+}
+
 int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
 {
     int ret = 0;
@@ -114,10 +224,10 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         {
             std::cout << "Not support this packet" << std::endl;
         }
- 
+        std::this_thread::sleep_for(std::chrono::microseconds(5000));
         av_frame_unref(frame);
     }
- 
+    
     return ret;
 }
 
@@ -248,6 +358,9 @@ int player::run(int argc, char **argv)
     if (open_codec_context(&audio_stream_idx, &audio_dec_ctx, fmt_ctx, AVMEDIA_TYPE_AUDIO) >= 0)
     {
         audio_stream = fmt_ctx->streams[audio_stream_idx];
+        std::cout << "sample rate: " << audio_dec_ctx->sample_rate << std::endl;
+        std::cout << "format: " << audio_dec_ctx->get_format << std::endl;
+        std::cout << "channel layout: " << audio_dec_ctx->channel_layout << std::endl;
     }
  
     /* dump input information to stderr */
@@ -297,7 +410,7 @@ int player::run(int argc, char **argv)
         decode_packet(audio_dec_ctx, NULL);
  
     printf("Demuxing succeeded.\n");
- 
+    while(true);
     if (video_stream)
     {
         printf("Play the output video file with the command:\n"

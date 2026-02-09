@@ -14,10 +14,10 @@ public:
     videooutput(const int width,const int height);
     ~videooutput();
     bool init();
-    void destroy();
     bool show(const yuv& ndata);
     bool checkevent();
 private:
+    void destroy();
     int width;
     int height;
     SDL_Window* window = nullptr;
