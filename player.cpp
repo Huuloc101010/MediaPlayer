@@ -355,7 +355,8 @@ int player::run(int argc, char **argv)
         if (ret < 0)
         {
             LOGE("Could not allocate raw video buffer");
-            goto end;
+            clean_resource();
+            return -1;
         }
         m_video_dst_bufsize = ret;
     }
@@ -374,7 +375,8 @@ int player::run(int argc, char **argv)
     {
         LOGE("Could not find audio or video stream in the input, aborting");
         ret = 1;
-        goto end;
+        clean_resource();
+        return 1;
     }
  
     m_frame = av_frame_alloc();
@@ -382,7 +384,8 @@ int player::run(int argc, char **argv)
     {
         LOGE("Could not allocate frame");
         ret = AVERROR(ENOMEM);
-        goto end;
+        clean_resource();
+        return -1;
     }
  
     m_pkt = av_packet_alloc();
@@ -390,7 +393,8 @@ int player::run(int argc, char **argv)
     {
         LOGE("Could not allocate packet");
         ret = AVERROR(ENOMEM);
-        goto end;
+        clean_resource();
+        return -1;
     }
  
     /* read frames from the file */
@@ -409,10 +413,13 @@ int player::run(int argc, char **argv)
  
     /* flush the decoders */
     if (m_video_dec_ctx)
+    {
         decode_packet(m_video_dec_ctx, NULL);
+    }
     if (m_audio_dec_ctx)
+    {
         decode_packet(m_audio_dec_ctx, NULL);
- 
+    }
     LOGI("Demuxing succeeded");
     while(true);
     if (m_video_stream)
@@ -443,17 +450,21 @@ int player::run(int argc, char **argv)
             n_channels = 1;
         }
  
-        if ((ret = get_format_from_sample_fmt(&fmt, sfmt)) < 0)
-            goto end;
+        if((ret = get_format_from_sample_fmt(&fmt, sfmt)) < 0)
+        {
+            clean_resource();
+        }
     }
  
-end:
+    return ret < 0;
+}
+
+void player::clean_resource()
+{
     avcodec_free_context(&m_video_dec_ctx);
     avcodec_free_context(&m_audio_dec_ctx);
     avformat_close_input(&m_fmt_ctx);
     av_packet_free(&m_pkt);
     av_frame_free(&m_frame);
     av_free(m_video_dst_data[0]);
- 
-    return ret < 0;
 }
