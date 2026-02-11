@@ -36,17 +36,17 @@ private:
     int output_video_frame(AVFrame *frame);
     int output_audio_frame(AVFrame *frame);
     int decode_packet(AVCodecContext *dec, const AVPacket *pkt);
-    int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type);
+    int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *m_fmt_ctx, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     bool config_audio_output(AVFrame* frame);
 
     std::unique_ptr<videooutput> m_videooutput = nullptr;
     std::unique_ptr<audiooutput> m_audiooutput = nullptr;
     std::once_flag m_once_flag;
-    SwrContext* swr = nullptr;
-    AVFormatContext *fmt_ctx = nullptr;
-    AVCodecContext *video_dec_ctx = nullptr, *audio_dec_ctx;
-    int width, height;
+    SwrContext* m_swr = nullptr;
+    AVFormatContext *m_fmt_ctx = nullptr;
+    AVCodecContext *m_video_dec_ctx = nullptr, *m_audio_dec_ctx;
+    int m_width, m_height;
     enum AVPixelFormat pix_fmt;
     AVStream *video_stream = nullptr, *audio_stream = nullptr;
     const char *src_filename = nullptr;

@@ -1,4 +1,5 @@
 #include "audiooutput.h"
+#include "log.h"
 #include <cstring>
 
 audiooutput::audiooutput()
@@ -29,8 +30,8 @@ bool audiooutput::config(int sample_rate,
     want.callback = sdl_callback;
     want.userdata = this;
 
-    device_id_ = SDL_OpenAudioDevice(nullptr, 0, &want, &spec_, 0);
-    if (!device_id_)
+    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_spec, 0);
+    if (!m_DeviceId)
     {
         SDL_Log("SDL_OpenAudioDevice failed: %s", SDL_GetError());
         return false;
@@ -41,32 +42,32 @@ bool audiooutput::config(int sample_rate,
 
 void audiooutput::start()
 {
-    if(device_id_)
+    if(m_DeviceId)
     {
-        SDL_PauseAudioDevice(device_id_, 0);
+        SDL_PauseAudioDevice(m_DeviceId, 0);
     }
 }
 
 void audiooutput::stop()
 {
-    if(device_id_)
+    if(m_DeviceId)
     {
-        SDL_PauseAudioDevice(device_id_, 1);
-        SDL_CloseAudioDevice(device_id_);
-        device_id_ = 0;
+        SDL_PauseAudioDevice(m_DeviceId, 1);
+        SDL_CloseAudioDevice(m_DeviceId);
+        m_DeviceId = 0;
     }
 }
 
 void audiooutput::clear()
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    queue_.clear();
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_deque.clear();
 }
 
 void audiooutput::push(const uint8_t* data, size_t size)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    queue_.insert(queue_.end(), data, data + size);
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_deque.insert(m_deque.end(), data, data + size);
 }
 
 void audiooutput::sdl_callback(void* userdata, Uint8* stream, int len)
@@ -78,12 +79,12 @@ void audiooutput::callback(Uint8* stream, int len)
 {
     std::memset(stream, 0, len); // silence nếu thiếu data
 
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    int to_copy = std::min<int>(len, queue_.size());
+    int to_copy = std::min<int>(len, m_deque.size());
     for(int i = 0; i < to_copy; ++i) 
     {
-        stream[i] = queue_.front();
-        queue_.pop_front();
+        stream[i] = m_deque.front();
+        m_deque.pop_front();
     }
 }
