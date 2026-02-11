@@ -3,6 +3,7 @@
 #include "player.h"
 #include "videooutput.h"
 #include "audiooutput.h"
+#include "log.h"
 
 player::~player()
 {
@@ -25,7 +26,7 @@ int player::output_video_frame(AVFrame *frame)
 {
     if(frame == nullptr)
     {
-        std::cerr << "fail to show video frame" << std::endl;
+        LOGE("fail to show video frame");
         return -1;
     }
     if(frame->format == AV_PIX_FMT_YUV420P)
@@ -34,7 +35,7 @@ int player::output_video_frame(AVFrame *frame)
         // std::cout << "Timestamp:" << frame->best_effort_timestamp << std::endl;
         
         double pts = frame->best_effort_timestamp * av_q2d(video_stream->time_base);
-        std::cout << "video pts:" << pts << std::endl;
+        LOGI("video pts:{}", pts);
         yuv lyuv =
         {
             frame->data[0],
@@ -57,23 +58,19 @@ int player::output_audio_frame(AVFrame *frame)
 {
     size_t unpadded_linesize = frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)frame->format);
  
-    // printf("audio_frame n:%d nb_samples:%d pts:%s\n",
-    //        audio_frame_count++, frame->nb_samples,
-    //        ts2timestr(frame->pts, audio_dec_ctx->time_base).c_str());
     double pts = frame->best_effort_timestamp * av_q2d(audio_stream->time_base);
-    std::cout << "Audio pts:" << pts << std::endl;
-    std::cout << "Audio frame->nb_samples=" << frame->nb_samples << std::endl;
+    LOGI("Audio pts:{}", pts);
+    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
     std::call_once(m_once_flag,
     [&](void)->void
     {
-        std::cout << "Config autio output" << std::endl;
         if(!config_audio_output(frame))
         {
-            std::cerr << "config audio fail" << std::endl;
+            LOGE("config audio fail");
         }
         else
         {
-            std::cerr << "config audio success" << std::endl;
+            LOGI("config audio success");
         }
     });
 
@@ -83,7 +80,8 @@ int player::output_audio_frame(AVFrame *frame)
         frame->sample_rate,
         AV_ROUND_UP
     );
-    /* 4. Cấp buffer output */
+
+    /* allocate buffer output */
     int out_linesize = 0;
     AudioS16Buffer out{};
     uint64_t ch_layout =
@@ -100,7 +98,7 @@ int player::output_audio_frame(AVFrame *frame)
         0
     );
 
-    /* 5. Convert */
+    /*  Convert */
     int samples = swr_convert(
         swr,
         &out.data,
@@ -112,7 +110,7 @@ int player::output_audio_frame(AVFrame *frame)
     if (samples <= 0)
     {
         av_freep(&out.data);
-        std::cerr << "fail to convert data" << std::endl;
+        LOGE("fail to convert data");
         return false;
     }
     out.size = samples * out_channels * sizeof(int16_t);
@@ -154,15 +152,18 @@ bool player::config_audio_output(AVFrame* frame)
     frame->channel_layout :
     av_get_default_channel_layout(frame->channels);
     m_audiooutput = std::make_unique<audiooutput>();
-    if(m_audiooutput != nullptr)
+    if(m_audiooutput == nullptr)
     {
-        if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS/*, frame->nb_samples*/))
-        {
-            std::cerr << "config audio error" << std::endl;
-            return false;
-        }
-        m_audiooutput->start();
+        LOGE("m_audiooutput = nullptr");
+        return false;
     }
+
+    if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS/*, frame->nb_samples*/))
+    {
+        std::cerr << "config audio error" << std::endl;
+        return false;
+    }
+    m_audiooutput->start();
     // init software context
     
     swr = swr_alloc_set_opts(
@@ -178,6 +179,7 @@ bool player::config_audio_output(AVFrame* frame)
     if(!swr || swr_init(swr))
     {
         swr_free(&swr);
+        LOGE("!swr || swr_init(swr)");
         return false;
     }
     return true;
@@ -191,7 +193,7 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
     ret = avcodec_send_packet(dec, pkt);
     if (ret < 0)
     {
-        fprintf(stderr, "Error submitting a packet for decoding (%s)\n", err2str(ret).c_str());
+        LOGE("Error submitting a packet for decoding {}", err2str(ret));
         return ret;
     }
  
@@ -206,7 +208,7 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
             if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN))
                 return 0;
  
-            fprintf(stderr, "Error during decoding (%s)\n", err2str(ret).c_str());
+            LOGE("Error during decoding {}", err2str(ret));
             return ret;
         }
  
@@ -222,7 +224,7 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         }
         else
         {
-            std::cout << "Not support this packet" << std::endl;
+            LOGW("Not support this packet");
         }
         std::this_thread::sleep_for(std::chrono::microseconds(5000));
         av_frame_unref(frame);
@@ -239,41 +241,45 @@ int player::open_codec_context(int *stream_idx,
     const AVCodec *dec = NULL;
  
     ret = av_find_best_stream(fmt_ctx, type, -1, -1, NULL, 0);
-    if (ret < 0) {
-        fprintf(stderr, "Could not find %s stream in input file '%s'\n",
-                av_get_media_type_string(type), src_filename);
+    if (ret < 0)
+    {
+        LOGE("Could not find {} stream in input file {}", av_get_media_type_string(type), src_filename);
         return ret;
-    } else {
+    }
+    else
+    {
         stream_index = ret;
         st = fmt_ctx->streams[stream_index];
  
         /* find decoder for the stream */
         dec = avcodec_find_decoder(st->codecpar->codec_id);
-        if (!dec) {
-            fprintf(stderr, "Failed to find %s codec\n",
-                    av_get_media_type_string(type));
+        if (!dec)
+        {
+            LOGE("Failed to find {} codec", av_get_media_type_string(type));
             return AVERROR(EINVAL);
         }
  
         /* Allocate a codec context for the decoder */
         *dec_ctx = avcodec_alloc_context3(dec);
-        if (!*dec_ctx) {
-            fprintf(stderr, "Failed to allocate the %s codec context\n",
-                    av_get_media_type_string(type));
+        if (!*dec_ctx)
+        {
+            LOGE("Failed to allocate the {} codec context", av_get_media_type_string(type));
             return AVERROR(ENOMEM);
         }
  
         /* Copy codec parameters from input stream to output codec context */
-        if ((ret = avcodec_parameters_to_context(*dec_ctx, st->codecpar)) < 0) {
-            fprintf(stderr, "Failed to copy %s codec parameters to decoder context\n",
-                    av_get_media_type_string(type));
+        if ((ret = avcodec_parameters_to_context(*dec_ctx, st->codecpar)) < 0)
+        {
+            LOGE("Failed to copy {} codec parameters to decoder context", av_get_media_type_string(type));
             return ret;
         }
  
         /* Init the decoders */
-        if ((ret = avcodec_open2(*dec_ctx, dec, NULL)) < 0) {
+        if ((ret = avcodec_open2(*dec_ctx, dec, NULL)) < 0)
+        {
             fprintf(stderr, "Failed to open %s codec\n",
                     av_get_media_type_string(type));
+            LOGE("Failed to open {} codec", av_get_media_type_string(type));
             return ret;
         }
         *stream_idx = stream_index;
@@ -289,7 +295,8 @@ int player::get_format_from_sample_fmt(const char **fmt,
     struct sample_fmt_entry
     {
         enum AVSampleFormat sample_fmt; const char *fmt_be, *fmt_le;
-    } sample_fmt_entries[] = {
+    };
+    sample_fmt_entry sample_fmt_entries[] = {
         { AV_SAMPLE_FMT_U8,  "u8",    "u8"    },
         { AV_SAMPLE_FMT_S16, "s16be", "s16le" },
         { AV_SAMPLE_FMT_S32, "s32be", "s32le" },
@@ -298,7 +305,8 @@ int player::get_format_from_sample_fmt(const char **fmt,
     };
     *fmt = NULL;
  
-    for (i = 0; i < FF_ARRAY_ELEMS(sample_fmt_entries); i++) {
+    for (i = 0; i < FF_ARRAY_ELEMS(sample_fmt_entries); i++)
+    {
         struct sample_fmt_entry *entry = &sample_fmt_entries[i];
         if (sample_fmt == entry->sample_fmt) {
             *fmt = AV_NE(entry->fmt_be, entry->fmt_le);
@@ -306,9 +314,7 @@ int player::get_format_from_sample_fmt(const char **fmt,
         }
     }
  
-    fprintf(stderr,
-            "sample format %s is not supported as output format\n",
-            av_get_sample_fmt_name(sample_fmt));
+    LOGE("sample format {} is not supported as output format", av_get_sample_fmt_name(sample_fmt));
     return -1;
 }
 int player::run(int argc, char **argv)
@@ -316,21 +322,21 @@ int player::run(int argc, char **argv)
     int ret = 0;
     if (argc != 2)
     {
-        std::cerr << "In valid parameter: usage " << argv[0] << " video.mp4" << std::endl;
+        LOGE("In valid parameter: usage {} video.mp4", argv[0]);
         exit(1);
     }
     src_filename = argv[1];
     /* open input file, and allocate format context */
     if (avformat_open_input(&fmt_ctx, src_filename, NULL, NULL) < 0)
     {
-        std::cerr << "Could not open source file" << src_filename << std::endl;
+        LOGE("Could not open source file {}", src_filename);
         exit(1);
     }
  
     /* retrieve stream information */
     if (avformat_find_stream_info(fmt_ctx, NULL) < 0)
     {
-        std::cerr << "Could not find stream information" << std::endl;
+        LOGE("Could not find stream information");
         exit(1);
     }
  
@@ -349,7 +355,7 @@ int player::run(int argc, char **argv)
         ret = av_image_alloc(video_dst_data, video_dst_linesize, width, height, pix_fmt, 1);
         if (ret < 0)
         {
-            fprintf(stderr, "Could not allocate raw video buffer\n");
+            LOGE("Could not allocate raw video buffer");
             goto end;
         }
         video_dst_bufsize = ret;
@@ -358,9 +364,8 @@ int player::run(int argc, char **argv)
     if (open_codec_context(&audio_stream_idx, &audio_dec_ctx, fmt_ctx, AVMEDIA_TYPE_AUDIO) >= 0)
     {
         audio_stream = fmt_ctx->streams[audio_stream_idx];
-        std::cout << "sample rate: " << audio_dec_ctx->sample_rate << std::endl;
-        std::cout << "format: " << audio_dec_ctx->get_format << std::endl;
-        std::cout << "channel layout: " << audio_dec_ctx->channel_layout << std::endl;
+        LOGI("sample rate: {}", audio_dec_ctx->sample_rate);
+        LOGI("channel layout: {}", audio_dec_ctx->channel_layout);
     }
  
     /* dump input information to stderr */
@@ -368,7 +373,7 @@ int player::run(int argc, char **argv)
  
     if (!audio_stream && !video_stream)
     {
-        fprintf(stderr, "Could not find audio or video stream in the input, aborting\n");
+        LOGE("Could not find audio or video stream in the input, aborting");
         ret = 1;
         goto end;
     }
@@ -376,7 +381,7 @@ int player::run(int argc, char **argv)
     frame = av_frame_alloc();
     if(!frame)
     {
-        fprintf(stderr, "Could not allocate frame\n");
+        LOGE("Could not allocate frame");
         ret = AVERROR(ENOMEM);
         goto end;
     }
@@ -384,7 +389,7 @@ int player::run(int argc, char **argv)
     pkt = av_packet_alloc();
     if(!pkt)
     {
-        fprintf(stderr, "Could not allocate packet\n");
+        LOGE("Could not allocate packet");
         ret = AVERROR(ENOMEM);
         goto end;
     }
@@ -409,12 +414,12 @@ int player::run(int argc, char **argv)
     if (audio_dec_ctx)
         decode_packet(audio_dec_ctx, NULL);
  
-    printf("Demuxing succeeded.\n");
+    LOGI("Demuxing succeeded");
     while(true);
     if (video_stream)
     {
-        printf("Play the output video file with the command:\n"
-               "ffplay -f rawvideo -pix_fmt %s -video_size %dx%d\n",
+        LOGI("Play the output video file with the command:"
+               "ffplay -f rawvideo -pix_fmt {} -video_size {}x{}",
                av_get_pix_fmt_name(pix_fmt), width, height);
     }
  
@@ -432,8 +437,8 @@ int player::run(int argc, char **argv)
         if (av_sample_fmt_is_planar(sfmt))
         {
             const char *packed = av_get_sample_fmt_name(sfmt);
-            printf("Warning: the sample format the decoder produced is planar "
-                   "(%s). This example will output the first channel only.\n",
+            LOGW("Warning: the sample format the decoder produced is planar "
+                   "({}). This example will output the first channel only.",
                    packed ? packed : "?");
             sfmt = av_get_packed_sample_fmt(sfmt);
             n_channels = 1;
@@ -441,10 +446,6 @@ int player::run(int argc, char **argv)
  
         if ((ret = get_format_from_sample_fmt(&fmt, sfmt)) < 0)
             goto end;
- 
-        printf("Play the output audio file with the command:\n"
-               "ffplay -f %s -ac %d -ar %d\n",
-               fmt, n_channels, audio_dec_ctx->sample_rate);
     }
  
 end:
