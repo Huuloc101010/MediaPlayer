@@ -3,6 +3,7 @@
 #include "log.h"
 
 videooutput::videooutput(const int width,const int height)
+: m_ThreadCheckEvent(&videooutput::checkevent, this)
 {
     this->width = width;
     this->height = height;
@@ -11,6 +12,8 @@ videooutput::videooutput(const int width,const int height)
 
 videooutput::~videooutput()
 {
+    m_exiting = true;
+    m_ThreadCheckEvent.join();
     destroy();
 }
 
@@ -51,10 +54,6 @@ bool videooutput::init()
 
 bool videooutput::show(const yuv& ndata)
 {
-        if(!checkevent())
-        {
-            exit(0);
-        }
         // Push data to GPU
         if(SDL_UpdateYUVTexture(texture, NULL, 
             ndata.plane_y, ndata.linesize_y,           
@@ -99,15 +98,20 @@ void videooutput::destroy()
     SDL_Quit();
 }
 
-bool videooutput::checkevent()
+void videooutput::checkevent()
 {
-    while(SDL_PollEvent(&e))
+    while(!m_exiting)
     {
-        if(e.type == SDL_QUIT)
+        while(SDL_PollEvent(&m_event))
         {
-            LOGW("Exitting");
-            return false;
+            if(m_event.type == SDL_QUIT)
+            {
+                LOGI("Event SDL_QUIT");
+                LOGW("Exitting");
+                exit(0);
+            }
+            // decrease cpu workload
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    return true;
 }

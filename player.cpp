@@ -59,8 +59,8 @@ int player::output_audio_frame(AVFrame *frame)
     size_t unpadded_linesize = frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)frame->format);
  
     double pts = frame->best_effort_timestamp * av_q2d(audio_stream->time_base);
-    LOGI("Audio pts:{}", pts);
-    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
+//    LOGI("Audio pts:{}", pts);
+//    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
     std::call_once(m_once_flag,
     [&](void)->void
     {
