@@ -33,33 +33,32 @@ public:
 private:
     std::string err2str(int errnum);
     std::string ts2timestr(int64_t ts, AVRational tb);
-    int output_video_frame(AVFrame *frame);
-    int output_audio_frame(AVFrame *frame);
+    int output_video_frame(AVFrame *m_frame);
+    int output_audio_frame(AVFrame *m_frame);
     int decode_packet(AVCodecContext *dec, const AVPacket *pkt);
     int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *m_fmt_ctx, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
-    bool config_audio_output(AVFrame* frame);
+    bool config_audio_output(AVFrame* m_frame);
 
-    std::unique_ptr<videooutput> m_videooutput = nullptr;
-    std::unique_ptr<audiooutput> m_audiooutput = nullptr;
-    std::once_flag m_once_flag;
-    SwrContext* m_swr = nullptr;
-    AVFormatContext *m_fmt_ctx = nullptr;
-    AVCodecContext *m_video_dec_ctx = nullptr, *m_audio_dec_ctx;
-    int m_width, m_height;
-    enum AVPixelFormat pix_fmt;
-    AVStream *video_stream = nullptr, *audio_stream = nullptr;
-    const char *src_filename = nullptr;
+    std::unique_ptr<videooutput>    m_videooutput = nullptr;
+    std::unique_ptr<audiooutput>    m_audiooutput = nullptr;
+    std::once_flag                  m_once_flag;
+    SwrContext*                     m_swr = nullptr;
+    AVFormatContext *               m_fmt_ctx = nullptr;
+    AVCodecContext *                m_video_dec_ctx = nullptr, *m_audio_dec_ctx;
+    int                             m_width, m_height;
+    enum AVPixelFormat              m_pix_fmt;
+    AVStream *                      m_video_stream = nullptr, *m_audio_stream = nullptr;
+    const char *                    m_src_filename = nullptr;
 
-    uint8_t *video_dst_data[4] = {nullptr};
-    int      video_dst_linesize[4];
-    int video_dst_bufsize;
+    uint8_t *                       m_video_dst_data[4] = {nullptr};
+    int                             m_video_dst_linesize[4];
+    int                             m_video_dst_bufsize;
 
-    int video_stream_idx = -1, audio_stream_idx = -1;
-    AVFrame *frame = nullptr;
-    AVPacket *pkt = nullptr;
-    int video_frame_count = 0;
-    int audio_frame_count = 0;
+    int                             m_video_stream_idx = -1;
+    int                             m_audio_stream_idx = -1;
+    AVFrame *                       m_frame = nullptr;
+    AVPacket *                      m_pkt = nullptr;
 };
 
 #endif /*_PLAYER_H_*/

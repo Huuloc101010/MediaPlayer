@@ -29,11 +29,11 @@ private:
     static void sdl_callback(void* userdata, Uint8* stream, int len);
     void callback(Uint8* stream, int len);
 
-    SDL_AudioDeviceID m_DeviceId{0};
-    SDL_AudioSpec m_spec{};
+    SDL_AudioDeviceID   m_DeviceId{0};
+    SDL_AudioSpec       m_spec{};
 
     std::deque<uint8_t> m_deque;
-    std::mutex m_mutex;
+    std::mutex          m_mutex;
 };
 
 #endif /* _AUDIO_OUTPUT_*/

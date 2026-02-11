@@ -34,7 +34,7 @@ int player::output_video_frame(AVFrame *frame)
         // std::cout << "YUV420" << std::endl;
         // std::cout << "Timestamp:" << frame->best_effort_timestamp << std::endl;
         
-        double pts = frame->best_effort_timestamp * av_q2d(video_stream->time_base);
+        double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
         LOGI("video pts:{}", pts);
         yuv lyuv =
         {
@@ -58,7 +58,7 @@ int player::output_audio_frame(AVFrame *frame)
 {
     size_t unpadded_linesize = frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)frame->format);
  
-    double pts = frame->best_effort_timestamp * av_q2d(audio_stream->time_base);
+    double pts = frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
 //    LOGI("Audio pts:{}", pts);
 //    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
     std::call_once(m_once_flag,
@@ -200,7 +200,7 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
     // get all the available frames from the decoder
     while (ret >= 0)
     {
-        ret = avcodec_receive_frame(dec, frame);
+        ret = avcodec_receive_frame(dec, m_frame);
         if (ret < 0)
         {
             // those two return values are special and mean there is no output
@@ -215,18 +215,18 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         // write the frame data to output file
         if(dec->codec->type == AVMEDIA_TYPE_VIDEO)
         {
-            ret = output_video_frame(frame);
+            ret = output_video_frame(m_frame);
         }
         else if(dec->codec->type == AVMEDIA_TYPE_AUDIO)
         {
             // TBD
-            ret = output_audio_frame(frame);
+            ret = output_audio_frame(m_frame);
         }
         else
         {
             LOGW("Not support this packet");
         }
-        av_frame_unref(frame);
+        av_frame_unref(m_frame);
     }
     
     return ret;
@@ -242,7 +242,7 @@ int player::open_codec_context(int *stream_idx,
     ret = av_find_best_stream(fmt_ctx, type, -1, -1, NULL, 0);
     if (ret < 0)
     {
-        LOGE("Could not find {} stream in input file {}", av_get_media_type_string(type), src_filename);
+        LOGE("Could not find {} stream in input file {}", av_get_media_type_string(type), m_src_filename);
         return ret;
     }
     else
@@ -324,11 +324,11 @@ int player::run(int argc, char **argv)
         LOGE("In valid parameter: usage {} video.mp4", argv[0]);
         exit(1);
     }
-    src_filename = argv[1];
+    m_src_filename = argv[1];
     /* open input file, and allocate format context */
-    if (avformat_open_input(&m_fmt_ctx, src_filename, NULL, NULL) < 0)
+    if (avformat_open_input(&m_fmt_ctx, m_src_filename, NULL, NULL) < 0)
     {
-        LOGE("Could not open source file {}", src_filename);
+        LOGE("Could not open source file {}", m_src_filename);
         exit(1);
     }
  
@@ -339,9 +339,9 @@ int player::run(int argc, char **argv)
         exit(1);
     }
  
-    if(open_codec_context(&video_stream_idx, &m_video_dec_ctx, m_fmt_ctx, AVMEDIA_TYPE_VIDEO) >= 0)
+    if(open_codec_context(&m_video_stream_idx, &m_video_dec_ctx, m_fmt_ctx, AVMEDIA_TYPE_VIDEO) >= 0)
     {
-        video_stream = m_fmt_ctx->streams[video_stream_idx];
+        m_video_stream = m_fmt_ctx->streams[m_video_stream_idx];
         
         
         /* allocate image where the decoded image will be put */
@@ -350,43 +350,43 @@ int player::run(int argc, char **argv)
         // Create windows
         m_videooutput = std::make_unique<videooutput>(m_width, m_height);
 
-        pix_fmt = m_video_dec_ctx->pix_fmt;
-        ret = av_image_alloc(video_dst_data, video_dst_linesize, m_width, m_height, pix_fmt, 1);
+        m_pix_fmt = m_video_dec_ctx->pix_fmt;
+        ret = av_image_alloc(m_video_dst_data, m_video_dst_linesize, m_width, m_height, m_pix_fmt, 1);
         if (ret < 0)
         {
             LOGE("Could not allocate raw video buffer");
             goto end;
         }
-        video_dst_bufsize = ret;
+        m_video_dst_bufsize = ret;
     }
  
-    if (open_codec_context(&audio_stream_idx, &m_audio_dec_ctx, m_fmt_ctx, AVMEDIA_TYPE_AUDIO) >= 0)
+    if (open_codec_context(&m_audio_stream_idx, &m_audio_dec_ctx, m_fmt_ctx, AVMEDIA_TYPE_AUDIO) >= 0)
     {
-        audio_stream = m_fmt_ctx->streams[audio_stream_idx];
+        m_audio_stream = m_fmt_ctx->streams[m_audio_stream_idx];
         LOGI("sample rate: {}", m_audio_dec_ctx->sample_rate);
         LOGI("channel layout: {}", m_audio_dec_ctx->channel_layout);
     }
  
     /* dump input information to stderr */
-    av_dump_format(m_fmt_ctx, 0, src_filename, 0);
+    av_dump_format(m_fmt_ctx, 0, m_src_filename, 0);
  
-    if (!audio_stream && !video_stream)
+    if (!m_audio_stream && !m_video_stream)
     {
         LOGE("Could not find audio or video stream in the input, aborting");
         ret = 1;
         goto end;
     }
  
-    frame = av_frame_alloc();
-    if(!frame)
+    m_frame = av_frame_alloc();
+    if(!m_frame)
     {
         LOGE("Could not allocate frame");
         ret = AVERROR(ENOMEM);
         goto end;
     }
  
-    pkt = av_packet_alloc();
-    if(!pkt)
+    m_pkt = av_packet_alloc();
+    if(!m_pkt)
     {
         LOGE("Could not allocate packet");
         ret = AVERROR(ENOMEM);
@@ -394,15 +394,15 @@ int player::run(int argc, char **argv)
     }
  
     /* read frames from the file */
-    while (av_read_frame(m_fmt_ctx, pkt) >= 0)
+    while (av_read_frame(m_fmt_ctx, m_pkt) >= 0)
     {
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it
-        if (pkt->stream_index == video_stream_idx)
-            ret = decode_packet(m_video_dec_ctx, pkt);
-        else if (pkt->stream_index == audio_stream_idx)
-            ret = decode_packet(m_audio_dec_ctx, pkt);
-        av_packet_unref(pkt);
+        if (m_pkt->stream_index == m_video_stream_idx)
+            ret = decode_packet(m_video_dec_ctx, m_pkt);
+        else if (m_pkt->stream_index == m_audio_stream_idx)
+            ret = decode_packet(m_audio_dec_ctx, m_pkt);
+        av_packet_unref(m_pkt);
         if (ret < 0)
             break;
     }
@@ -415,14 +415,14 @@ int player::run(int argc, char **argv)
  
     LOGI("Demuxing succeeded");
     while(true);
-    if (video_stream)
+    if (m_video_stream)
     {
         LOGI("Play the output video file with the command:"
                "ffplay -f rawvideo -pix_fmt {} -video_size {}x{}",
-               av_get_pix_fmt_name(pix_fmt), m_width, m_height);
+               av_get_pix_fmt_name(m_pix_fmt), m_width, m_height);
     }
  
-    if (audio_stream)
+    if (m_audio_stream)
     {
         enum AVSampleFormat sfmt = m_audio_dec_ctx->sample_fmt;
         int n_channels = /*m_audio_dec_ctx->ch_layout.nb_channels;*/ 1;
@@ -451,9 +451,9 @@ end:
     avcodec_free_context(&m_video_dec_ctx);
     avcodec_free_context(&m_audio_dec_ctx);
     avformat_close_input(&m_fmt_ctx);
-    av_packet_free(&pkt);
-    av_frame_free(&frame);
-    av_free(video_dst_data[0]);
+    av_packet_free(&m_pkt);
+    av_frame_free(&m_frame);
+    av_free(m_video_dst_data[0]);
  
     return ret < 0;
 }
