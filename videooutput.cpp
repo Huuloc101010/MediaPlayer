@@ -5,8 +5,8 @@
 videooutput::videooutput(const int width,const int height)
 : m_ThreadCheckEvent(&videooutput::checkevent, this)
 {
-    this->width = width;
-    this->height = height;
+    this->m_width = width;
+    this->m_height = height;
     init();  
 }
 
@@ -25,25 +25,25 @@ bool videooutput::init()
         return false;
     }
 
-    window = SDL_CreateWindow(NAME_WINDOW,
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
-    if(window == nullptr)
+    m_window = SDL_CreateWindow(NAME_WINDOW,
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_width, m_height, SDL_WINDOW_SHOWN);
+    if(m_window == nullptr)
     {
         LOGE("Create window SDL fail: {}", SDL_GetError());
         return false;
     }
     LOGI("Create windows success");
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if(renderer == nullptr)
+    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
+    if(m_renderer == nullptr)
     {
         std::cerr << "Create renderer SDL fail: " << SDL_GetError() << std::endl;
         LOGE("Create renderer SDL fail: {}", SDL_GetError());
         return false;
     }
     LOGI("create render success");
-    texture = SDL_CreateTexture(renderer, 
-        SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, width, height);
-    if (texture == nullptr)
+    m_texture = SDL_CreateTexture(m_renderer, 
+        SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, m_width, m_height);
+    if (m_texture == nullptr)
     {
         LOGE("Create texture SDL fail: {}", SDL_GetError());
         return false;
@@ -55,7 +55,7 @@ bool videooutput::init()
 bool videooutput::show(const yuv& ndata)
 {
         // Push data to GPU
-        if(SDL_UpdateYUVTexture(texture, NULL, 
+        if(SDL_UpdateYUVTexture(m_texture, NULL, 
             ndata.plane_y, ndata.linesize_y,           
             ndata.plane_u, ndata.linesize_u,       
             ndata.plane_v, ndata.linesize_v) < 0)
@@ -64,36 +64,36 @@ bool videooutput::show(const yuv& ndata)
             return false;
         }     
 
-        if(SDL_RenderClear(renderer) < 0)
+        if(SDL_RenderClear(m_renderer) < 0)
         {
             LOGE("render clear fail");
             return false;
         }
-        if(SDL_RenderCopy(renderer, texture, NULL, NULL) < 0)
+        if(SDL_RenderCopy(m_renderer, m_texture, NULL, NULL) < 0)
         {
             LOGE("Render copy fail");
             return false;
         }
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(m_renderer);
         return true;
 }
 
 void videooutput::destroy()
 {
-    if (texture)
+    if (m_texture)
     {
-        SDL_DestroyTexture(texture);
-        texture = nullptr;
+        SDL_DestroyTexture(m_texture);
+        m_texture = nullptr;
     }
-    if (renderer)
+    if (m_renderer)
     {
-        SDL_DestroyRenderer(renderer);
-        renderer = nullptr;
+        SDL_DestroyRenderer(m_renderer);
+        m_renderer = nullptr;
     }
-    if (window)
+    if (m_window)
     {
-        SDL_DestroyWindow(window);
-        window = nullptr;
+        SDL_DestroyWindow(m_window);
+        m_window = nullptr;
     }
     SDL_Quit();
 }

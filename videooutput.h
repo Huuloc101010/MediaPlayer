@@ -19,14 +19,14 @@ private:
     void checkevent();
     bool init();
     void destroy();
-    std::atomic<bool> m_exiting = false;
-    std::thread m_ThreadCheckEvent;
-    int width;
-    int height;
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
-    SDL_Texture* texture = nullptr;
-    SDL_Event m_event;
+    std::atomic<bool>    m_exiting = false;
+    std::thread          m_ThreadCheckEvent;
+    int                  m_width = 0;
+    int                  m_height = 0;
+    SDL_Window*          m_window = nullptr;
+    SDL_Renderer*        m_renderer = nullptr;
+    SDL_Texture*         m_texture = nullptr;
+    SDL_Event            m_event;
 };
 
 #endif /*_VIDEO_OUTPUT_*/
