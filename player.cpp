@@ -326,7 +326,7 @@ int player::run(int argc, char **argv)
     }
     m_src_filename = argv[1];
     /* open input file, and allocate format context */
-    if (avformat_open_input(&m_fmt_ctx, m_src_filename, NULL, NULL) < 0)
+    if (avformat_open_input(&m_fmt_ctx, m_src_filename.c_str(), NULL, NULL) < 0)
     {
         LOGE("Could not open source file {}", m_src_filename);
         exit(1);
@@ -368,7 +368,7 @@ int player::run(int argc, char **argv)
     }
  
     /* dump input information to stderr */
-    av_dump_format(m_fmt_ctx, 0, m_src_filename, 0);
+    av_dump_format(m_fmt_ctx, 0, m_src_filename.c_str(), 0);
  
     if (!m_audio_stream && !m_video_stream)
     {

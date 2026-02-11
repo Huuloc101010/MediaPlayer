@@ -42,21 +42,20 @@ private:
 
     std::unique_ptr<videooutput>    m_videooutput = nullptr;
     std::unique_ptr<audiooutput>    m_audiooutput = nullptr;
-    std::once_flag                  m_once_flag;
+    std::once_flag                  m_once_flag{};
     SwrContext*                     m_swr = nullptr;
     AVFormatContext *               m_fmt_ctx = nullptr;
     AVCodecContext *                m_video_dec_ctx = nullptr, *m_audio_dec_ctx;
-    int                             m_width, m_height;
-    enum AVPixelFormat              m_pix_fmt;
-    AVStream *                      m_video_stream = nullptr, *m_audio_stream = nullptr;
-    const char *                    m_src_filename = nullptr;
-
-    uint8_t *                       m_video_dst_data[4] = {nullptr};
+    int                             m_width{}, m_height{};
     int                             m_video_dst_linesize[4];
-    int                             m_video_dst_bufsize;
-
+    int                             m_video_dst_bufsize{};
     int                             m_video_stream_idx = -1;
     int                             m_audio_stream_idx = -1;
+    enum AVPixelFormat              m_pix_fmt;
+    AVStream *                      m_video_stream = nullptr, *m_audio_stream = nullptr;
+    std::string                     m_src_filename{};
+
+    uint8_t *                       m_video_dst_data[4] = {nullptr};
     AVFrame *                       m_frame = nullptr;
     AVPacket *                      m_pkt = nullptr;
 };
