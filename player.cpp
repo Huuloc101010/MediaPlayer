@@ -226,7 +226,6 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         {
             LOGW("Not support this packet");
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(5000));
         av_frame_unref(frame);
     }
     
