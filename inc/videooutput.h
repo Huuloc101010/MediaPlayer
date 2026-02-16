@@ -9,16 +9,19 @@
 #include <memory>
 #include "define.h"
 
+class mediator;
+
 class videooutput
 {
 public:
-    videooutput(const int width,const int height);
+    videooutput(const int width,const int height, mediator* mediator);
     ~videooutput();
     bool show(const yuv& ndata);
 private:
     void checkevent();
     bool init();
     void destroy();
+    mediator*            m_mediator{};
     std::atomic<bool>    m_exiting = false;
     std::thread          m_ThreadCheckEvent;
     int                  m_width = 0;

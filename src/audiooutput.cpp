@@ -1,8 +1,9 @@
 #include "audiooutput.h"
 #include "log.h"
 #include <cstring>
+#include "mediator.h"
 
-audiooutput::audiooutput()
+audiooutput::audiooutput(mediator* mediator) : m_mediator(mediator)
 {
     if(SDL_Init(SDL_INIT_AUDIO) < 0)
     {
@@ -98,4 +99,8 @@ void audiooutput::callback(Uint8* stream, int len)
     m_AudioClock.last_frame_pts.store(m_AudioClock.pts);
     m_AudioClock.pts = m_first_pts + (static_cast<double>(m_total_samples_played) / m_sample_rate);
     LOGW("audio clock = {}", m_AudioClock.pts.load());
+}
+const double audiooutput::get_clock()
+{
+    return m_AudioClock.pts;
 }

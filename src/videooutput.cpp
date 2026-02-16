@@ -1,12 +1,14 @@
 #include <vector>
 #include "videooutput.h"
 #include "log.h"
+#include "mediator.h"
 
-videooutput::videooutput(const int width,const int height)
-: m_ThreadCheckEvent(&videooutput::checkevent, this)
+videooutput::videooutput(const int width,const int height, mediator* mediator)
+: m_ThreadCheckEvent(&videooutput::checkevent, this),
+  m_mediator(mediator)
 {
-    this->m_width = width;
-    this->m_height = height;
+    m_width = width;
+    m_height = height;
     init();  
 }
 
@@ -54,28 +56,36 @@ bool videooutput::init()
 
 bool videooutput::show(const yuv& ndata)
 {
-        // Push data to GPU
-        if(SDL_UpdateYUVTexture(m_texture, NULL, 
-            ndata.plane_y, ndata.linesize_y,           
-            ndata.plane_u, ndata.linesize_u,       
-            ndata.plane_v, ndata.linesize_v) < 0)
-        {
-            LOGE("update YUV texture fail");
-            return false;
-        }     
+    // if(m_mediator != nullptr)
+    // {
+    //     LOGE("audio clock:{}", m_mediator->GetAudioClock());
+    // }
+    // else
+    // {
+    //     LOGE("Faill");
+    // }
+    // Push data to GPU
+    if(SDL_UpdateYUVTexture(m_texture, NULL, 
+        ndata.plane_y, ndata.linesize_y,           
+        ndata.plane_u, ndata.linesize_u,       
+        ndata.plane_v, ndata.linesize_v) < 0)
+    {
+        LOGE("update YUV texture fail");
+        return false;
+    }     
 
-        if(SDL_RenderClear(m_renderer) < 0)
-        {
-            LOGE("render clear fail");
-            return false;
-        }
-        if(SDL_RenderCopy(m_renderer, m_texture, NULL, NULL) < 0)
-        {
-            LOGE("Render copy fail");
-            return false;
-        }
-        SDL_RenderPresent(m_renderer);
-        return true;
+    if(SDL_RenderClear(m_renderer) < 0)
+    {
+        LOGE("render clear fail");
+        return false;
+    }
+    if(SDL_RenderCopy(m_renderer, m_texture, NULL, NULL) < 0)
+    {
+        LOGE("Render copy fail");
+        return false;
+    }
+    SDL_RenderPresent(m_renderer);
+    return true;
 }
 
 void videooutput::destroy()
@@ -110,8 +120,8 @@ void videooutput::checkevent()
                 LOGW("Exitting");
                 exit(0);
             }
-            // decrease cpu workload
         }
+        // decrease cpu workload
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }

@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include "define.h"
+#include "mediator.h"
 
 extern "C"
 {
@@ -22,13 +23,14 @@ extern "C"
 class videooutput;
 class audiooutput;
 
-class player
+class player : public mediator
 {
 public:
     player() = default;
     ~player();
  
     int run(int argc, char **argv);
+    double GetAudioClock() override;
 
 private:
     std::string err2str(int errnum);

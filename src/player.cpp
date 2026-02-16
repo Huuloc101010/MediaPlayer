@@ -53,6 +53,10 @@ int player::output_video_frame(AVFrame *frame)
 
 int player::output_audio_frame(AVFrame *frame)
 {
+    if(frame == nullptr)
+    {
+        return -1;
+    }
     size_t unpadded_linesize = frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)frame->format);
  
     double pts = frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
@@ -144,12 +148,16 @@ int player::output_audio_frame(AVFrame *frame)
 
 bool player::config_audio_output(AVFrame* frame)
 {
+    if(frame == nullptr)
+    {
+        return false;
+    }
     double first_pts = frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
     uint64_t ch_layout =
     frame->channel_layout ?
     frame->channel_layout :
     av_get_default_channel_layout(frame->channels);
-    m_audiooutput = std::make_unique<audiooutput>();
+    m_audiooutput = std::make_unique<audiooutput>(this);
     if(m_audiooutput == nullptr)
     {
         LOGE("m_audiooutput = nullptr");
@@ -346,7 +354,7 @@ int player::run(int argc, char **argv)
         m_width = m_video_dec_ctx->width;
         m_height = m_video_dec_ctx->height;
         // Create windows
-        m_videooutput = std::make_unique<videooutput>(m_width, m_height);
+        m_videooutput = std::make_unique<videooutput>(m_width, m_height, this);
 
         m_pix_fmt = m_video_dec_ctx->pix_fmt;
         ret = av_image_alloc(m_video_dst_data, m_video_dst_linesize, m_width, m_height, m_pix_fmt, 1);
@@ -465,4 +473,14 @@ void player::clean_resource()
     av_packet_free(&m_pkt);
     av_frame_free(&m_frame);
     av_free(m_video_dst_data[0]);
+}
+
+double player::GetAudioClock()
+{
+    double audioclock{};
+    if(m_audiooutput != nullptr)
+    {
+        audioclock = m_audiooutput->get_clock();
+    }
+    return audioclock;
 }

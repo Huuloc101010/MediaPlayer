@@ -7,10 +7,12 @@
 #include <cstdint>
 #include "define.h"
 
-class audiooutput
+class mediator;
+
+class audiooutput 
 {
 public:
-    audiooutput();
+    audiooutput(mediator* mediator);
     ~audiooutput();
 
     bool config(int sample_rate,
@@ -20,7 +22,7 @@ public:
 
     void start();
     void stop();
-
+    const double get_clock();
     // Push PCM data (interleaved)
     void push(const uint8_t* data, size_t size);
 
@@ -30,6 +32,7 @@ private:
     static void sdl_callback(void* userdata, Uint8* stream, int len);
     void callback(Uint8* stream, int len);
 
+    mediator*           m_mediator{};
     SDL_AudioDeviceID   m_DeviceId{0};
     SDL_AudioSpec       m_spec{};
     AudioClock          m_AudioClock{};

@@ -10,6 +10,7 @@ RESET='\033[0m'
 g++-13 \
 ./src/*.cpp \
 --std=c++20 `pkg-config --cflags --libs libavformat libavcodec libavutil libswresample` \
+-g -o0 \
 -I./inc \
 `pkg-config --cflags --libs sdl2` \
 -o ./a.out
