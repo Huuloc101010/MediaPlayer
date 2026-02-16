@@ -1,6 +1,7 @@
 #ifndef _DEFINE_
 #define _DEFINE_
 #include <cstdint>
+#include <atomic>
 
 #define NAME_WINDOW "Video Media Player"
 
@@ -18,6 +19,17 @@ struct AudioS16Buffer
 {
     uint8_t* data = nullptr;
     int      size = 0;   // bytes
+};
+
+struct AudioClock
+{
+    std::atomic<double> pts;
+    std::atomic<double> last_frame_pts;
+    // int64_t total_sample;
+    // int sample_rate;
+    // int channels;
+    // int byte_per_sample;
+    // bool started;
 };
 
 #endif /*_DEFINE_*/

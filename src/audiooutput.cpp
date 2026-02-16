@@ -20,8 +20,12 @@ audiooutput::~audiooutput()
 bool audiooutput::config(int sample_rate,
                          int channels,
                          SDL_AudioFormat format,
+                         int first_pts,
                          int samples)
 {
+    m_sample_rate = sample_rate;
+    m_first_pts = first_pts;
+    m_sample = samples;
     SDL_AudioSpec want{};
     want.freq = sample_rate;
     want.channels = channels;
@@ -87,4 +91,11 @@ void audiooutput::callback(Uint8* stream, int len)
         stream[i] = m_deque.front();
         m_deque.pop_front();
     }
+
+    /* calculate audio timestamp */
+
+    m_total_samples_played += m_sample;
+    m_AudioClock.last_frame_pts.store(m_AudioClock.pts);
+    m_AudioClock.pts = m_first_pts + (static_cast<double>(m_total_samples_played) / m_sample_rate);
+    LOGW("audio clock = {}", m_AudioClock.pts.load());
 }

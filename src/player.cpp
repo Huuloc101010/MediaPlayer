@@ -31,9 +31,6 @@ int player::output_video_frame(AVFrame *frame)
     }
     if(frame->format == AV_PIX_FMT_YUV420P)
     {
-        // std::cout << "YUV420" << std::endl;
-        // std::cout << "Timestamp:" << frame->best_effort_timestamp << std::endl;
-        
         double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
         LOGI("video pts:{}", pts);
         yuv lyuv =
@@ -59,8 +56,9 @@ int player::output_audio_frame(AVFrame *frame)
     size_t unpadded_linesize = frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)frame->format);
  
     double pts = frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
-//    LOGI("Audio pts:{}", pts);
+    //LOGI("Audio pts:{}", pts);
 //    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
+//    LOGE("{}", frame->pts);
     std::call_once(m_once_flag,
     [&](void)->void
     {
@@ -146,7 +144,7 @@ int player::output_audio_frame(AVFrame *frame)
 
 bool player::config_audio_output(AVFrame* frame)
 {
-    
+    double first_pts = frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
     uint64_t ch_layout =
     frame->channel_layout ?
     frame->channel_layout :
@@ -158,7 +156,7 @@ bool player::config_audio_output(AVFrame* frame)
         return false;
     }
 
-    if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS/*, frame->nb_samples*/))
+    if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS, first_pts))
     {
         std::cerr << "config audio error" << std::endl;
         return false;
