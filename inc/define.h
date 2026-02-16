@@ -2,8 +2,40 @@
 #define _DEFINE_
 #include <cstdint>
 #include <atomic>
+#include <mutex>
+#include <deque>
+#include <memory>
+extern "C"
+{
+#define __STDC_CONSTANT_MACROS
+#define __STDC_FORMAT_MACROS
+ 
+#include <libavutil/imgutils.h>
+#include <libavutil/samplefmt.h>
+#include <libavutil/timestamp.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswresample/swresample.h>
+}
 
 #define NAME_WINDOW "Video Media Player"
+
+struct AVFrameDeleter
+{
+    void operator()(AVFrame* frame) const
+    {
+        if(frame) av_frame_free(&frame);
+    }
+};
+
+using UniqueFramePtr = std::unique_ptr<AVFrame, AVFrameDeleter>;
+using SharedFramePtr = std::shared_ptr<AVFrame>;
+
+struct queue_safe
+{
+    std::deque<UniqueFramePtr> queue{};
+    std::mutex          mutex;
+};
 
 struct yuv
 {

@@ -35,12 +35,12 @@ public:
 private:
     std::string err2str(int errnum);
     std::string ts2timestr(int64_t ts, AVRational tb);
-    int output_video_frame(AVFrame *m_frame);
-    int output_audio_frame(AVFrame *m_frame);
+    int output_video_frame(AVFrame *frame);
+    int output_audio_frame(AVFrame *frame);
     int decode_packet(AVCodecContext *dec, const AVPacket *pkt);
     int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *m_fmt_ctx, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
-    bool config_audio_output(AVFrame* m_frame);
+    bool config_audio_output(AVFrame* frame);
     void clean_resource();
 
     std::unique_ptr<videooutput>    m_videooutput = nullptr;

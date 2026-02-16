@@ -15,7 +15,10 @@ videooutput::videooutput(const int width,const int height, mediator* mediator)
 videooutput::~videooutput()
 {
     m_exiting = true;
-    m_ThreadCheckEvent.join();
+    if(m_ThreadCheckEvent.joinable())
+    {
+        m_ThreadCheckEvent.join();
+    }
     destroy();
 }
 
