@@ -18,8 +18,8 @@ public:
     ~videooutput();
     bool show(const yuv& ndata);
     bool show2(UniqueFramePtr frame);
+    void show3();
     void push_queue(UniqueFramePtr framePtr);
-    UniqueFramePtr pop_queue();
 
 private:
     void checkevent();
@@ -29,6 +29,7 @@ private:
     queue_safe           m_QueueSafe{};
     std::atomic<bool>    m_exiting = false;
     std::thread          m_ThreadCheckEvent;
+    std::thread          m_ThreadShow;
     int                  m_width = 0;
     int                  m_height = 0;
     SDL_Window*          m_window = nullptr;

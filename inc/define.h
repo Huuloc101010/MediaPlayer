@@ -29,7 +29,6 @@ struct AVFrameDeleter
         {
             av_frame_free(&frame);
         }
-        LOGW("release resource");
     }
 };
 

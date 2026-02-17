@@ -31,7 +31,8 @@ int player::output_video_frame()
     }
     if(m_videooutput)
     {
-        m_videooutput->show2(std::move(m_frame));
+        //m_videooutput->show2(std::move(m_frame));
+        m_videooutput->push_queue(std::move(m_frame));
         /* reallocate */
         m_frame.reset(av_frame_alloc());
     }

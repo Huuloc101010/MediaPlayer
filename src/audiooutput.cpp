@@ -82,7 +82,7 @@ void audiooutput::sdl_callback(void* userdata, Uint8* stream, int len)
 
 void audiooutput::callback(Uint8* stream, int len)
 {
-    std::memset(stream, 0, len); // silence nếu thiếu data
+    std::memset(stream, 0, len); // silence if not enable data
 
     std::lock_guard<std::mutex> lock(m_mutex);
 

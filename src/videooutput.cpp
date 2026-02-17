@@ -5,11 +5,11 @@
 
 videooutput::videooutput(const int width,const int height, mediator* mediator)
 : m_ThreadCheckEvent(&videooutput::checkevent, this),
+  m_ThreadShow(&videooutput::show3, this),
   m_mediator(mediator)
 {
     m_width = width;
     m_height = height;
-    init();  
 }
 
 videooutput::~videooutput()
@@ -135,17 +135,6 @@ void videooutput::push_queue(UniqueFramePtr framePtr)
     m_QueueSafe.queue.emplace_front(std::move(framePtr));
 }
 
-UniqueFramePtr videooutput::pop_queue()
-{
-    std::lock_guard<std::mutex> lock_guard(m_QueueSafe.mutex);
-    if(m_QueueSafe.queue.empty())
-    {
-        LOGE("error because queue is empty");
-        return {};
-    }
-    return std::move(m_QueueSafe.queue.back());
-}
-
 bool videooutput::show2(UniqueFramePtr frame)
 {
     if(frame == nullptr)
@@ -170,4 +159,26 @@ bool videooutput::show2(UniqueFramePtr frame)
         show(lyuv);
     }
     return 0;
+}
+
+void videooutput::show3()
+{
+    init();
+    while(true)
+    {
+        m_QueueSafe.mutex.lock();
+        while(m_QueueSafe.queue.empty())
+        {
+            m_QueueSafe.mutex.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            m_QueueSafe.mutex.lock();
+        }
+        UniqueFramePtr FramePtr = std::move(m_QueueSafe.queue.back());
+        // remove element
+        m_QueueSafe.queue.pop_back();
+        m_QueueSafe.mutex.unlock();
+
+        show2(std::move(FramePtr));
+        std::this_thread::sleep_for(std::chrono::milliseconds(33));
+    }
 }
