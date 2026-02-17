@@ -473,3 +473,8 @@ double player::GetAudioClock()
     }
     return audioclock;
 }
+
+AVRational player::GetTimeBaseAudio()
+{
+    return m_audio_stream->time_base;
+}

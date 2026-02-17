@@ -189,20 +189,16 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
     {
         return false;
     }
-    //double first_pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
-    double first_pts = 0.0;
+    if(m_mediator == nullptr)
+    {
+        return false;
+    }
+    double first_pts = m_frame->best_effort_timestamp * av_q2d(m_mediator->GetTimeBaseAudio());
     uint64_t ch_layout =
     m_frame->channel_layout ?
     m_frame->channel_layout :
     av_get_default_channel_layout(m_frame->channels);
-   // m_audiooutput = std::make_unique<audiooutput>(this);
-    // if(m_audiooutput == nullptr)
-    // {
-    //     LOGE("m_audiooutput = nullptr");
-    //     return false;
-    // }
-
-    //if(!m_audiooutput->config(m_frame->sample_rate,m_frame->channels ,AUDIO_S16SYS, first_pts))
+   
     if(!config(m_frame->sample_rate,m_frame->channels ,AUDIO_S16SYS, first_pts))
     {
         std::cerr << "config audio error" << std::endl;
@@ -253,6 +249,5 @@ void audiooutput::thread_process()
         m_QueueSafe.mutex.unlock();
 
         audio_convert(std::move(FramePtr));
-        //std::this_thread::sleep_for(std::chrono::milliseconds(33));
     }
 }

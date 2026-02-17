@@ -31,6 +31,7 @@ public:
  
     int run(int argc, char **argv);
     double GetAudioClock() override;
+    AVRational GetTimeBaseAudio() override;
 
 private:
     std::string err2str(int errnum);
