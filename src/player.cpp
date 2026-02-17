@@ -24,31 +24,41 @@ std::string player::ts2timestr(int64_t ts, AVRational tb)
 }
 int player::output_video_frame(AVFrame *frame)
 {
-    if(frame == nullptr)
+    if(m_videooutput)
     {
-        LOGE("fail to show video frame");
+        m_videooutput->show2(frame);
+    }
+    else
+    {
+        LOGE("video output is nullptr");
         return -1;
     }
-    if(frame->format == AV_PIX_FMT_YUV420P)
-    {
-        double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
-        LOGI("video pts:{}", pts);
-        yuv lyuv =
-        {
-            frame->data[0],
-            frame->data[1],
-            frame->data[2],
-            frame->linesize[0],
-            frame->linesize[1],
-            frame->linesize[2]
-        };
-        
-        if(m_videooutput)
-        {
-            m_videooutput->show(lyuv);
-        }
-    }
     return 0;
+    // if(frame == nullptr)
+    // {
+    //     LOGE("fail to show video frame");
+    //     return -1;
+    // }
+    // if(frame->format == AV_PIX_FMT_YUV420P)
+    // {
+    //     double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
+    //     LOGI("video pts:{}", pts);
+    //     yuv lyuv =
+    //     {
+    //         frame->data[0],
+    //         frame->data[1],
+    //         frame->data[2],
+    //         frame->linesize[0],
+    //         frame->linesize[1],
+    //         frame->linesize[2]
+    //     };
+        
+    //     if(m_videooutput)
+    //     {
+    //         m_videooutput->show(lyuv);
+    //     }
+    // }
+    // return 0;
 }
 
 int player::output_audio_frame(AVFrame *frame)

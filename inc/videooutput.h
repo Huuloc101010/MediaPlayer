@@ -17,6 +17,7 @@ public:
     videooutput(const int width,const int height, mediator* mediator);
     ~videooutput();
     bool show(const yuv& ndata);
+    bool show2(AVFrame* frame);
     void push_queue(UniqueFramePtr framePtr);
     UniqueFramePtr pop_queue();
 

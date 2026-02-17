@@ -145,3 +145,29 @@ UniqueFramePtr videooutput::pop_queue()
     }
     return std::move(m_QueueSafe.queue.back());
 }
+
+bool videooutput::show2(AVFrame* frame)
+{
+    if(frame == nullptr)
+    {
+        LOGE("fail to show video frame");
+        return false;
+    }
+    if(frame->format == AV_PIX_FMT_YUV420P)
+    {
+        // double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
+        // LOGI("video pts:{}", pts);
+        yuv lyuv =
+        {
+            frame->data[0],
+            frame->data[1],
+            frame->data[2],
+            frame->linesize[0],
+            frame->linesize[1],
+            frame->linesize[2]
+        };
+        
+        show(lyuv);
+    }
+    return 0;
+}
