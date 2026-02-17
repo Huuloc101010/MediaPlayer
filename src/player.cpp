@@ -7,7 +7,6 @@
 
 player::~player()
 {
-    swr_free(&m_swr);
 }
 
 std::string player::err2str(int errnum)
@@ -71,76 +70,85 @@ int player::output_video_frame()
 
 int player::output_audio_frame()
 {
-    if(m_frame == nullptr)
+    if(m_audiooutput)
     {
-        LOGE("m_frame is nullptr");
-        return -1;
+        m_audiooutput->audio_convert(std::move(m_frame));
+        m_frame.reset(av_frame_alloc());
     }
-    size_t unpadded_linesize = m_frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)m_frame->format);
+    else
+    {
+        LOGE("m_audiooutput is null");
+    }
+    // if(m_frame == nullptr)
+    // {
+    //     LOGE("m_frame is nullptr");
+    //     return -1;
+    // }
+//     size_t unpadded_linesize = m_frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)m_frame->format);
  
-    double pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
-    //LOGI("Audio pts:{}", pts);
-//    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
-//    LOGE("{}", frame->pts);
-    std::call_once(m_once_flag,
-    [&](void)->void
-    {
-        if(!config_audio_output())
-        {
-            LOGE("config audio fail");
-        }
-        else
-        {
-            LOGI("config audio success");
-        }
-    });
+//     double pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
+//     //LOGI("Audio pts:{}", pts);
+// //    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
+// //    LOGE("{}", frame->pts);
+//     std::call_once(m_once_flag,
+//     [&](void)->void
+//     {
+//         if(!config_audio_output())
+//         {
+//             LOGE("config audio fail");
+//         }
+//         else
+//         {
+//             LOGI("config audio success");
+//         }
+//     });
 
-    int out_samples = av_rescale_rnd(
-        swr_get_delay(m_swr, m_frame->sample_rate) + m_frame->nb_samples,
-        m_frame->sample_rate,
-        m_frame->sample_rate,
-        AV_ROUND_UP
-    );
+//     int out_samples = av_rescale_rnd(
+//         swr_get_delay(m_swr, m_frame->sample_rate) + m_frame->nb_samples,
+//         m_frame->sample_rate,
+//         m_frame->sample_rate,
+//         AV_ROUND_UP
+//     );
 
-    /* allocate buffer output */
-    int out_linesize = 0;
-    AudioS16Buffer out{};
-    uint64_t ch_layout =
-        m_frame->channel_layout ?
-        m_frame->channel_layout :
-        av_get_default_channel_layout(m_frame->channels);
-    int out_channels = av_get_channel_layout_nb_channels(ch_layout);
-    av_samples_alloc(
-        &out.data,
-        &out_linesize,
-        out_channels,
-        out_samples,
-        AV_SAMPLE_FMT_S16,
-        0
-    );
+//     /* allocate buffer output */
+//     int out_linesize = 0;
+//     AudioS16Buffer out{};
+//     uint64_t ch_layout =
+//         m_frame->channel_layout ?
+//         m_frame->channel_layout :
+//         av_get_default_channel_layout(m_frame->channels);
+//     int out_channels = av_get_channel_layout_nb_channels(ch_layout);
+//     av_samples_alloc(
+//         &out.data,
+//         &out_linesize,
+//         out_channels,
+//         out_samples,
+//         AV_SAMPLE_FMT_S16,
+//         0
+//     );
 
-    /*  Convert */
-    int samples = swr_convert(
-        m_swr,
-        &out.data,
-        out_samples,
-        (const uint8_t**)m_frame->data,
-        m_frame->nb_samples
-    );
+//     /*  Convert */
+//     int samples = swr_convert(
+//         m_swr,
+//         &out.data,
+//         out_samples,
+//         (const uint8_t**)m_frame->data,
+//         m_frame->nb_samples
+//     );
 
-    if (samples <= 0)
-    {
-        av_freep(&out.data);
-        LOGE("fail to convert data");
-        return false;
-    }
-    out.size = samples * out_channels * sizeof(int16_t);
+//     if (samples <= 0)
+//     {
+//         av_freep(&out.data);
+//         LOGE("fail to convert data");
+//         return false;
+//     }
+//     out.size = samples * out_channels * sizeof(int16_t);
 
-    if(out.data && out.size > 0)
-    {
-        m_audiooutput->push(out.data, out.size);
-        av_freep(&out.data);
-    }
+//     if(out.data && out.size > 0)
+//     {
+//         m_audiooutput->push(out.data, out.size);
+//         av_freep(&out.data);
+//     }
     // std::unordered_map<uint8_t, std::string> table =
     // {
     //     {0, "No Audio"},
@@ -165,50 +173,7 @@ int player::output_audio_frame()
     return 0;
 }
 
-bool player::config_audio_output()
-{
-    if(m_frame == nullptr)
-    {
-        return false;
-    }
-    double first_pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
-    uint64_t ch_layout =
-    m_frame->channel_layout ?
-    m_frame->channel_layout :
-    av_get_default_channel_layout(m_frame->channels);
-    m_audiooutput = std::make_unique<audiooutput>(this);
-    if(m_audiooutput == nullptr)
-    {
-        LOGE("m_audiooutput = nullptr");
-        return false;
-    }
 
-    if(!m_audiooutput->config(m_frame->sample_rate,m_frame->channels ,AUDIO_S16SYS, first_pts))
-    {
-        std::cerr << "config audio error" << std::endl;
-        return false;
-    }
-    m_audiooutput->start();
-    // init software context
-    
-    m_swr = swr_alloc_set_opts(
-    nullptr,
-    ch_layout,
-    AV_SAMPLE_FMT_S16,
-    m_frame->sample_rate,
-    m_frame->channel_layout,
-    (AVSampleFormat)m_frame->format,
-    m_frame->sample_rate,
-
-    0, nullptr);
-    if(!m_swr || swr_init(m_swr))
-    {
-        swr_free(&m_swr);
-        LOGE("!m_swr || swr_init(m_swr)");
-        return false;
-    }
-    return true;
-}
 
 int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
 {
@@ -228,6 +193,7 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         if(m_frame == nullptr)
         {
             LOGE("null");
+            return -1;
         }
         ret = avcodec_receive_frame(dec, m_frame.get());
         if (ret < 0)
@@ -377,6 +343,7 @@ int player::run(int argc, char **argv)
         m_height = m_video_dec_ctx->height;
         // Create windows
         m_videooutput = std::make_unique<videooutput>(m_width, m_height, this);
+        m_audiooutput = std::make_unique<audiooutput>(this);
 
         m_pix_fmt = m_video_dec_ctx->pix_fmt;
         ret = av_image_alloc(m_video_dst_data, m_video_dst_linesize, m_width, m_height, m_pix_fmt, 1);

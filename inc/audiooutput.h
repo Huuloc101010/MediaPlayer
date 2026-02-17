@@ -27,11 +27,15 @@ public:
     void push(const uint8_t* data, size_t size);
 
     void clear();
+    void audio_convert(UniqueFramePtr FramePtr);
 
 private:
     static void sdl_callback(void* userdata, Uint8* stream, int len);
     void callback(Uint8* stream, int len);
+    bool config_audio_output(UniqueFramePtr& frame);
 
+    SwrContext*         m_swr = nullptr;
+    std::once_flag      m_once_flag{};
     mediator*           m_mediator{};
     SDL_AudioDeviceID   m_DeviceId{0};
     SDL_AudioSpec       m_spec{};

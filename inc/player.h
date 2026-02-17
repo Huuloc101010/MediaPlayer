@@ -45,9 +45,8 @@ private:
 
     std::unique_ptr<videooutput>    m_videooutput = nullptr;
     std::unique_ptr<audiooutput>    m_audiooutput = nullptr;
-    std::once_flag                  m_once_flag{};
+   
     enum AVPixelFormat              m_pix_fmt;
-    SwrContext*                     m_swr = nullptr;
     AVFormatContext*                m_fmt_ctx = nullptr;
     AVCodecContext*                 m_video_dec_ctx = nullptr, *m_audio_dec_ctx;
     AVStream*                       m_video_stream = nullptr, *m_audio_stream = nullptr;

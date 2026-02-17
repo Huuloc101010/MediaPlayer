@@ -19,7 +19,7 @@ public:
     bool show(const yuv& ndata);
     bool show2(UniqueFramePtr frame);
     void show3();
-    void push_queue(UniqueFramePtr framePtr);
+    void push_queue(UniqueFramePtr FramePtr);
 
 private:
     void checkevent();

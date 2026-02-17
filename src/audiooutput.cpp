@@ -16,6 +16,7 @@ audiooutput::audiooutput(mediator* mediator) : m_mediator(mediator)
 audiooutput::~audiooutput()
 {
     stop();
+    swr_free(&m_swr);
 }
 
 bool audiooutput::config(int sample_rate,
@@ -103,4 +104,126 @@ void audiooutput::callback(Uint8* stream, int len)
 const double audiooutput::get_clock()
 {
     return m_AudioClock.pts;
+}
+
+void audiooutput::audio_convert(UniqueFramePtr FramePtr)
+{
+    if(FramePtr == nullptr)
+    {
+        LOGE("FramePtr is nullptr");
+        return;
+    }
+    size_t unpadded_linesize = FramePtr->nb_samples * av_get_bytes_per_sample((AVSampleFormat)FramePtr->format);
+ 
+    //double pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
+    //LOGI("Audio pts:{}", pts);
+//    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
+//    LOGE("{}", frame->pts);
+    std::call_once(m_once_flag,
+    [&](void)->void
+    {
+        if(!config_audio_output(FramePtr))
+        {
+            LOGE("config audio fail");
+            return;
+        }
+        else
+        {
+            LOGI("config audio success");
+        }
+    });
+
+    int out_samples = av_rescale_rnd(
+        swr_get_delay(m_swr, FramePtr->sample_rate) + FramePtr->nb_samples,
+        FramePtr->sample_rate,
+        FramePtr->sample_rate,
+        AV_ROUND_UP
+    );
+
+    /* allocate buffer output */
+    int out_linesize = 0;
+    AudioS16Buffer out{};
+    uint64_t ch_layout =
+        FramePtr->channel_layout ?
+        FramePtr->channel_layout :
+        av_get_default_channel_layout(FramePtr->channels);
+    int out_channels = av_get_channel_layout_nb_channels(ch_layout);
+    av_samples_alloc(
+        &out.data,
+        &out_linesize,
+        out_channels,
+        out_samples,
+        AV_SAMPLE_FMT_S16,
+        0
+    );
+
+    /*  Convert */
+    int samples = swr_convert(
+        m_swr,
+        &out.data,
+        out_samples,
+        (const uint8_t**)FramePtr->data,
+        FramePtr->nb_samples
+    );
+
+    if (samples <= 0)
+    {
+        av_freep(&out.data);
+        LOGE("fail to convert data");
+        return;
+    }
+    out.size = samples * out_channels * sizeof(int16_t);
+
+    if(out.data && out.size > 0)
+    {
+        push(out.data, out.size);
+        av_freep(&out.data);
+    }
+}
+
+bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
+{
+    if(m_frame == nullptr)
+    {
+        return false;
+    }
+    //double first_pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
+    double first_pts = 0.0;
+    uint64_t ch_layout =
+    m_frame->channel_layout ?
+    m_frame->channel_layout :
+    av_get_default_channel_layout(m_frame->channels);
+   // m_audiooutput = std::make_unique<audiooutput>(this);
+    // if(m_audiooutput == nullptr)
+    // {
+    //     LOGE("m_audiooutput = nullptr");
+    //     return false;
+    // }
+
+    //if(!m_audiooutput->config(m_frame->sample_rate,m_frame->channels ,AUDIO_S16SYS, first_pts))
+    if(!config(m_frame->sample_rate,m_frame->channels ,AUDIO_S16SYS, first_pts))
+    {
+        std::cerr << "config audio error" << std::endl;
+        return false;
+    }
+    start();
+    // init software context
+    
+    m_swr = swr_alloc_set_opts(
+    nullptr,
+    ch_layout,
+    AV_SAMPLE_FMT_S16,
+    m_frame->sample_rate,
+    m_frame->channel_layout,
+    (AVSampleFormat)m_frame->format,
+    m_frame->sample_rate,
+
+    0, nullptr);
+    if(!m_swr || swr_init(m_swr))
+    {
+        swr_free(&m_swr);
+        LOGE("!m_swr || swr_init(m_swr)");
+        return false;
+    }
+    return true;
 }
