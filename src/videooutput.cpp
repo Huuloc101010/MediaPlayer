@@ -146,7 +146,7 @@ UniqueFramePtr videooutput::pop_queue()
     return std::move(m_QueueSafe.queue.back());
 }
 
-bool videooutput::show2(AVFrame* frame)
+bool videooutput::show2(UniqueFramePtr frame)
 {
     if(frame == nullptr)
     {

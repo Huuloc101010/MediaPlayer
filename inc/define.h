@@ -27,7 +27,6 @@ struct AVFrameDeleter
     {
         if(frame)
         {
-            av_frame_unref(frame);
             av_frame_free(&frame);
         }
         LOGW("release resource");

@@ -52,7 +52,7 @@ private:
     AVCodecContext*                 m_video_dec_ctx = nullptr, *m_audio_dec_ctx;
     AVStream*                       m_video_stream = nullptr, *m_audio_stream = nullptr;
     uint8_t*                        m_video_dst_data[4] = {nullptr};
-    AVFrame*                        m_frame = nullptr;
+    UniqueFramePtr                  m_frame = nullptr;
     AVPacket*                       m_pkt = nullptr;
     int                             m_width{}, m_height{};
     int                             m_video_dst_linesize[4];

@@ -24,9 +24,16 @@ std::string player::ts2timestr(int64_t ts, AVRational tb)
 }
 int player::output_video_frame()
 {
+    if(m_frame == nullptr)
+    {
+        LOGE("m_frame is null");
+        return -1;
+    }
     if(m_videooutput)
     {
-        m_videooutput->show2(m_frame);
+        m_videooutput->show2(std::move(m_frame));
+        /* reallocate */
+        m_frame.reset(av_frame_alloc());
     }
     else
     {
@@ -65,6 +72,7 @@ int player::output_audio_frame()
 {
     if(m_frame == nullptr)
     {
+        LOGE("m_frame is nullptr");
         return -1;
     }
     size_t unpadded_linesize = m_frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)m_frame->format);
@@ -216,7 +224,11 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
     // get all the available frames from the decoder
     while (ret >= 0)
     {
-        ret = avcodec_receive_frame(dec, m_frame);
+        if(m_frame == nullptr)
+        {
+            LOGE("null");
+        }
+        ret = avcodec_receive_frame(dec, m_frame.get());
         if (ret < 0)
         {
             // those two return values are special and mean there is no output
@@ -242,7 +254,6 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         {
             LOGW("Not support this packet");
         }
-        av_frame_unref(m_frame);
     }
     
     return ret;
@@ -394,8 +405,8 @@ int player::run(int argc, char **argv)
         clean_resource();
         return 1;
     }
- 
-    m_frame = av_frame_alloc();
+    //m_frame.reset();
+    m_frame.reset(av_frame_alloc());
     if(!m_frame)
     {
         LOGE("Could not allocate frame");
@@ -481,7 +492,7 @@ void player::clean_resource()
     avcodec_free_context(&m_audio_dec_ctx);
     avformat_close_input(&m_fmt_ctx);
     av_packet_free(&m_pkt);
-    av_frame_free(&m_frame);
+    //av_frame_free(&m_frame.data());
     av_free(m_video_dst_data[0]);
 }
 
