@@ -101,7 +101,7 @@ void audiooutput::callback(Uint8* stream, int len)
     m_total_samples_played += m_sample;
     m_AudioClock.last_frame_pts.store(m_AudioClock.pts);
     m_AudioClock.pts = m_first_pts + (static_cast<double>(m_total_samples_played) / m_sample_rate);
-    LOGW("audio clock = {}", m_AudioClock.pts.load());
+    //LOGW("audio clock = {}", m_AudioClock.pts.load());
 }
 const double audiooutput::get_clock()
 {

@@ -177,8 +177,31 @@ void videooutput::show3()
         // remove element
         m_QueueSafe.queue.pop_back();
         m_QueueSafe.mutex.unlock();
+        double audio_pts = m_mediator->GetAudioClock();
+        LOGE("audio clock: {}", audio_pts);
+
+        double video_pts = 0;
+        if(FramePtr->best_effort_timestamp != AV_NOPTS_VALUE)
+        {
+            video_pts = FramePtr->best_effort_timestamp *
+                av_q2d(m_mediator->GetTimeBaseVideo());
+        }
+        LOGW("video clock: {}", video_pts);
+
+        // video < audio -> skip frame
+        if((video_pts - audio_pts) < 0.05)
+        {
+            LOGW("Skip frame");
+            continue;
+        }
+        double diff = video_pts - audio_pts;
+        // video > audio
+        while((video_pts - audio_pts) > 0.05)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            audio_pts = m_mediator->GetAudioClock();
+        }
 
         show2(std::move(FramePtr));
-        std::this_thread::sleep_for(std::chrono::milliseconds(33));
     }
 }

@@ -478,3 +478,8 @@ AVRational player::GetTimeBaseAudio()
 {
     return m_audio_stream->time_base;
 }
+
+AVRational player::GetTimeBaseVideo()
+{
+    return m_video_stream->time_base;
+}

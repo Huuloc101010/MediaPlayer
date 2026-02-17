@@ -68,4 +68,15 @@ struct AudioClock
     // bool started;
 };
 
+struct VideoClock
+{
+    std::atomic<double> pts;
+    std::atomic<double> last_frame_pts;
+    // int64_t total_sample;
+    // int sample_rate;
+    // int channels;
+    // int byte_per_sample;
+    // bool started;
+};
+
 #endif /*_DEFINE_*/
