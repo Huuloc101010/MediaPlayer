@@ -22,11 +22,11 @@ std::string player::ts2timestr(int64_t ts, AVRational tb)
     av_ts_make_time_string(buf.data(), ts, &tb);
     return buf;
 }
-int player::output_video_frame(AVFrame *frame)
+int player::output_video_frame()
 {
     if(m_videooutput)
     {
-        m_videooutput->show2(frame);
+        m_videooutput->show2(m_frame);
     }
     else
     {
@@ -61,22 +61,22 @@ int player::output_video_frame(AVFrame *frame)
     // return 0;
 }
 
-int player::output_audio_frame(AVFrame *frame)
+int player::output_audio_frame()
 {
-    if(frame == nullptr)
+    if(m_frame == nullptr)
     {
         return -1;
     }
-    size_t unpadded_linesize = frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)frame->format);
+    size_t unpadded_linesize = m_frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)m_frame->format);
  
-    double pts = frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
+    double pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
     //LOGI("Audio pts:{}", pts);
 //    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
 //    LOGE("{}", frame->pts);
     std::call_once(m_once_flag,
     [&](void)->void
     {
-        if(!config_audio_output(frame))
+        if(!config_audio_output())
         {
             LOGE("config audio fail");
         }
@@ -87,9 +87,9 @@ int player::output_audio_frame(AVFrame *frame)
     });
 
     int out_samples = av_rescale_rnd(
-        swr_get_delay(m_swr, frame->sample_rate) + frame->nb_samples,
-        frame->sample_rate,
-        frame->sample_rate,
+        swr_get_delay(m_swr, m_frame->sample_rate) + m_frame->nb_samples,
+        m_frame->sample_rate,
+        m_frame->sample_rate,
         AV_ROUND_UP
     );
 
@@ -97,9 +97,9 @@ int player::output_audio_frame(AVFrame *frame)
     int out_linesize = 0;
     AudioS16Buffer out{};
     uint64_t ch_layout =
-        frame->channel_layout ?
-        frame->channel_layout :
-        av_get_default_channel_layout(frame->channels);
+        m_frame->channel_layout ?
+        m_frame->channel_layout :
+        av_get_default_channel_layout(m_frame->channels);
     int out_channels = av_get_channel_layout_nb_channels(ch_layout);
     av_samples_alloc(
         &out.data,
@@ -115,8 +115,8 @@ int player::output_audio_frame(AVFrame *frame)
         m_swr,
         &out.data,
         out_samples,
-        (const uint8_t**)frame->data,
-        frame->nb_samples
+        (const uint8_t**)m_frame->data,
+        m_frame->nb_samples
     );
 
     if (samples <= 0)
@@ -156,17 +156,17 @@ int player::output_audio_frame(AVFrame *frame)
     return 0;
 }
 
-bool player::config_audio_output(AVFrame* frame)
+bool player::config_audio_output()
 {
-    if(frame == nullptr)
+    if(m_frame == nullptr)
     {
         return false;
     }
-    double first_pts = frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
+    double first_pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
     uint64_t ch_layout =
-    frame->channel_layout ?
-    frame->channel_layout :
-    av_get_default_channel_layout(frame->channels);
+    m_frame->channel_layout ?
+    m_frame->channel_layout :
+    av_get_default_channel_layout(m_frame->channels);
     m_audiooutput = std::make_unique<audiooutput>(this);
     if(m_audiooutput == nullptr)
     {
@@ -174,7 +174,7 @@ bool player::config_audio_output(AVFrame* frame)
         return false;
     }
 
-    if(!m_audiooutput->config(frame->sample_rate,frame->channels ,AUDIO_S16SYS, first_pts))
+    if(!m_audiooutput->config(m_frame->sample_rate,m_frame->channels ,AUDIO_S16SYS, first_pts))
     {
         std::cerr << "config audio error" << std::endl;
         return false;
@@ -186,10 +186,10 @@ bool player::config_audio_output(AVFrame* frame)
     nullptr,
     ch_layout,
     AV_SAMPLE_FMT_S16,
-    frame->sample_rate,
-    frame->channel_layout,
-    (AVSampleFormat)frame->format,
-    frame->sample_rate,
+    m_frame->sample_rate,
+    m_frame->channel_layout,
+    (AVSampleFormat)m_frame->format,
+    m_frame->sample_rate,
 
     0, nullptr);
     if(!m_swr || swr_init(m_swr))
@@ -231,12 +231,12 @@ int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
         // write the frame data to output file
         if(dec->codec->type == AVMEDIA_TYPE_VIDEO)
         {
-            ret = output_video_frame(m_frame);
+            ret = output_video_frame();
         }
         else if(dec->codec->type == AVMEDIA_TYPE_AUDIO)
         {
             // TBD
-            ret = output_audio_frame(m_frame);
+            ret = output_audio_frame();
         }
         else
         {
