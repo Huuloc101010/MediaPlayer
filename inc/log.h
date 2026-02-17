@@ -1,3 +1,6 @@
+#ifndef _LOG_H_
+#define _LOG_H_
+
 #include <iostream>
 #include <format>
 #include <string_view>
@@ -55,3 +58,5 @@ void log_implement(std::string_view color,
 #else
     #define LOGD(fmt, ...) ((void)0)
 #endif
+
+#endif /* _LOG_H_*/

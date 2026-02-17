@@ -5,6 +5,7 @@
 #include <mutex>
 #include <deque>
 #include <memory>
+#include "log.h"
 extern "C"
 {
 #define __STDC_CONSTANT_MACROS
@@ -24,7 +25,12 @@ struct AVFrameDeleter
 {
     void operator()(AVFrame* frame) const
     {
-        if(frame) av_frame_free(&frame);
+        if(frame)
+        {
+            av_frame_unref(frame);
+            av_frame_free(&frame);
+        }
+        LOGW("release resource");
     }
 };
 

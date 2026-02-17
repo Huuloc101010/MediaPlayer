@@ -22,3 +22,7 @@ else
     echo -e "************${RED}Build code fail${RESET}***********"
 fi
 echo "**************************************"
+
+# cần chuyển software convert từ player qua audiooutput
+# Thêm queue ở giữa
+# thêm thread để xử lý
