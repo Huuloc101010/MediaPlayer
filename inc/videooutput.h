@@ -17,11 +17,15 @@ public:
     videooutput(const int width,const int height, mediator* mediator);
     ~videooutput();
     bool show(const yuv& ndata);
+    void push_queue(UniqueFramePtr framePtr);
+    UniqueFramePtr pop_queue();
+
 private:
     void checkevent();
     bool init();
     void destroy();
     mediator*            m_mediator{};
+    queue_safe           m_QueueSafe{};
     std::atomic<bool>    m_exiting = false;
     std::thread          m_ThreadCheckEvent;
     int                  m_width = 0;

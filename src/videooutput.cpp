@@ -128,3 +128,20 @@ void videooutput::checkevent()
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
+
+void videooutput::push_queue(UniqueFramePtr framePtr)
+{
+    std::lock_guard<std::mutex> lock_guard(m_QueueSafe.mutex);
+    m_QueueSafe.queue.emplace_front(std::move(framePtr));
+}
+
+UniqueFramePtr videooutput::pop_queue()
+{
+    std::lock_guard<std::mutex> lock_guard(m_QueueSafe.mutex);
+    if(m_QueueSafe.queue.empty())
+    {
+        LOGE("error because queue is empty");
+        return {};
+    }
+    return std::move(m_QueueSafe.queue.back());
+}
