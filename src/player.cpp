@@ -72,7 +72,7 @@ int player::output_audio_frame()
 {
     if(m_audiooutput)
     {
-        m_audiooutput->audio_convert(std::move(m_frame));
+        m_audiooutput->push_queue(std::move(m_frame));
         m_frame.reset(av_frame_alloc());
     }
     else

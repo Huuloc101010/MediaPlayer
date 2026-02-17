@@ -3,7 +3,9 @@
 #include <cstring>
 #include "mediator.h"
 
-audiooutput::audiooutput(mediator* mediator) : m_mediator(mediator)
+audiooutput::audiooutput(mediator* mediator)
+                        : m_mediator(mediator),
+                          m_ThreadShow(&audiooutput::thread_process, this)
 {
     if(SDL_Init(SDL_INIT_AUDIO) < 0)
     {
@@ -226,4 +228,31 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
         return false;
     }
     return true;
+}
+
+void audiooutput::push_queue(UniqueFramePtr FramePtr)
+{
+    std::lock_guard<std::mutex> lock_guard(m_QueueSafe.mutex);
+    m_QueueSafe.queue.emplace_front(std::move(FramePtr));
+}
+
+void audiooutput::thread_process()
+{
+    while(true)
+    {
+        m_QueueSafe.mutex.lock();
+        while(m_QueueSafe.queue.empty())
+        {
+            m_QueueSafe.mutex.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            m_QueueSafe.mutex.lock();
+        }
+        UniqueFramePtr FramePtr = std::move(m_QueueSafe.queue.back());
+        // remove element
+        m_QueueSafe.queue.pop_back();
+        m_QueueSafe.mutex.unlock();
+
+        audio_convert(std::move(FramePtr));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(33));
+    }
 }

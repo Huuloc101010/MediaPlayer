@@ -5,6 +5,7 @@
 #include <deque>
 #include <mutex>
 #include <cstdint>
+#include <thread>
 #include "define.h"
 
 class mediator;
@@ -28,17 +29,21 @@ public:
 
     void clear();
     void audio_convert(UniqueFramePtr FramePtr);
+    void push_queue(UniqueFramePtr FramePtr);
 
 private:
     static void sdl_callback(void* userdata, Uint8* stream, int len);
     void callback(Uint8* stream, int len);
     bool config_audio_output(UniqueFramePtr& frame);
+    void thread_process();
 
     SwrContext*         m_swr = nullptr;
     std::once_flag      m_once_flag{};
     mediator*           m_mediator{};
     SDL_AudioDeviceID   m_DeviceId{0};
     SDL_AudioSpec       m_spec{};
+    queue_safe          m_QueueSafe{};
+    std::thread         m_ThreadShow;
     AudioClock          m_AudioClock{};
     int                 m_first_pts{};
     int                 m_sample_rate{};
