@@ -409,11 +409,11 @@ int player::run(int argc, char **argv)
     /* flush the decoders */
     if (m_video_dec_ctx)
     {
-        decode_packet(m_video_dec_ctx, NULL);
+        decode_packet(m_video_dec_ctx, nullptr);
     }
     if (m_audio_dec_ctx)
     {
-        decode_packet(m_audio_dec_ctx, NULL);
+        decode_packet(m_audio_dec_ctx, nullptr);
     }
     LOGI("Demuxing succeeded");
     while(true);
