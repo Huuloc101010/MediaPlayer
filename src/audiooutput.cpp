@@ -228,7 +228,7 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
 
 void audiooutput::thread_process()
 {
-    while(true)
+    while(!m_exiting)
     {
         m_QueueSafe.mutex.lock();
         while(m_QueueSafe.queue.empty())

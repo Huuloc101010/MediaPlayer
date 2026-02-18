@@ -58,14 +58,6 @@ bool videooutput::init()
 
 bool videooutput::show(const yuv& ndata)
 {
-    // if(m_mediator != nullptr)
-    // {
-    //     LOGE("audio clock:{}", m_mediator->GetAudioClock());
-    // }
-    // else
-    // {
-    //     LOGE("Faill");
-    // }
     // Push data to GPU
     if(SDL_UpdateYUVTexture(m_texture, NULL, 
         ndata.plane_y, ndata.linesize_y,           
@@ -158,7 +150,7 @@ bool videooutput::show2(UniqueFramePtr frame)
 void videooutput::thread_process()
 {
     init();
-    while(true)
+    while(!m_exiting)
     {
         m_QueueSafe.mutex.lock();
         while(m_QueueSafe.queue.empty())

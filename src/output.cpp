@@ -4,6 +4,7 @@ output::output() : m_ThreadShow(&output::thread_process, this) {}
 
 output::~output()
 {
+    m_exiting = true;
     if(m_ThreadShow.joinable())
     {
         m_ThreadShow.join();

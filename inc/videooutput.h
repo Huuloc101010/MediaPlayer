@@ -27,7 +27,6 @@ private:
     void destroy();
     Clock                m_Video_Clock{};
     mediator*            m_mediator{};
-    std::atomic<bool>    m_exiting = false;
     std::thread          m_ThreadCheckEvent;
     int                  m_width = 0;
     int                  m_height = 0;

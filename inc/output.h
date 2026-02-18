@@ -17,6 +17,7 @@ public:
 protected:
     virtual void thread_process() = 0;
 
+    std::atomic<bool>   m_exiting = false;
     queue_safe          m_QueueSafe{};
     std::thread         m_ThreadShow;
 };

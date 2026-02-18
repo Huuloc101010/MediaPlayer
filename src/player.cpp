@@ -30,7 +30,6 @@ int player::output_video_frame()
     }
     if(m_videooutput)
     {
-        //m_videooutput->show2(std::move(m_frame));
         m_videooutput->push_queue(std::move(m_frame));
         /* reallocate */
         m_frame.reset(av_frame_alloc());
@@ -41,31 +40,6 @@ int player::output_video_frame()
         return -1;
     }
     return 0;
-    // if(frame == nullptr)
-    // {
-    //     LOGE("fail to show video frame");
-    //     return -1;
-    // }
-    // if(frame->format == AV_PIX_FMT_YUV420P)
-    // {
-    //     double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
-    //     LOGI("video pts:{}", pts);
-    //     yuv lyuv =
-    //     {
-    //         frame->data[0],
-    //         frame->data[1],
-    //         frame->data[2],
-    //         frame->linesize[0],
-    //         frame->linesize[1],
-    //         frame->linesize[2]
-    //     };
-        
-    //     if(m_videooutput)
-    //     {
-    //         m_videooutput->show(lyuv);
-    //     }
-    // }
-    // return 0;
 }
 
 int player::output_audio_frame()
@@ -79,76 +53,6 @@ int player::output_audio_frame()
     {
         LOGE("m_audiooutput is null");
     }
-    // if(m_frame == nullptr)
-    // {
-    //     LOGE("m_frame is nullptr");
-    //     return -1;
-    // }
-//     size_t unpadded_linesize = m_frame->nb_samples * av_get_bytes_per_sample((AVSampleFormat)m_frame->format);
- 
-//     double pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
-//     //LOGI("Audio pts:{}", pts);
-// //    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
-// //    LOGE("{}", frame->pts);
-//     std::call_once(m_once_flag,
-//     [&](void)->void
-//     {
-//         if(!config_audio_output())
-//         {
-//             LOGE("config audio fail");
-//         }
-//         else
-//         {
-//             LOGI("config audio success");
-//         }
-//     });
-
-//     int out_samples = av_rescale_rnd(
-//         swr_get_delay(m_swr, m_frame->sample_rate) + m_frame->nb_samples,
-//         m_frame->sample_rate,
-//         m_frame->sample_rate,
-//         AV_ROUND_UP
-//     );
-
-//     /* allocate buffer output */
-//     int out_linesize = 0;
-//     AudioS16Buffer out{};
-//     uint64_t ch_layout =
-//         m_frame->channel_layout ?
-//         m_frame->channel_layout :
-//         av_get_default_channel_layout(m_frame->channels);
-//     int out_channels = av_get_channel_layout_nb_channels(ch_layout);
-//     av_samples_alloc(
-//         &out.data,
-//         &out_linesize,
-//         out_channels,
-//         out_samples,
-//         AV_SAMPLE_FMT_S16,
-//         0
-//     );
-
-//     /*  Convert */
-//     int samples = swr_convert(
-//         m_swr,
-//         &out.data,
-//         out_samples,
-//         (const uint8_t**)m_frame->data,
-//         m_frame->nb_samples
-//     );
-
-//     if (samples <= 0)
-//     {
-//         av_freep(&out.data);
-//         LOGE("fail to convert data");
-//         return false;
-//     }
-//     out.size = samples * out_channels * sizeof(int16_t);
-
-//     if(out.data && out.size > 0)
-//     {
-//         m_audiooutput->push(out.data, out.size);
-//         av_freep(&out.data);
-//     }
     // std::unordered_map<uint8_t, std::string> table =
     // {
     //     {0, "No Audio"},
@@ -416,7 +320,7 @@ int player::run(int argc, char **argv)
         decode_packet(m_audio_dec_ctx, nullptr);
     }
     LOGI("Demuxing succeeded");
-    while(true);
+    //while(true);
     if (m_video_stream)
     {
         LOGI("Play the output video file with the command:"
