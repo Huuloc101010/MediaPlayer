@@ -44,7 +44,7 @@ private:
     SDL_AudioSpec       m_spec{};
     queue_safe          m_QueueSafe{};
     std::thread         m_ThreadShow;
-    AudioClock          m_AudioClock{};
+    Clock               m_AudioClock{};
     int                 m_first_pts{};
     int                 m_sample_rate{};
     int                 m_sample{};

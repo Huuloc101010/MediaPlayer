@@ -57,18 +57,7 @@ struct AudioS16Buffer
     int      size = 0;   // bytes
 };
 
-struct AudioClock
-{
-    std::atomic<double> pts;
-    std::atomic<double> last_frame_pts;
-    // int64_t total_sample;
-    // int sample_rate;
-    // int channels;
-    // int byte_per_sample;
-    // bool started;
-};
-
-struct VideoClock
+struct Clock
 {
     std::atomic<double> pts;
     std::atomic<double> last_frame_pts;

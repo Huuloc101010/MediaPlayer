@@ -25,7 +25,7 @@ private:
     void checkevent();
     bool init();
     void destroy();
-    VideoClock           m_Video_Clock{};
+    Clock                m_Video_Clock{};
     mediator*            m_mediator{};
     queue_safe           m_QueueSafe{};
     std::atomic<bool>    m_exiting = false;
