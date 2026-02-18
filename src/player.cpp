@@ -460,7 +460,6 @@ void player::clean_resource()
     avcodec_free_context(&m_audio_dec_ctx);
     avformat_close_input(&m_fmt_ctx);
     av_packet_free(&m_pkt);
-    //av_frame_free(&m_frame.data());
     av_free(m_video_dst_data[0]);
 }
 
