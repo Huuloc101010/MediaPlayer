@@ -188,20 +188,22 @@ void videooutput::show3()
         }
         LOGW("video clock: {}", video_pts);
 
+        double diff = video_pts - audio_pts;
+
+        // video > audio 0.04s -> sleep
+        if(diff > 0)
+        {
+            std::this_thread::sleep_for(std::chrono::duration<double>(diff));
+        }
+
         // video < audio -> skip frame
-        if((video_pts - audio_pts) < 0.05)
+        if((video_pts - audio_pts) < -0.04)
         {
             LOGW("Skip frame");
             continue;
         }
-        double diff = video_pts - audio_pts;
-        // video > audio
-        while((video_pts - audio_pts) > 0.05)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-            audio_pts = m_mediator->GetAudioClock();
-        }
 
+        // video - audio = ( -0.04 -> 0) show frame
         show2(std::move(FramePtr));
     }
 }
