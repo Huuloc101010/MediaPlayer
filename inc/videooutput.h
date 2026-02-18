@@ -8,18 +8,18 @@
 #include <iostream>
 #include <memory>
 #include "define.h"
+#include "output.h"
 
 class mediator;
 
-class videooutput
+class videooutput : public output
 {
 public:
     videooutput(const int width,const int height, mediator* mediator);
     ~videooutput();
     bool show(const yuv& ndata);
     bool show2(UniqueFramePtr frame);
-    void show3();
-    void push_queue(UniqueFramePtr FramePtr);
+    void thread_process() override;
 
 private:
     void checkevent();
@@ -27,10 +27,8 @@ private:
     void destroy();
     Clock                m_Video_Clock{};
     mediator*            m_mediator{};
-    queue_safe           m_QueueSafe{};
     std::atomic<bool>    m_exiting = false;
     std::thread          m_ThreadCheckEvent;
-    std::thread          m_ThreadShow;
     int                  m_width = 0;
     int                  m_height = 0;
     SDL_Window*          m_window = nullptr;

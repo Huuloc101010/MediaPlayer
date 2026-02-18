@@ -5,7 +5,6 @@
 
 videooutput::videooutput(const int width,const int height, mediator* mediator)
 : m_ThreadCheckEvent(&videooutput::checkevent, this),
-  m_ThreadShow(&videooutput::show3, this),
   m_mediator(mediator)
 {
     m_width = width;
@@ -129,11 +128,6 @@ void videooutput::checkevent()
     }
 }
 
-void videooutput::push_queue(UniqueFramePtr framePtr)
-{
-    std::lock_guard<std::mutex> lock_guard(m_QueueSafe.mutex);
-    m_QueueSafe.queue.emplace_front(std::move(framePtr));
-}
 
 bool videooutput::show2(UniqueFramePtr frame)
 {
@@ -161,7 +155,7 @@ bool videooutput::show2(UniqueFramePtr frame)
     return 0;
 }
 
-void videooutput::show3()
+void videooutput::thread_process()
 {
     init();
     while(true)

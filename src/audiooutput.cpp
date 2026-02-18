@@ -4,8 +4,7 @@
 #include "mediator.h"
 
 audiooutput::audiooutput(mediator* mediator)
-                        : m_mediator(mediator),
-                          m_ThreadShow(&audiooutput::thread_process, this)
+                        : m_mediator(mediator)
 {
     if(SDL_Init(SDL_INIT_AUDIO) < 0)
     {
@@ -226,11 +225,6 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
     return true;
 }
 
-void audiooutput::push_queue(UniqueFramePtr FramePtr)
-{
-    std::lock_guard<std::mutex> lock_guard(m_QueueSafe.mutex);
-    m_QueueSafe.queue.emplace_front(std::move(FramePtr));
-}
 
 void audiooutput::thread_process()
 {

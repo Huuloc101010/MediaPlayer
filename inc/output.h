@@ -1,0 +1,24 @@
+#ifndef __OUTPUT_
+#define __OUTPUT_
+
+#include <thread>
+#include "define.h"
+
+class output
+{
+public:
+    output();
+    virtual ~output();
+    virtual void push_queue(UniqueFramePtr FramePtr) final;
+    virtual void start();
+    virtual void stop();
+    virtual void clear();
+    virtual const double get_clock();
+protected:
+    virtual void thread_process() = 0;
+
+    queue_safe          m_QueueSafe{};
+    std::thread         m_ThreadShow;
+};
+
+#endif /* _VIDEO_OUTPUT_ */
