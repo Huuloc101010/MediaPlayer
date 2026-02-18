@@ -27,7 +27,7 @@ class player : public mediator
 {
 public:
     player() = default;
-    ~player();
+    ~player() = default;
  
     int run(int argc, char **argv);
     double GetAudioClock() override;

@@ -5,9 +5,6 @@
 #include "audiooutput.h"
 #include "log.h"
 
-player::~player()
-{
-}
 
 std::string player::err2str(int errnum)
 {

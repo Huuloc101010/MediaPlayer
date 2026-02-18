@@ -233,6 +233,7 @@ void audiooutput::thread_process()
         m_QueueSafe.mutex.lock();
         while(m_QueueSafe.queue.empty())
         {
+            if(m_exiting) return;
             m_QueueSafe.mutex.unlock();
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
             m_QueueSafe.mutex.lock();
