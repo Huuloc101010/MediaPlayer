@@ -25,7 +25,6 @@ private:
     void checkevent();
     bool init();
     void destroy();
-    Clock                m_Video_Clock{};
     mediator*            m_mediator{};
     std::thread          m_ThreadCheckEvent;
     int                  m_width = 0;

@@ -98,13 +98,13 @@ void audiooutput::callback(Uint8* stream, int len)
     /* calculate audio timestamp */
 
     m_total_samples_played += m_sample;
-    m_AudioClock.last_frame_pts.store(m_AudioClock.pts);
-    m_AudioClock.pts = m_first_pts + (static_cast<double>(m_total_samples_played) / m_sample_rate);
-    //LOGW("audio clock = {}", m_AudioClock.pts.load());
+    m_Clock.last_frame_pts.store(m_Clock.pts);
+    m_Clock.pts = m_first_pts + (static_cast<double>(m_total_samples_played) / m_sample_rate);
+    //LOGW("audio clock = {}", m_Clock.pts.load());
 }
 const double audiooutput::get_clock()
 {
-    return m_AudioClock.pts;
+    return m_Clock.pts;
 }
 
 void audiooutput::audio_convert(UniqueFramePtr FramePtr)

@@ -317,7 +317,7 @@ int player::run(int argc, char **argv)
         decode_packet(m_audio_dec_ctx, nullptr);
     }
     LOGI("Demuxing succeeded");
-    //while(true);
+    while(true);
     if (m_video_stream)
     {
         LOGI("Play the output video file with the command:"

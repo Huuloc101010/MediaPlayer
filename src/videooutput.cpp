@@ -172,7 +172,9 @@ void videooutput::thread_process()
             video_pts = FramePtr->best_effort_timestamp *
                 av_q2d(m_mediator->GetTimeBaseVideo());
         }
-        LOGW("video clock: {}", video_pts);
+        m_Clock.last_frame_pts.store(m_Clock.pts.load());
+        m_Clock.pts = video_pts;
+        LOGW("video clock: {}", m_Clock.pts.load());
 
         double diff = video_pts - audio_pts;
 

@@ -42,7 +42,6 @@ private:
     mediator*           m_mediator{};
     SDL_AudioDeviceID   m_DeviceId{0};
     SDL_AudioSpec       m_spec{};
-    Clock               m_AudioClock{};
     int                 m_first_pts{};
     int                 m_sample_rate{};
     int                 m_sample{};
