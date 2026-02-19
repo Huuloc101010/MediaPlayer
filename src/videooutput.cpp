@@ -5,15 +5,15 @@
 
 videooutput::videooutput(const int width,const int height, mediator* mediator)
 : m_ThreadCheckEvent(&videooutput::checkevent, this),
-  m_mediator(mediator)
+  m_Mediator(mediator)
 {
-    m_width = width;
-    m_height = height;
+    m_Width = width;
+    m_Height = height;
 }
 
 videooutput::~videooutput()
 {
-    m_exiting = true;
+    m_Exiting = true;
     if(m_ThreadCheckEvent.joinable())
     {
         m_ThreadCheckEvent.join();
@@ -29,25 +29,25 @@ bool videooutput::init()
         return false;
     }
 
-    m_window = SDL_CreateWindow(NAME_WINDOW,
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_width, m_height, SDL_WINDOW_SHOWN);
-    if(m_window == nullptr)
+    m_Window = SDL_CreateWindow(NAME_WINDOW,
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_SHOWN);
+    if(m_Window == nullptr)
     {
         LOGE("Create window SDL fail: {}", SDL_GetError());
         return false;
     }
     LOGI("Create windows success");
-    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
-    if(m_renderer == nullptr)
+    m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED);
+    if(m_Renderer == nullptr)
     {
         std::cerr << "Create renderer SDL fail: " << SDL_GetError() << std::endl;
         LOGE("Create renderer SDL fail: {}", SDL_GetError());
         return false;
     }
     LOGI("create render success");
-    m_texture = SDL_CreateTexture(m_renderer, 
-        SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, m_width, m_height);
-    if (m_texture == nullptr)
+    m_Texture = SDL_CreateTexture(m_Renderer, 
+        SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, m_Width, m_Height);
+    if (m_Texture == nullptr)
     {
         LOGE("Create texture SDL fail: {}", SDL_GetError());
         return false;
@@ -59,7 +59,7 @@ bool videooutput::init()
 bool videooutput::UpdateYUVTexture(const yuv& ndata)
 {
     // Push data to GPU
-    if(SDL_UpdateYUVTexture(m_texture, NULL, 
+    if(SDL_UpdateYUVTexture(m_Texture, NULL, 
         ndata.plane_y, ndata.linesize_y,           
         ndata.plane_u, ndata.linesize_u,       
         ndata.plane_v, ndata.linesize_v) < 0)
@@ -68,47 +68,47 @@ bool videooutput::UpdateYUVTexture(const yuv& ndata)
         return false;
     }     
 
-    if(SDL_RenderClear(m_renderer) < 0)
+    if(SDL_RenderClear(m_Renderer) < 0)
     {
         LOGE("render clear fail");
         return false;
     }
-    if(SDL_RenderCopy(m_renderer, m_texture, NULL, NULL) < 0)
+    if(SDL_RenderCopy(m_Renderer, m_Texture, NULL, NULL) < 0)
     {
         LOGE("Render copy fail");
         return false;
     }
-    SDL_RenderPresent(m_renderer);
+    SDL_RenderPresent(m_Renderer);
     return true;
 }
 
 void videooutput::destroy()
 {
-    if (m_texture)
+    if (m_Texture)
     {
-        SDL_DestroyTexture(m_texture);
-        m_texture = nullptr;
+        SDL_DestroyTexture(m_Texture);
+        m_Texture = nullptr;
     }
-    if (m_renderer)
+    if (m_Renderer)
     {
-        SDL_DestroyRenderer(m_renderer);
-        m_renderer = nullptr;
+        SDL_DestroyRenderer(m_Renderer);
+        m_Renderer = nullptr;
     }
-    if (m_window)
+    if (m_Window)
     {
-        SDL_DestroyWindow(m_window);
-        m_window = nullptr;
+        SDL_DestroyWindow(m_Window);
+        m_Window = nullptr;
     }
     SDL_Quit();
 }
 
 void videooutput::checkevent()
 {
-    while(!m_exiting)
+    while(!m_Exiting)
     {
-        while(SDL_PollEvent(&m_event))
+        while(SDL_PollEvent(&m_Event))
         {
-            if(m_event.type == SDL_QUIT)
+            if(m_Event.type == SDL_QUIT)
             {
                 LOGI("Event SDL_QUIT");
                 LOGW("Exitting");
@@ -150,7 +150,7 @@ bool videooutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
 void videooutput::ThreadProcessFramePtr()
 {
     init();
-    while(!m_exiting)
+    while(!m_Exiting)
     {
         m_QueueSafe.mutex.lock();
         while(m_QueueSafe.queue.empty())
@@ -163,14 +163,14 @@ void videooutput::ThreadProcessFramePtr()
         // remove element
         m_QueueSafe.queue.pop_back();
         m_QueueSafe.mutex.unlock();
-        double audio_pts = m_mediator->GetAudioClock();
+        double audio_pts = m_Mediator->GetAudioClock();
         LOGE("audio clock: {}", audio_pts);
 
         double video_pts = 0;
         if(FramePtr->best_effort_timestamp != AV_NOPTS_VALUE)
         {
             video_pts = FramePtr->best_effort_timestamp *
-                av_q2d(m_mediator->GetTimeBaseVideo());
+                av_q2d(m_Mediator->GetTimeBaseVideo());
         }
         m_Clock.last_frame_pts.store(m_Clock.pts.load());
         m_Clock.pts = video_pts;

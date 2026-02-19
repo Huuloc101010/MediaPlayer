@@ -18,7 +18,7 @@ protected:
     virtual void ThreadProcessFramePtr() = 0;
 
     Clock               m_Clock{};
-    std::atomic<bool>   m_exiting = false;
+    std::atomic<bool>   m_Exiting = false;
     queue_safe          m_QueueSafe{};
     std::thread         m_ThreadShow;
 };

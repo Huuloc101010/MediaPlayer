@@ -40,27 +40,27 @@ private:
     int output_video_frame();
     int output_audio_frame();
     int decode_packet(AVCodecContext *dec, UniquePacketPtr pkt);
-    int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *m_fmt_ctx, enum AVMediaType type);
+    int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *m_FormatContext, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     bool config_audio_output();
     void clean_resource();
 
-    std::unique_ptr<videooutput>    m_videooutput = nullptr;
-    std::unique_ptr<audiooutput>    m_audiooutput = nullptr;
+    std::unique_ptr<videooutput>    m_VideoOutput = nullptr;
+    std::unique_ptr<audiooutput>    m_AudioOutput = nullptr;
    
-    enum AVPixelFormat              m_pix_fmt;
-    AVFormatContext*                m_fmt_ctx = nullptr;
-    AVCodecContext*                 m_video_dec_ctx = nullptr, *m_audio_dec_ctx;
-    AVStream*                       m_video_stream = nullptr, *m_audio_stream = nullptr;
-    uint8_t*                        m_video_dst_data[4] = {nullptr};
-    UniqueFramePtr                  m_frame = nullptr;
-    UniquePacketPtr                 m_pkt = nullptr;
-    int                             m_width{}, m_height{};
-    int                             m_video_dst_linesize[4];
-    int                             m_video_dst_bufsize{};
-    int                             m_video_stream_idx = -1;
-    int                             m_audio_stream_idx = -1;
-    std::string                     m_src_filename{};
+    enum AVPixelFormat              m_PixelFormat;
+    AVFormatContext*                m_FormatContext = nullptr;
+    AVCodecContext*                 m_VideoDecodeContext = nullptr, *m_AudioDecodeContext;
+    AVStream*                       m_VideoStream = nullptr, *m_AudioStream = nullptr;
+    uint8_t*                        m_VideoDtsData[4] = {nullptr};
+    UniqueFramePtr                  m_Frame = nullptr;
+    UniquePacketPtr                 m_Packet = nullptr;
+    int                             m_Width{}, m_Height{};
+    int                             m_VideoDtsLineSize[4];
+    int                             m_VideoDtsBuffSize{};
+    int                             m_VideoStreamIndex = -1;
+    int                             m_AudioStreamIndex = -1;
+    std::string                     m_SourceFileName{};
 
 };
 

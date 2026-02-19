@@ -25,14 +25,14 @@ private:
     void checkevent();
     bool init();
     void destroy();
-    mediator*            m_mediator{};
+    mediator*            m_Mediator{};
     std::thread          m_ThreadCheckEvent;
-    int                  m_width = 0;
-    int                  m_height = 0;
-    SDL_Window*          m_window = nullptr;
-    SDL_Renderer*        m_renderer = nullptr;
-    SDL_Texture*         m_texture = nullptr;
-    SDL_Event            m_event;
+    int                  m_Width = 0;
+    int                  m_Height = 0;
+    SDL_Window*          m_Window = nullptr;
+    SDL_Renderer*        m_Renderer = nullptr;
+    SDL_Texture*         m_Texture = nullptr;
+    SDL_Event            m_Event;
 };
 
 #endif /*_VIDEO_OUTPUT_*/

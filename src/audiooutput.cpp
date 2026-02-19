@@ -4,7 +4,7 @@
 #include "mediator.h"
 
 audiooutput::audiooutput(mediator* mediator)
-                        : m_mediator(mediator)
+                        : m_Mediator(mediator)
 {
     if(SDL_Init(SDL_INIT_AUDIO) < 0)
     {
@@ -17,7 +17,7 @@ audiooutput::audiooutput(mediator* mediator)
 audiooutput::~audiooutput()
 {
     stop();
-    swr_free(&m_swr);
+    swr_free(&m_SwrContext);
 }
 
 bool audiooutput::config(int sample_rate,
@@ -26,9 +26,9 @@ bool audiooutput::config(int sample_rate,
                          int first_pts,
                          int samples)
 {
-    m_sample_rate = sample_rate;
-    m_first_pts = first_pts;
-    m_sample = samples;
+    m_SampleRate = sample_rate;
+    m_FirstPts = first_pts;
+    m_Sample = samples;
     SDL_AudioSpec want{};
     want.freq = sample_rate;
     want.channels = channels;
@@ -37,7 +37,7 @@ bool audiooutput::config(int sample_rate,
     want.callback = sdl_callback;
     want.userdata = this;
 
-    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_spec, 0);
+    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
     if (!m_DeviceId)
     {
         SDL_Log("SDL_OpenAudioDevice failed: %s", SDL_GetError());
@@ -67,14 +67,14 @@ void audiooutput::stop()
 
 void audiooutput::clear()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_deque.clear();
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_Deque.clear();
 }
 
 void audiooutput::push(const uint8_t* data, size_t size)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_deque.insert(m_deque.end(), data, data + size);
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_Deque.insert(m_Deque.end(), data, data + size);
 }
 
 void audiooutput::sdl_callback(void* userdata, Uint8* stream, int len)
@@ -86,20 +86,20 @@ void audiooutput::callback(Uint8* stream, int len)
 {
     std::memset(stream, 0, len); // silence if not enable data
 
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
-    int to_copy = std::min<int>(len, m_deque.size());
+    int to_copy = std::min<int>(len, m_Deque.size());
     for(int i = 0; i < to_copy; ++i) 
     {
-        stream[i] = m_deque.front();
-        m_deque.pop_front();
+        stream[i] = m_Deque.front();
+        m_Deque.pop_front();
     }
 
     /* calculate audio timestamp */
 
-    m_total_samples_played += m_sample;
+    m_TotalSamplePlayed += m_Sample;
     m_Clock.last_frame_pts.store(m_Clock.pts);
-    m_Clock.pts = m_first_pts + (static_cast<double>(m_total_samples_played) / m_sample_rate);
+    m_Clock.pts = m_FirstPts + (static_cast<double>(m_TotalSamplePlayed) / m_SampleRate);
     //LOGW("audio clock = {}", m_Clock.pts.load());
 }
 const double audiooutput::get_clock()
@@ -120,7 +120,7 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
     //LOGI("Audio pts:{}", pts);
 //    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
 //    LOGE("{}", frame->pts);
-    std::call_once(m_once_flag,
+    std::call_once(m_OnceFlag,
     [&](void)->void
     {
         if(!config_audio_output(FramePtr))
@@ -135,7 +135,7 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
     });
 
     int out_samples = av_rescale_rnd(
-        swr_get_delay(m_swr, FramePtr->sample_rate) + FramePtr->nb_samples,
+        swr_get_delay(m_SwrContext, FramePtr->sample_rate) + FramePtr->nb_samples,
         FramePtr->sample_rate,
         FramePtr->sample_rate,
         AV_ROUND_UP
@@ -160,7 +160,7 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
 
     /*  Convert */
     int samples = swr_convert(
-        m_swr,
+        m_SwrContext,
         &out.data,
         out_samples,
         (const uint8_t**)FramePtr->data,
@@ -188,11 +188,11 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
     {
         return false;
     }
-    if(m_mediator == nullptr)
+    if(m_Mediator == nullptr)
     {
         return false;
     }
-    double first_pts = m_frame->best_effort_timestamp * av_q2d(m_mediator->GetTimeBaseAudio());
+    double first_pts = m_frame->best_effort_timestamp * av_q2d(m_Mediator->GetTimeBaseAudio());
     uint64_t ch_layout =
     m_frame->channel_layout ?
     m_frame->channel_layout :
@@ -206,7 +206,7 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
     start();
     // init software context
     
-    m_swr = swr_alloc_set_opts(
+    m_SwrContext = swr_alloc_set_opts(
     nullptr,
     ch_layout,
     AV_SAMPLE_FMT_S16,
@@ -216,10 +216,10 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
     m_frame->sample_rate,
 
     0, nullptr);
-    if(!m_swr || swr_init(m_swr))
+    if(!m_SwrContext || swr_init(m_SwrContext))
     {
-        swr_free(&m_swr);
-        LOGE("!m_swr || swr_init(m_swr)");
+        swr_free(&m_SwrContext);
+        LOGE("!m_SwrContext || swr_init(m_SwrContext)");
         return false;
     }
     return true;
@@ -228,12 +228,12 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
 
 void audiooutput::ThreadProcessFramePtr()
 {
-    while(!m_exiting)
+    while(!m_Exiting)
     {
         m_QueueSafe.mutex.lock();
         while(m_QueueSafe.queue.empty())
         {
-            if(m_exiting) return;
+            if(m_Exiting) return;
             m_QueueSafe.mutex.unlock();
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
             m_QueueSafe.mutex.lock();

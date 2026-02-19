@@ -20,16 +20,16 @@ std::string player::ts2timestr(int64_t ts, AVRational tb)
 }
 int player::output_video_frame()
 {
-    if(m_frame == nullptr)
+    if(m_Frame == nullptr)
     {
-        LOGE("m_frame is null");
+        LOGE("m_Frame is null");
         return -1;
     }
-    if(m_videooutput)
+    if(m_VideoOutput)
     {
-        m_videooutput->push_queue(std::move(m_frame));
+        m_VideoOutput->push_queue(std::move(m_Frame));
         /* reallocate */
-        m_frame.reset(av_frame_alloc());
+        m_Frame.reset(av_frame_alloc());
     }
     else
     {
@@ -41,14 +41,14 @@ int player::output_video_frame()
 
 int player::output_audio_frame()
 {
-    if(m_audiooutput)
+    if(m_AudioOutput)
     {
-        m_audiooutput->push_queue(std::move(m_frame));
-        m_frame.reset(av_frame_alloc());
+        m_AudioOutput->push_queue(std::move(m_Frame));
+        m_Frame.reset(av_frame_alloc());
     }
     else
     {
-        LOGE("m_audiooutput is null");
+        LOGE("m_AudioOutput is null");
     }
     // std::unordered_map<uint8_t, std::string> table =
     // {
@@ -91,12 +91,12 @@ int player::decode_packet(AVCodecContext *dec, UniquePacketPtr pkt)
     // get all the available frames from the decoder
     while (ret >= 0)
     {
-        if(m_frame == nullptr)
+        if(m_Frame == nullptr)
         {
             LOGE("null");
             return -1;
         }
-        ret = avcodec_receive_frame(dec, m_frame.get());
+        ret = avcodec_receive_frame(dec, m_Frame.get());
         if (ret < 0)
         {
             // those two return values are special and mean there is no output
@@ -137,7 +137,7 @@ int player::open_codec_context(int *stream_idx,
     ret = av_find_best_stream(fmt_ctx, type, -1, -1, NULL, 0);
     if (ret < 0)
     {
-        LOGE("Could not find {} stream in input file {}", av_get_media_type_string(type), m_src_filename);
+        LOGE("Could not find {} stream in input file {}", av_get_media_type_string(type), m_SourceFileName);
         return ret;
     }
     else
@@ -219,64 +219,63 @@ int player::run(int argc, char **argv)
         LOGE("In valid parameter: usage {} video.mp4", argv[0]);
         exit(1);
     }
-    m_src_filename = argv[1];
+    m_SourceFileName = argv[1];
     /* open input file, and allocate format context */
-    if (avformat_open_input(&m_fmt_ctx, m_src_filename.c_str(), NULL, NULL) < 0)
+    if (avformat_open_input(&m_FormatContext, m_SourceFileName.c_str(), NULL, NULL) < 0)
     {
-        LOGE("Could not open source file {}", m_src_filename);
+        LOGE("Could not open source file {}", m_SourceFileName);
         exit(1);
     }
  
     /* retrieve stream information */
-    if (avformat_find_stream_info(m_fmt_ctx, NULL) < 0)
+    if (avformat_find_stream_info(m_FormatContext, NULL) < 0)
     {
         LOGE("Could not find stream information");
         exit(1);
     }
  
-    if(open_codec_context(&m_video_stream_idx, &m_video_dec_ctx, m_fmt_ctx, AVMEDIA_TYPE_VIDEO) >= 0)
+    if(open_codec_context(&m_VideoStreamIndex, &m_VideoDecodeContext, m_FormatContext, AVMEDIA_TYPE_VIDEO) >= 0)
     {
-        m_video_stream = m_fmt_ctx->streams[m_video_stream_idx];
+        m_VideoStream = m_FormatContext->streams[m_VideoStreamIndex];
         
         
         /* allocate image where the decoded image will be put */
-        m_width = m_video_dec_ctx->width;
-        m_height = m_video_dec_ctx->height;
+        m_Width = m_VideoDecodeContext->width;
+        m_Height = m_VideoDecodeContext->height;
         // Create windows
-        m_videooutput = std::make_unique<videooutput>(m_width, m_height, this);
-        m_audiooutput = std::make_unique<audiooutput>(this);
+        m_VideoOutput = std::make_unique<videooutput>(m_Width, m_Height, this);
+        m_AudioOutput = std::make_unique<audiooutput>(this);
 
-        m_pix_fmt = m_video_dec_ctx->pix_fmt;
-        ret = av_image_alloc(m_video_dst_data, m_video_dst_linesize, m_width, m_height, m_pix_fmt, 1);
+        m_PixelFormat = m_VideoDecodeContext->pix_fmt;
+        ret = av_image_alloc(m_VideoDtsData, m_VideoDtsLineSize, m_Width, m_Height, m_PixelFormat, 1);
         if (ret < 0)
         {
             LOGE("Could not allocate raw video buffer");
             clean_resource();
             return -1;
         }
-        m_video_dst_bufsize = ret;
+        m_VideoDtsBuffSize = ret;
     }
  
-    if (open_codec_context(&m_audio_stream_idx, &m_audio_dec_ctx, m_fmt_ctx, AVMEDIA_TYPE_AUDIO) >= 0)
+    if (open_codec_context(&m_AudioStreamIndex, &m_AudioDecodeContext, m_FormatContext, AVMEDIA_TYPE_AUDIO) >= 0)
     {
-        m_audio_stream = m_fmt_ctx->streams[m_audio_stream_idx];
-        LOGI("sample rate: {}", m_audio_dec_ctx->sample_rate);
-        LOGI("channel layout: {}", m_audio_dec_ctx->channel_layout);
+        m_AudioStream = m_FormatContext->streams[m_AudioStreamIndex];
+        LOGI("sample rate: {}", m_AudioDecodeContext->sample_rate);
+        LOGI("channel layout: {}", m_AudioDecodeContext->channel_layout);
     }
  
     /* dump input information to stderr */
-    av_dump_format(m_fmt_ctx, 0, m_src_filename.c_str(), 0);
+    av_dump_format(m_FormatContext, 0, m_SourceFileName.c_str(), 0);
  
-    if (!m_audio_stream && !m_video_stream)
+    if (!m_AudioStream && !m_VideoStream)
     {
         LOGE("Could not find audio or video stream in the input, aborting");
         ret = 1;
         clean_resource();
         return 1;
     }
-    //m_frame.reset();
-    m_frame.reset(av_frame_alloc());
-    if(!m_frame)
+    m_Frame.reset(av_frame_alloc());
+    if(!m_Frame)
     {
         LOGE("Could not allocate frame");
         ret = AVERROR(ENOMEM);
@@ -284,8 +283,8 @@ int player::run(int argc, char **argv)
         return -1;
     }
  
-    m_pkt.reset(av_packet_alloc());
-    if(!m_pkt)
+    m_Packet.reset(av_packet_alloc());
+    if(!m_Packet)
     {
         LOGE("Could not allocate packet");
         ret = AVERROR(ENOMEM);
@@ -294,51 +293,51 @@ int player::run(int argc, char **argv)
     }
  
     /* read frames from the file */
-    while (av_read_frame(m_fmt_ctx, m_pkt.get()) >= 0)
+    while (av_read_frame(m_FormatContext, m_Packet.get()) >= 0)
     {
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it
-        if(m_pkt->stream_index == m_video_stream_idx)
+        if(m_Packet->stream_index == m_VideoStreamIndex)
         {
-            ret = decode_packet(m_video_dec_ctx, std::move(m_pkt));
+            ret = decode_packet(m_VideoDecodeContext, std::move(m_Packet));
         }
-        else if(m_pkt->stream_index == m_audio_stream_idx)
+        else if(m_Packet->stream_index == m_AudioStreamIndex)
         {
-            ret = decode_packet(m_audio_dec_ctx, std::move(m_pkt));
+            ret = decode_packet(m_AudioDecodeContext, std::move(m_Packet));
         }
 
         // realocate
-        m_pkt.reset(av_packet_alloc());
+        m_Packet.reset(av_packet_alloc());
 
         if(ret < 0) break;
     }
  
     /* flush the decoders */
-    if (m_video_dec_ctx)
+    if (m_VideoDecodeContext)
     {
-        decode_packet(m_video_dec_ctx, nullptr);
+        decode_packet(m_VideoDecodeContext, nullptr);
     }
-    if (m_audio_dec_ctx)
+    if (m_AudioDecodeContext)
     {
-        decode_packet(m_audio_dec_ctx, nullptr);
+        decode_packet(m_AudioDecodeContext, nullptr);
     }
     LOGI("Demuxing succeeded");
     while(true);
-    if (m_video_stream)
+    if (m_VideoStream)
     {
         LOGI("Play the output video file with the command:"
                "ffplay -f rawvideo -pix_fmt {} -video_size {}x{}",
-               av_get_pix_fmt_name(m_pix_fmt), m_width, m_height);
+               av_get_pix_fmt_name(m_PixelFormat), m_Width, m_Height);
     }
  
-    if (m_audio_stream)
+    if (m_AudioStream)
     {
-        enum AVSampleFormat sfmt = m_audio_dec_ctx->sample_fmt;
-        int n_channels = /*m_audio_dec_ctx->ch_layout.nb_channels;*/ 1;
+        enum AVSampleFormat sfmt = m_AudioDecodeContext->sample_fmt;
+        int n_channels = /*m_AudioDecodeContext->ch_layout.nb_channels;*/ 1;
        
-// int n_channels = m_audio_dec_ctx->ch_layout.nb_channels > 0
-//                          ? m_audio_dec_ctx->ch_layout.nb_channels
-//                          : m_audio_dec_ctx->channels;
+// int n_channels = m_AudioDecodeContext->ch_layout.nb_channels > 0
+//                          ? m_AudioDecodeContext->ch_layout.nb_channels
+//                          : m_AudioDecodeContext->channels;
  
         const char *fmt;
  
@@ -363,28 +362,28 @@ int player::run(int argc, char **argv)
 
 void player::clean_resource()
 {
-    avcodec_free_context(&m_video_dec_ctx);
-    avcodec_free_context(&m_audio_dec_ctx);
-    avformat_close_input(&m_fmt_ctx);
-    av_free(m_video_dst_data[0]);
+    avcodec_free_context(&m_VideoDecodeContext);
+    avcodec_free_context(&m_AudioDecodeContext);
+    avformat_close_input(&m_FormatContext);
+    av_free(m_VideoDtsData[0]);
 }
 
 double player::GetAudioClock()
 {
     double audioclock{};
-    if(m_audiooutput != nullptr)
+    if(m_AudioOutput != nullptr)
     {
-        audioclock = m_audiooutput->get_clock();
+        audioclock = m_AudioOutput->get_clock();
     }
     return audioclock;
 }
 
 AVRational player::GetTimeBaseAudio()
 {
-    return m_audio_stream->time_base;
+    return m_AudioStream->time_base;
 }
 
 AVRational player::GetTimeBaseVideo()
 {
-    return m_video_stream->time_base;
+    return m_VideoStream->time_base;
 }

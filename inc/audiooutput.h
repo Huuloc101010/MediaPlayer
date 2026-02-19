@@ -37,17 +37,17 @@ private:
     bool config_audio_output(UniqueFramePtr& frame);
     void ThreadProcessFramePtr() override;
 
-    SwrContext*         m_swr = nullptr;
-    std::once_flag      m_once_flag{};
-    mediator*           m_mediator{};
+    SwrContext*         m_SwrContext = nullptr;
+    std::once_flag      m_OnceFlag{};
+    mediator*           m_Mediator{};
     SDL_AudioDeviceID   m_DeviceId{0};
-    SDL_AudioSpec       m_spec{};
-    int                 m_first_pts{};
-    int                 m_sample_rate{};
-    int                 m_sample{};
-    int64_t             m_total_samples_played{};
-    std::deque<uint8_t> m_deque;
-    std::mutex          m_mutex;
+    SDL_AudioSpec       m_Spec{};
+    int                 m_FirstPts{};
+    int                 m_SampleRate{};
+    int                 m_Sample{};
+    int64_t             m_TotalSamplePlayed{};
+    std::deque<uint8_t> m_Deque;
+    std::mutex          m_Mutex;
 };
 
 #endif /* _AUDIO_OUTPUT_*/
