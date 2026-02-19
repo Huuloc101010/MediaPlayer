@@ -56,7 +56,7 @@ bool videooutput::init()
     return true;
 }
 
-bool videooutput::show(const yuv& ndata)
+bool videooutput::UpdateYUVTexture(const yuv& ndata)
 {
     // Push data to GPU
     if(SDL_UpdateYUVTexture(m_texture, NULL, 
@@ -121,7 +121,7 @@ void videooutput::checkevent()
 }
 
 
-bool videooutput::show2(UniqueFramePtr frame)
+bool videooutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
 {
     if(frame == nullptr)
     {
@@ -142,12 +142,12 @@ bool videooutput::show2(UniqueFramePtr frame)
             frame->linesize[2]
         };
         
-        show(lyuv);
+        UpdateYUVTexture(lyuv);
     }
     return 0;
 }
 
-void videooutput::thread_process()
+void videooutput::ThreadProcessFramePtr()
 {
     init();
     while(!m_exiting)
@@ -192,6 +192,6 @@ void videooutput::thread_process()
         }
 
         // video - audio = ( -0.04 -> 0) show frame
-        show2(std::move(FramePtr));
+        ConvertFramePtrToRawData(std::move(FramePtr));
     }
 }

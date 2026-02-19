@@ -226,7 +226,7 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
 }
 
 
-void audiooutput::thread_process()
+void audiooutput::ThreadProcessFramePtr()
 {
     while(!m_exiting)
     {

@@ -15,7 +15,7 @@ public:
     virtual void clear();
     virtual const double get_clock();
 protected:
-    virtual void thread_process() = 0;
+    virtual void ThreadProcessFramePtr() = 0;
 
     Clock               m_Clock{};
     std::atomic<bool>   m_exiting = false;

@@ -35,7 +35,7 @@ private:
     static void sdl_callback(void* userdata, Uint8* stream, int len);
     void callback(Uint8* stream, int len);
     bool config_audio_output(UniqueFramePtr& frame);
-    void thread_process() override;
+    void ThreadProcessFramePtr() override;
 
     SwrContext*         m_swr = nullptr;
     std::once_flag      m_once_flag{};

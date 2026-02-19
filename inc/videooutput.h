@@ -17,9 +17,9 @@ class videooutput : public output
 public:
     videooutput(const int width,const int height, mediator* mediator);
     ~videooutput();
-    bool show(const yuv& ndata);
-    bool show2(UniqueFramePtr frame);
-    void thread_process() override;
+    bool UpdateYUVTexture(const yuv& ndata);
+    bool ConvertFramePtrToRawData(UniqueFramePtr frame);
+    void ThreadProcessFramePtr() override;
 
 private:
     void checkevent();

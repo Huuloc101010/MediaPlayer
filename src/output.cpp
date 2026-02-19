@@ -1,6 +1,6 @@
 #include "output.h"
 
-output::output() : m_ThreadShow(&output::thread_process, this) {}
+output::output() : m_ThreadShow(&output::ThreadProcessFramePtr, this) {}
 
 output::~output()
 {
