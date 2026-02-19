@@ -39,7 +39,7 @@ private:
     std::string ts2timestr(int64_t ts, AVRational tb);
     int output_video_frame();
     int output_audio_frame();
-    int decode_packet(AVCodecContext *dec, const AVPacket *pkt);
+    int decode_packet(AVCodecContext *dec, UniquePacketPtr pkt);
     int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *m_fmt_ctx, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     bool config_audio_output();
@@ -54,7 +54,7 @@ private:
     AVStream*                       m_video_stream = nullptr, *m_audio_stream = nullptr;
     uint8_t*                        m_video_dst_data[4] = {nullptr};
     UniqueFramePtr                  m_frame = nullptr;
-    AVPacket*                       m_pkt = nullptr;
+    UniquePacketPtr                 m_pkt = nullptr;
     int                             m_width{}, m_height{};
     int                             m_video_dst_linesize[4];
     int                             m_video_dst_bufsize{};

@@ -76,12 +76,12 @@ int player::output_audio_frame()
 
 
 
-int player::decode_packet(AVCodecContext *dec, const AVPacket *pkt)
+int player::decode_packet(AVCodecContext *dec, UniquePacketPtr pkt)
 {
     int ret = 0;
  
     // submit the packet to the decoder
-    ret = avcodec_send_packet(dec, pkt);
+    ret = avcodec_send_packet(dec, pkt.get());
     if (ret < 0)
     {
         LOGE("Error submitting a packet for decoding {}", err2str(ret));
@@ -284,7 +284,7 @@ int player::run(int argc, char **argv)
         return -1;
     }
  
-    m_pkt = av_packet_alloc();
+    m_pkt.reset(av_packet_alloc());
     if(!m_pkt)
     {
         LOGE("Could not allocate packet");
@@ -294,17 +294,23 @@ int player::run(int argc, char **argv)
     }
  
     /* read frames from the file */
-    while (av_read_frame(m_fmt_ctx, m_pkt) >= 0)
+    while (av_read_frame(m_fmt_ctx, m_pkt.get()) >= 0)
     {
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it
-        if (m_pkt->stream_index == m_video_stream_idx)
-            ret = decode_packet(m_video_dec_ctx, m_pkt);
-        else if (m_pkt->stream_index == m_audio_stream_idx)
-            ret = decode_packet(m_audio_dec_ctx, m_pkt);
-        av_packet_unref(m_pkt);
-        if (ret < 0)
-            break;
+        if(m_pkt->stream_index == m_video_stream_idx)
+        {
+            ret = decode_packet(m_video_dec_ctx, std::move(m_pkt));
+        }
+        else if(m_pkt->stream_index == m_audio_stream_idx)
+        {
+            ret = decode_packet(m_audio_dec_ctx, std::move(m_pkt));
+        }
+
+        // realocate
+        m_pkt.reset(av_packet_alloc());
+
+        if(ret < 0) break;
     }
  
     /* flush the decoders */
@@ -360,7 +366,6 @@ void player::clean_resource()
     avcodec_free_context(&m_video_dec_ctx);
     avcodec_free_context(&m_audio_dec_ctx);
     avformat_close_input(&m_fmt_ctx);
-    av_packet_free(&m_pkt);
     av_free(m_video_dst_data[0]);
 }
 

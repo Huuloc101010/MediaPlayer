@@ -32,8 +32,18 @@ struct AVFrameDeleter
     }
 };
 
+struct AVPacketDeleter
+{
+    void operator()(AVPacket* packet) const
+    {
+        if(packet)
+        {
+            av_packet_free(&packet);
+        }
+    }
+};
 using UniqueFramePtr = std::unique_ptr<AVFrame, AVFrameDeleter>;
-using SharedFramePtr = std::shared_ptr<AVFrame>;
+using UniquePacketPtr = std::unique_ptr<AVPacket, AVPacketDeleter>;
 
 struct queue_safe
 {
