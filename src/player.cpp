@@ -244,8 +244,7 @@ int player::run(int argc, char **argv)
         m_Height = m_VideoDecodeContext->height;
         // Create windows
         m_VideoOutput = std::make_unique<videooutput>(m_Width, m_Height, this);
-        m_AudioOutput = std::make_unique<audiooutput>(this);
-
+        
         m_PixelFormat = m_VideoDecodeContext->pix_fmt;
         ret = av_image_alloc(m_VideoDtsData, m_VideoDtsLineSize, m_Width, m_Height, m_PixelFormat, 1);
         if (ret < 0)
@@ -256,9 +255,10 @@ int player::run(int argc, char **argv)
         }
         m_VideoDtsBuffSize = ret;
     }
- 
+    
     if (open_codec_context(&m_AudioStreamIndex, &m_AudioDecodeContext, m_FormatContext, AVMEDIA_TYPE_AUDIO) >= 0)
     {
+        m_AudioOutput = std::make_unique<audiooutput>(this);
         m_AudioStream = m_FormatContext->streams[m_AudioStreamIndex];
         LOGI("sample rate: {}", m_AudioDecodeContext->sample_rate);
         LOGI("channel layout: {}", m_AudioDecodeContext->channel_layout);
