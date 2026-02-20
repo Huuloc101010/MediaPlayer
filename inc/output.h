@@ -20,7 +20,7 @@ protected:
     Clock               m_Clock{};
     std::atomic<bool>   m_Exiting = false;
     queue_safe          m_QueueSafe{};
-    std::thread         m_ThreadShow;
+    std::jthread        m_ThreadShow;
 };
 
 #endif /* _VIDEO_OUTPUT_ */

@@ -5,10 +5,6 @@ output::output() : m_ThreadShow(&output::ThreadProcessFramePtr, this) {}
 output::~output()
 {
     m_Exiting = true;
-    if(m_ThreadShow.joinable())
-    {
-        m_ThreadShow.join();
-    }
 }
 
 void output::push_queue(UniqueFramePtr FramePtr)

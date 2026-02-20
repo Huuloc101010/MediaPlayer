@@ -26,7 +26,7 @@ private:
     bool init();
     void destroy();
     mediator*            m_Mediator{};
-    std::thread          m_ThreadCheckEvent;
+    std::jthread         m_ThreadCheckEvent;
     int                  m_Width = 0;
     int                  m_Height = 0;
     SDL_Window*          m_Window = nullptr;
