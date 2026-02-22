@@ -42,6 +42,11 @@ public:
         m_condition_variable.notify_all();
     }
 
+    void clear()
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_queue.clear();
+    }
 private:
 
     std::mutex              m_mutex;
