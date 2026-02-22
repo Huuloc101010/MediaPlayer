@@ -152,17 +152,13 @@ void videooutput::ThreadProcessFramePtr()
     init();
     while(!m_Exiting)
     {
-        m_QueueSafe.mutex.lock();
-        while(m_QueueSafe.queue.empty())
+        auto retval = std::move(m_QueueSafe.pop());
+        if(retval == std::nullopt)
         {
-            m_QueueSafe.mutex.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-            m_QueueSafe.mutex.lock();
+            LOGW("nullopt");
+            continue;
         }
-        UniqueFramePtr FramePtr = std::move(m_QueueSafe.queue.back());
-        // remove element
-        m_QueueSafe.queue.pop_back();
-        m_QueueSafe.mutex.unlock();
+        UniqueFramePtr FramePtr = std::move(retval.value());
         double audio_pts = m_Mediator->GetAudioClock();
         LOGE("audio clock: {}", audio_pts);
 

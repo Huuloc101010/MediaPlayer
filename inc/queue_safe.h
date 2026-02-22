@@ -1,5 +1,9 @@
+#ifndef _QUEUE_SAFE_
+#define _QUEUE_SAFE_
+
 #include <optional>
 #include <deque>
+#include <condition_variable>
 
 template<typename T>
 class queue_safe
@@ -28,7 +32,7 @@ public:
         {
             return std::nullopt;
         }
-        auto value = m_queue.front();
+        auto value = std::move(m_queue.front());
         m_queue.pop_front();
         return std::move(value);
     }
@@ -54,3 +58,5 @@ private:
     bool                    m_Exiting = false;
     std::condition_variable m_condition_variable;
 };
+
+#endif

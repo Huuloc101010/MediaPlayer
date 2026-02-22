@@ -45,11 +45,6 @@ struct AVPacketDeleter
 using UniqueFramePtr = std::unique_ptr<AVFrame, AVFrameDeleter>;
 using UniquePacketPtr = std::unique_ptr<AVPacket, AVPacketDeleter>;
 
-struct queue_safe
-{
-    std::deque<UniqueFramePtr> queue{};
-    std::mutex          mutex;
-};
 
 struct yuv
 {
