@@ -44,6 +44,7 @@ private:
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     bool config_audio_output();
     void clean_resource();
+    void loop_read_frame();
 
     std::unique_ptr<videooutput>    m_VideoOutput = nullptr;
     std::unique_ptr<audiooutput>    m_AudioOutput = nullptr;

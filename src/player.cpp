@@ -291,36 +291,36 @@ int player::run(int argc, char **argv)
         clean_resource();
         return -1;
     }
- 
-    /* read frames from the file */
-    while (av_read_frame(m_FormatContext, m_Packet.get()) >= 0)
-    {
-        // check if the packet belongs to a stream we are interested in, otherwise
-        // skip it
-        if(m_Packet->stream_index == m_VideoStreamIndex)
-        {
-            ret = decode_packet(m_VideoDecodeContext, std::move(m_Packet));
-        }
-        else if(m_Packet->stream_index == m_AudioStreamIndex)
-        {
-            ret = decode_packet(m_AudioDecodeContext, std::move(m_Packet));
-        }
+    loop_read_frame();
+    // /* read frames from the file */
+    // while (av_read_frame(m_FormatContext, m_Packet.get()) >= 0)
+    // {
+    //     // check if the packet belongs to a stream we are interested in, otherwise
+    //     // skip it
+    //     if(m_Packet->stream_index == m_VideoStreamIndex)
+    //     {
+    //         ret = decode_packet(m_VideoDecodeContext, std::move(m_Packet));
+    //     }
+    //     else if(m_Packet->stream_index == m_AudioStreamIndex)
+    //     {
+    //         ret = decode_packet(m_AudioDecodeContext, std::move(m_Packet));
+    //     }
 
-        // realocate
-        m_Packet.reset(av_packet_alloc());
+    //     // realocate
+    //     m_Packet.reset(av_packet_alloc());
 
-        if(ret < 0) break;
-    }
+    //     if(ret < 0) break;
+    // }
  
-    /* flush the decoders */
-    if (m_VideoDecodeContext)
-    {
-        decode_packet(m_VideoDecodeContext, nullptr);
-    }
-    if (m_AudioDecodeContext)
-    {
-        decode_packet(m_AudioDecodeContext, nullptr);
-    }
+    // /* flush the decoders */
+    // if (m_VideoDecodeContext)
+    // {
+    //     decode_packet(m_VideoDecodeContext, nullptr);
+    // }
+    // if (m_AudioDecodeContext)
+    // {
+    //     decode_packet(m_AudioDecodeContext, nullptr);
+    // }
     LOGI("Demuxing succeeded");
     while(true);
     if (m_VideoStream)
@@ -358,6 +358,40 @@ int player::run(int argc, char **argv)
     }
  
     return ret < 0;
+}
+
+void player::loop_read_frame()
+{
+    int ret = 0;
+    /* read frames from the file */
+    while (av_read_frame(m_FormatContext, m_Packet.get()) >= 0)
+    {
+        // check if the packet belongs to a stream we are interested in, otherwise
+        // skip it
+        if(m_Packet->stream_index == m_VideoStreamIndex)
+        {
+            ret = decode_packet(m_VideoDecodeContext, std::move(m_Packet));
+        }
+        else if(m_Packet->stream_index == m_AudioStreamIndex)
+        {
+            ret = decode_packet(m_AudioDecodeContext, std::move(m_Packet));
+        }
+
+        // realocate
+        m_Packet.reset(av_packet_alloc());
+
+        if(ret < 0) break;
+    }
+ 
+    /* flush the decoders */
+    if (m_VideoDecodeContext)
+    {
+        decode_packet(m_VideoDecodeContext, nullptr);
+    }
+    if (m_AudioDecodeContext)
+    {
+        decode_packet(m_AudioDecodeContext, nullptr);
+    }
 }
 
 void player::clean_resource()
