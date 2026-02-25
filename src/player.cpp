@@ -76,57 +76,6 @@ int player::output_audio_frame()
 
 
 
-int player::decode_packet(AVCodecContext *dec, UniquePacketPtr pkt, UniqueFramePtr& frame)
-{
-    int ret = 0;
- 
-    // submit the packet to the decoder
-    ret = avcodec_send_packet(dec, pkt.get());
-    if (ret < 0)
-    {
-        LOGE("Error submitting a packet for decoding {}", err2str(ret));
-        return ret;
-    }
- 
-    // get all the available frames from the decoder
-    while (ret >= 0)
-    {
-        if(frame == nullptr)
-        {
-            LOGE("null");
-            return -1;
-        }
-        ret = avcodec_receive_frame(dec, frame.get());
-        if (ret < 0)
-        {
-            // those two return values are special and mean there is no output
-            // frame available, but there were no errors during decoding
-            if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN))
-                return 0;
- 
-            LOGE("Error during decoding {}", err2str(ret));
-            return ret;
-        }
- 
-        // write the frame data to output file
-        if(dec->codec->type == AVMEDIA_TYPE_VIDEO)
-        {
-            ret = output_video_frame();
-        }
-        else if(dec->codec->type == AVMEDIA_TYPE_AUDIO)
-        {
-            // TBD
-            ret = output_audio_frame();
-        }
-        else
-        {
-            LOGW("Not support this packet");
-        }
-    }
-    
-    return ret;
-}
-
 int player::open_codec_context(int *stream_idx,
                               AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type)
 {
@@ -144,7 +93,7 @@ int player::open_codec_context(int *stream_idx,
     {
         stream_index = ret;
         st = fmt_ctx->streams[stream_index];
-        if(init_decoder(st->codecpar->codec_id, dec_ctx, st->codecpar) == 0)
+        if(m_Decoder->init_decoder(st->codecpar->codec_id, dec_ctx, st->codecpar) == 0)
         {
             LOGI("Init decoder success");
         }
@@ -158,43 +107,6 @@ int player::open_codec_context(int *stream_idx,
     return 0;
 }
 
-int player::init_decoder(AVCodecID codecID, AVCodecContext **dec_ctx, AVCodecParameters* codec_par)
-{
-    int ret = -1;
-    const AVCodec *dec = NULL;
-    /* find decoder for the stream */
-    dec = avcodec_find_decoder(codecID);
-    if (!dec)
-    {
-        LOGE("Failed to find {} codec", 1/*, av_get_media_type_string(type)*/);
-        return AVERROR(EINVAL);
-    }
-
-    /* Allocate a codec context for the decoder */
-    *dec_ctx = avcodec_alloc_context3(dec);
-    if (!*dec_ctx)
-    {
-        LOGE("Failed to allocate the {} codec context", 1/*,av_get_media_type_string(type)*/);
-        return AVERROR(ENOMEM);
-    }
-
-    /* Copy codec parameters from input stream to output codec context */
-    if ((ret = avcodec_parameters_to_context(*dec_ctx, codec_par)) < 0)
-    {
-        LOGE("Failed to copy {} codec parameters to decoder context", 1/*, av_get_media_type_string(type)*/);
-        return ret;
-    }
-
-    /* Init the decoders */
-    if ((ret = avcodec_open2(*dec_ctx, dec, NULL)) < 0)
-    {
-        // fprintf(stderr, "Failed to open %s codec\n",
-        //         av_get_media_type_string(type));
-        LOGE("Failed to open {} codec", 1/*, av_get_media_type_string(type)*/);
-        return ret;
-    }
-    return 0;
-}
 
 int player::get_format_from_sample_fmt(const char **fmt,
                                       enum AVSampleFormat sample_fmt)
@@ -227,6 +139,7 @@ int player::get_format_from_sample_fmt(const char **fmt,
 }
 int player::run(int argc, char **argv)
 {
+    m_Decoder = std::make_unique<decoder>(this);
     int ret = 0;
     if (argc != 2)
     {
@@ -355,11 +268,11 @@ void player::loop_read_frame()
         // skip it
         if(m_Packet->stream_index == m_VideoStreamIndex)
         {
-            ret = decode_packet(m_VideoDecodeContext, std::move(m_Packet), m_Frame);
+            ret = m_Decoder->decode_packet(m_VideoDecodeContext, std::move(m_Packet), m_Frame);
         }
         else if(m_Packet->stream_index == m_AudioStreamIndex)
         {
-            ret = decode_packet(m_AudioDecodeContext, std::move(m_Packet), m_Frame);
+            ret = m_Decoder->decode_packet(m_AudioDecodeContext, std::move(m_Packet), m_Frame);
         }
 
         // realocate
@@ -371,11 +284,11 @@ void player::loop_read_frame()
     /* flush the decoders */
     if (m_VideoDecodeContext)
     {
-        decode_packet(m_VideoDecodeContext, nullptr, m_Frame);
+        m_Decoder->decode_packet(m_VideoDecodeContext, nullptr, m_Frame);
     }
     if (m_AudioDecodeContext)
     {
-        decode_packet(m_AudioDecodeContext, nullptr, m_Frame);
+        m_Decoder->decode_packet(m_AudioDecodeContext, nullptr, m_Frame);
     }
 }
 

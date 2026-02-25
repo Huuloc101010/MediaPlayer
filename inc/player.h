@@ -6,6 +6,7 @@
 #include <mutex>
 #include "define.h"
 #include "mediator.h"
+#include "decoder.h"
 
 extern "C"
 {
@@ -37,18 +38,17 @@ public:
 private:
     std::string err2str(int errnum);
     std::string ts2timestr(int64_t ts, AVRational tb);
-    int output_video_frame();
-    int output_audio_frame();
-    int decode_packet(AVCodecContext *dec, UniquePacketPtr pkt, UniqueFramePtr& frame);
+    int output_video_frame() override;
+    int output_audio_frame() override;
     int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *m_FormatContext, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     bool config_audio_output();
     void clean_resource();
     void loop_read_frame();
-    int init_decoder(AVCodecID codecID, AVCodecContext **dec_ctx, AVCodecParameters* codec_par);
 
     std::unique_ptr<videooutput>    m_VideoOutput = nullptr;
     std::unique_ptr<audiooutput>    m_AudioOutput = nullptr;
+    std::unique_ptr<decoder>        m_Decoder = nullptr;
    
     enum AVPixelFormat              m_PixelFormat;
     AVFormatContext*                m_FormatContext = nullptr;
