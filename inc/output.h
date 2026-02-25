@@ -2,6 +2,7 @@
 #define __OUTPUT_
 
 #include <thread>
+#include <queue_safe.h>
 #include "define.h"
 
 class output
@@ -17,10 +18,10 @@ public:
 protected:
     virtual void ThreadProcessFramePtr() = 0;
 
-    Clock               m_Clock{};
-    std::atomic<bool>   m_Exiting = false;
-    queue_safe          m_QueueSafe{};
-    std::jthread        m_ThreadShow;
+    Clock                        m_Clock{};
+    std::atomic<bool>            m_Exiting = false;
+    queue_safe<UniqueFramePtr>   m_QueueSafe{};
+    std::jthread                 m_ThreadShow;
 };
 
 #endif /* _VIDEO_OUTPUT_ */

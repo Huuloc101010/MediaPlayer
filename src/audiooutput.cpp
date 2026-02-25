@@ -230,19 +230,12 @@ void audiooutput::ThreadProcessFramePtr()
 {
     while(!m_Exiting)
     {
-        m_QueueSafe.mutex.lock();
-        while(m_QueueSafe.queue.empty())
+        auto retval = std::move(m_QueueSafe.pop());
+        if(retval == std::nullopt)
         {
-            if(m_Exiting) return;
-            m_QueueSafe.mutex.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-            m_QueueSafe.mutex.lock();
+            LOGW("nullopt");
+            continue;
         }
-        UniqueFramePtr FramePtr = std::move(m_QueueSafe.queue.back());
-        // remove element
-        m_QueueSafe.queue.pop_back();
-        m_QueueSafe.mutex.unlock();
-
-        audio_convert(std::move(FramePtr));
+        audio_convert(std::move(retval.value()));
     }
 }
