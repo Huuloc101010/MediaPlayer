@@ -132,7 +132,7 @@ int player::open_codec_context(int *stream_idx,
 {
     int ret, stream_index;
     AVStream *st;
-    const AVCodec *dec = NULL;
+    //const AVCodec *dec = NULL;
  
     ret = av_find_best_stream(fmt_ctx, type, -1, -1, NULL, 0);
     if (ret < 0)
@@ -144,41 +144,55 @@ int player::open_codec_context(int *stream_idx,
     {
         stream_index = ret;
         st = fmt_ctx->streams[stream_index];
- 
-        /* find decoder for the stream */
-        dec = avcodec_find_decoder(st->codecpar->codec_id);
-        if (!dec)
+        if(init_decoder(st->codecpar->codec_id, dec_ctx, st->codecpar) == 0)
         {
-            LOGE("Failed to find {} codec", av_get_media_type_string(type));
-            return AVERROR(EINVAL);
+            LOGI("Init decoder success");
         }
- 
-        /* Allocate a codec context for the decoder */
-        *dec_ctx = avcodec_alloc_context3(dec);
-        if (!*dec_ctx)
+        else
         {
-            LOGE("Failed to allocate the {} codec context", av_get_media_type_string(type));
-            return AVERROR(ENOMEM);
-        }
- 
-        /* Copy codec parameters from input stream to output codec context */
-        if ((ret = avcodec_parameters_to_context(*dec_ctx, st->codecpar)) < 0)
-        {
-            LOGE("Failed to copy {} codec parameters to decoder context", av_get_media_type_string(type));
-            return ret;
-        }
- 
-        /* Init the decoders */
-        if ((ret = avcodec_open2(*dec_ctx, dec, NULL)) < 0)
-        {
-            fprintf(stderr, "Failed to open %s codec\n",
-                    av_get_media_type_string(type));
-            LOGE("Failed to open {} codec", av_get_media_type_string(type));
-            return ret;
+            LOGE("Init decoder fail");
         }
         *stream_idx = stream_index;
     }
  
+    return 0;
+}
+
+int player::init_decoder(AVCodecID codecID, AVCodecContext **dec_ctx, AVCodecParameters* codec_par)
+{
+    int ret = -1;
+    const AVCodec *dec = NULL;
+    /* find decoder for the stream */
+    dec = avcodec_find_decoder(codecID);
+    if (!dec)
+    {
+        LOGE("Failed to find {} codec", 1/*, av_get_media_type_string(type)*/);
+        return AVERROR(EINVAL);
+    }
+
+    /* Allocate a codec context for the decoder */
+    *dec_ctx = avcodec_alloc_context3(dec);
+    if (!*dec_ctx)
+    {
+        LOGE("Failed to allocate the {} codec context", 1/*,av_get_media_type_string(type)*/);
+        return AVERROR(ENOMEM);
+    }
+
+    /* Copy codec parameters from input stream to output codec context */
+    if ((ret = avcodec_parameters_to_context(*dec_ctx, codec_par)) < 0)
+    {
+        LOGE("Failed to copy {} codec parameters to decoder context", 1/*, av_get_media_type_string(type)*/);
+        return ret;
+    }
+
+    /* Init the decoders */
+    if ((ret = avcodec_open2(*dec_ctx, dec, NULL)) < 0)
+    {
+        // fprintf(stderr, "Failed to open %s codec\n",
+        //         av_get_media_type_string(type));
+        LOGE("Failed to open {} codec", 1/*, av_get_media_type_string(type)*/);
+        return ret;
+    }
     return 0;
 }
 
@@ -292,35 +306,6 @@ int player::run(int argc, char **argv)
         return -1;
     }
     loop_read_frame();
-    // /* read frames from the file */
-    // while (av_read_frame(m_FormatContext, m_Packet.get()) >= 0)
-    // {
-    //     // check if the packet belongs to a stream we are interested in, otherwise
-    //     // skip it
-    //     if(m_Packet->stream_index == m_VideoStreamIndex)
-    //     {
-    //         ret = decode_packet(m_VideoDecodeContext, std::move(m_Packet));
-    //     }
-    //     else if(m_Packet->stream_index == m_AudioStreamIndex)
-    //     {
-    //         ret = decode_packet(m_AudioDecodeContext, std::move(m_Packet));
-    //     }
-
-    //     // realocate
-    //     m_Packet.reset(av_packet_alloc());
-
-    //     if(ret < 0) break;
-    // }
- 
-    // /* flush the decoders */
-    // if (m_VideoDecodeContext)
-    // {
-    //     decode_packet(m_VideoDecodeContext, nullptr);
-    // }
-    // if (m_AudioDecodeContext)
-    // {
-    //     decode_packet(m_AudioDecodeContext, nullptr);
-    // }
     LOGI("Demuxing succeeded");
     while(true);
     if (m_VideoStream)

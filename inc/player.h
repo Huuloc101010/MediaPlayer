@@ -45,6 +45,7 @@ private:
     bool config_audio_output();
     void clean_resource();
     void loop_read_frame();
+    int init_decoder(AVCodecID codecID, AVCodecContext **dec_ctx, AVCodecParameters* codec_par);
 
     std::unique_ptr<videooutput>    m_VideoOutput = nullptr;
     std::unique_ptr<audiooutput>    m_AudioOutput = nullptr;
