@@ -39,7 +39,7 @@ private:
     std::string ts2timestr(int64_t ts, AVRational tb);
     int output_video_frame();
     int output_audio_frame();
-    int decode_packet(AVCodecContext *dec, UniquePacketPtr pkt);
+    int decode_packet(AVCodecContext *dec, UniquePacketPtr pkt, UniqueFramePtr& frame);
     int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *m_FormatContext, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     bool config_audio_output();

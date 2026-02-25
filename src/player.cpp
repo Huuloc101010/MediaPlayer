@@ -76,7 +76,7 @@ int player::output_audio_frame()
 
 
 
-int player::decode_packet(AVCodecContext *dec, UniquePacketPtr pkt)
+int player::decode_packet(AVCodecContext *dec, UniquePacketPtr pkt, UniqueFramePtr& frame)
 {
     int ret = 0;
  
@@ -91,12 +91,12 @@ int player::decode_packet(AVCodecContext *dec, UniquePacketPtr pkt)
     // get all the available frames from the decoder
     while (ret >= 0)
     {
-        if(m_Frame == nullptr)
+        if(frame == nullptr)
         {
             LOGE("null");
             return -1;
         }
-        ret = avcodec_receive_frame(dec, m_Frame.get());
+        ret = avcodec_receive_frame(dec, frame.get());
         if (ret < 0)
         {
             // those two return values are special and mean there is no output
@@ -370,11 +370,11 @@ void player::loop_read_frame()
         // skip it
         if(m_Packet->stream_index == m_VideoStreamIndex)
         {
-            ret = decode_packet(m_VideoDecodeContext, std::move(m_Packet));
+            ret = decode_packet(m_VideoDecodeContext, std::move(m_Packet), m_Frame);
         }
         else if(m_Packet->stream_index == m_AudioStreamIndex)
         {
-            ret = decode_packet(m_AudioDecodeContext, std::move(m_Packet));
+            ret = decode_packet(m_AudioDecodeContext, std::move(m_Packet), m_Frame);
         }
 
         // realocate
@@ -386,11 +386,11 @@ void player::loop_read_frame()
     /* flush the decoders */
     if (m_VideoDecodeContext)
     {
-        decode_packet(m_VideoDecodeContext, nullptr);
+        decode_packet(m_VideoDecodeContext, nullptr, m_Frame);
     }
     if (m_AudioDecodeContext)
     {
-        decode_packet(m_AudioDecodeContext, nullptr);
+        decode_packet(m_AudioDecodeContext, nullptr, m_Frame);
     }
 }
 
