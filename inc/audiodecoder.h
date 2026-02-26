@@ -6,7 +6,7 @@ class audiodecoder : public decoder
 {
 public:
     audiodecoder(mediator* mediator);
-
+    AVSampleFormat GetSampleFormat();
 };
 
 #endif /* _AUDIO_DECODER_ */

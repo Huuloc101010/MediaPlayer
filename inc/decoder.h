@@ -9,12 +9,13 @@ class decoder
 public:
     decoder(mediator* mediator);
 
-    virtual ~decoder() = default;
-    int init_decoder(const AVCodecID codecID, AVCodecContext **dec_ctx, AVCodecParameters* codec_par);
-    int decode_packet(AVCodecContext *dec, UniquePacketPtr pkt, UniqueFramePtr& frame);
+    virtual ~decoder();
+    int init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par);
+    int decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame);
 
 protected:
-    mediator* m_mediator = nullptr;
+    mediator*        m_mediator = nullptr;
+    AVCodecContext*  m_CodecContext = nullptr;
 };
 
 #endif /* _DECODER */

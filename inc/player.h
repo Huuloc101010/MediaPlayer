@@ -41,7 +41,7 @@ private:
     std::string ts2timestr(int64_t ts, AVRational tb);
     int output_video_frame() override;
     int output_audio_frame() override;
-    int open_codec_context(int *stream_idx, AVCodecContext **dec_ctx, AVFormatContext *m_FormatContext, enum AVMediaType type);
+    int open_codec_context(int *stream_idx, AVFormatContext *m_FormatContext, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     bool config_audio_output();
     void clean_resource();
@@ -54,7 +54,6 @@ private:
    
     enum AVPixelFormat              m_PixelFormat{};
     AVFormatContext*                m_FormatContext = nullptr;
-    AVCodecContext*                 m_VideoDecodeContext = nullptr, *m_AudioDecodeContext;
     AVStream*                       m_VideoStream = nullptr, *m_AudioStream = nullptr;
     uint8_t*                        m_VideoDtsData[4] = {nullptr};
     UniqueFramePtr                  m_Frame = nullptr;
