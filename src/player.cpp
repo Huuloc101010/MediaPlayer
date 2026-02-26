@@ -297,11 +297,11 @@ void player::loop_read_frame()
     }
  
     /* flush the decoders */
-    if (m_VideoDecodeContext)
+    if(m_VideoDecoder)
     {
         m_VideoDecoder->decode_packet(m_VideoDecodeContext, nullptr, m_Frame);
     }
-    if (m_AudioDecodeContext)
+    if(m_AudioDecoder)
     {
         m_AudioDecoder->decode_packet(m_AudioDecodeContext, nullptr, m_Frame);
     }
