@@ -93,13 +93,27 @@ int player::open_codec_context(int *stream_idx,
     {
         stream_index = ret;
         st = fmt_ctx->streams[stream_index];
-        if(m_Decoder->init_decoder(st->codecpar->codec_id, dec_ctx, st->codecpar) == 0)
+        if(type == AVMEDIA_TYPE_VIDEO)
         {
-            LOGI("Init decoder success");
+            if(m_VideoDecoder->init_decoder(st->codecpar->codec_id, dec_ctx, st->codecpar) == 0)
+            {
+                LOGI("Init video decoder success");
+            }
+            else
+            {
+                LOGE("Init video decoder fail");
+            } 
         }
-        else
+        if(type == AVMEDIA_TYPE_AUDIO)
         {
-            LOGE("Init decoder fail");
+            if(m_AudioDecoder->init_decoder(st->codecpar->codec_id, dec_ctx, st->codecpar) == 0)
+            {
+                LOGI("Init audio decoder success");
+            }
+            else
+            {
+                LOGE("Init audio decoder fail");
+            }
         }
         *stream_idx = stream_index;
     }
@@ -139,7 +153,8 @@ int player::get_format_from_sample_fmt(const char **fmt,
 }
 int player::run(int argc, char **argv)
 {
-    m_Decoder = std::make_unique<decoder>(this);
+    m_VideoDecoder = std::make_unique<videodecoder>(this);
+    m_AudioDecoder = std::make_unique<audiodecoder>(this);
     int ret = 0;
     if (argc != 2)
     {
@@ -268,11 +283,11 @@ void player::loop_read_frame()
         // skip it
         if(m_Packet->stream_index == m_VideoStreamIndex)
         {
-            ret = m_Decoder->decode_packet(m_VideoDecodeContext, std::move(m_Packet), m_Frame);
+            ret = m_VideoDecoder->decode_packet(m_VideoDecodeContext, std::move(m_Packet), m_Frame);
         }
         else if(m_Packet->stream_index == m_AudioStreamIndex)
         {
-            ret = m_Decoder->decode_packet(m_AudioDecodeContext, std::move(m_Packet), m_Frame);
+            ret = m_AudioDecoder->decode_packet(m_AudioDecodeContext, std::move(m_Packet), m_Frame);
         }
 
         // realocate
@@ -284,11 +299,11 @@ void player::loop_read_frame()
     /* flush the decoders */
     if (m_VideoDecodeContext)
     {
-        m_Decoder->decode_packet(m_VideoDecodeContext, nullptr, m_Frame);
+        m_VideoDecoder->decode_packet(m_VideoDecodeContext, nullptr, m_Frame);
     }
     if (m_AudioDecodeContext)
     {
-        m_Decoder->decode_packet(m_AudioDecodeContext, nullptr, m_Frame);
+        m_AudioDecoder->decode_packet(m_AudioDecodeContext, nullptr, m_Frame);
     }
 }
 

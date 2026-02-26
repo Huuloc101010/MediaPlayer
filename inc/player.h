@@ -6,7 +6,8 @@
 #include <mutex>
 #include "define.h"
 #include "mediator.h"
-#include "decoder.h"
+#include "videodecoder.h"
+#include "audiodecoder.h"
 
 extern "C"
 {
@@ -46,11 +47,12 @@ private:
     void clean_resource();
     void loop_read_frame();
 
-    std::unique_ptr<videooutput>    m_VideoOutput = nullptr;
-    std::unique_ptr<audiooutput>    m_AudioOutput = nullptr;
-    std::unique_ptr<decoder>        m_Decoder = nullptr;
+    std::unique_ptr<videooutput>    m_VideoOutput  = nullptr;
+    std::unique_ptr<audiooutput>    m_AudioOutput  = nullptr;
+    std::unique_ptr<videodecoder>   m_VideoDecoder = nullptr;
+    std::unique_ptr<audiodecoder>   m_AudioDecoder = nullptr;
    
-    enum AVPixelFormat              m_PixelFormat;
+    enum AVPixelFormat              m_PixelFormat{};
     AVFormatContext*                m_FormatContext = nullptr;
     AVCodecContext*                 m_VideoDecodeContext = nullptr, *m_AudioDecodeContext;
     AVStream*                       m_VideoStream = nullptr, *m_AudioStream = nullptr;
