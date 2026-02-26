@@ -5,7 +5,7 @@ decoder::decoder(mediator* mediator): m_mediator(mediator)
 {
 }
 
-int decoder::init_decoder(AVCodecID codecID, AVCodecContext **dec_ctx, AVCodecParameters* codec_par)
+int decoder::init_decoder(const AVCodecID codecID, AVCodecContext **dec_ctx, AVCodecParameters* codec_par)
 {
     int ret = -1;
     const AVCodec *dec = NULL;

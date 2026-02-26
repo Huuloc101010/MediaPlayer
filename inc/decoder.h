@@ -10,7 +10,7 @@ public:
     decoder(mediator* mediator);
 
     virtual ~decoder() = default;
-    int init_decoder(AVCodecID codecID, AVCodecContext **dec_ctx, AVCodecParameters* codec_par);
+    int init_decoder(const AVCodecID codecID, AVCodecContext **dec_ctx, AVCodecParameters* codec_par);
     int decode_packet(AVCodecContext *dec, UniquePacketPtr pkt, UniqueFramePtr& frame);
 
 protected:
