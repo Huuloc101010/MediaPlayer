@@ -4,7 +4,8 @@
 
 class videodecoder : public decoder
 {
-
+public:
+    videodecoder(mediator* mediator);
 };
 
 #endif /* _VIDEO_DECODER_ */

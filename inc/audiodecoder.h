@@ -4,6 +4,8 @@
 
 class audiodecoder : public decoder
 {
+public:
+    audiodecoder(mediator* mediator);
 
 };
 
