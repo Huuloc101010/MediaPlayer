@@ -330,3 +330,8 @@ AVRational player::GetTimeBaseVideo()
 {
     return m_VideoStream->time_base;
 }
+
+std::atomic<PlayerState>& player::GetCurrentState()
+{
+    return m_PlayerState;
+}

@@ -36,6 +36,7 @@ public:
     AVRational GetTimeBaseAudio() override;
     AVRational GetTimeBaseVideo() override;
     const std::string err2str(int errnum) override;
+    std::atomic<PlayerState>& GetCurrentState() override;
 
 private:
     std::string ts2timestr(int64_t ts, AVRational tb);
@@ -64,6 +65,7 @@ private:
     int                             m_VideoStreamIndex = -1;
     int                             m_AudioStreamIndex = -1;
     std::string                     m_SourceFileName{};
+    std::atomic<PlayerState>        m_PlayerState = PlayerState::IDLE;
 
 };
 

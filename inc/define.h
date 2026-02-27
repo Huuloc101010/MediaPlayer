@@ -73,4 +73,12 @@ struct Clock
     // bool started;
 };
 
+enum class PlayerState : uint8_t
+{
+    IDLE,
+    STOPPED,
+    PLAYING,
+    PAUSED,
+};
+
 #endif /*_DEFINE_*/
