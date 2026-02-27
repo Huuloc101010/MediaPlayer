@@ -35,9 +35,9 @@ public:
     double GetAudioClock() override;
     AVRational GetTimeBaseAudio() override;
     AVRational GetTimeBaseVideo() override;
+    const std::string err2str(int errnum) override;
 
 private:
-    std::string err2str(int errnum);
     std::string ts2timestr(int64_t ts, AVRational tb);
     int output_video_frame() override;
     int output_audio_frame() override;

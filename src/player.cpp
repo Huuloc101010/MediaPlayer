@@ -6,7 +6,7 @@
 #include "log.h"
 
 
-std::string player::err2str(int errnum)
+const std::string player::err2str(int errnum)
 {
     std::string buf(AV_ERROR_MAX_STRING_SIZE, '\0');
     av_strerror(errnum, buf.data(), buf.size());
@@ -50,27 +50,6 @@ int player::output_audio_frame()
     {
         LOGE("m_AudioOutput is null");
     }
-    // std::unordered_map<uint8_t, std::string> table =
-    // {
-    //     {0, "No Audio"},
-    //     {1, "Mono"},
-    //     {2, "Stereo"},
-    //     {3, "Suround"},
-    // };
-    // std::cout << "Channels:" << table[frame->channels] << std::endl;
-    // Need check:
-    // sample rate 44000 Hz
-    // sample format s16, each sample use signed int data
-    // sample channel : mono -> single, stereo -> double channel
-    // plannar or packed -> plannar (separate channel left right), packed (data packed in format R L R L R L)
-    /* Write the raw audio data samples of the first plane. This works
-     * fine for packed formats (e.g. AV_SAMPLE_FMT_S16). However,
-     * most audio decoders output planar audio, which uses a separate
-     * plane of audio samples for each channel (e.g. AV_SAMPLE_FMT_S16P).
-     * In other words, this code will write only the first audio channel
-     * in these cases.
-     * You should use libswresample or libavfilter to convert the frame
-     * to packed data. */
     return 0;
 }
 

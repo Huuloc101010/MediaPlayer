@@ -12,7 +12,7 @@ decoder::~decoder()
         avcodec_free_context(&m_CodecContext);
     }
 }
-int decoder::init_decoder(const AVCodecID codecID/*, AVCodecContext **m_CodecContext,*/, AVCodecParameters* codec_par)
+int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 {
     int ret = -1;
     const AVCodec *dec = NULL;
@@ -20,7 +20,7 @@ int decoder::init_decoder(const AVCodecID codecID/*, AVCodecContext **m_CodecCon
     dec = avcodec_find_decoder(codecID);
     if (!dec)
     {
-        LOGE("Failed to find {} codec", 1/*, av_get_media_type_string(type)*/);
+        LOGE("Failed to find {} codec", av_get_media_type_string(codec_par->codec_type));
         return AVERROR(EINVAL);
     }
 
@@ -28,23 +28,21 @@ int decoder::init_decoder(const AVCodecID codecID/*, AVCodecContext **m_CodecCon
     m_CodecContext = avcodec_alloc_context3(dec);
     if (!m_CodecContext)
     {
-        LOGE("Failed to allocate the {} codec context", 1/*,av_get_media_type_string(type)*/);
+        LOGE("Failed to allocate the {} codec context", av_get_media_type_string(codec_par->codec_type));
         return AVERROR(ENOMEM);
     }
 
     /* Copy codec parameters from input stream to output codec context */
     if ((ret = avcodec_parameters_to_context(m_CodecContext, codec_par)) < 0)
     {
-        LOGE("Failed to copy {} codec parameters to decoder context", 1/*, av_get_media_type_string(type)*/);
+        LOGE("Failed to copy {} codec parameters to decoder context", av_get_media_type_string(codec_par->codec_type));
         return ret;
     }
 
     /* Init the decoders */
     if ((ret = avcodec_open2(m_CodecContext, dec, NULL)) < 0)
     {
-        // fprintf(stderr, "Failed to open %s codec\n",
-        //         av_get_media_type_string(type));
-        LOGE("Failed to open {} codec", 1/*, av_get_media_type_string(type)*/);
+        LOGE("Failed to open {} codec", av_get_media_type_string(codec_par->codec_type));
         return ret;
     }
     return 0;
@@ -58,7 +56,7 @@ int decoder::decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame)
     ret = avcodec_send_packet(m_CodecContext, pkt.get());
     if (ret < 0)
     {
-        LOGE("Error submitting a packet for decoding {}", 1/*err2str(ret)*/);
+        LOGE("Error submitting a packet for decoding {}", err2str(ret));
         return ret;
     }
 
@@ -78,19 +76,24 @@ int decoder::decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame)
             if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN))
                 return 0;
 
-            LOGE("Error during decoding {}",1 /*err2str(ret)*/);
+            LOGE("Error during decoding {}", err2str(ret));
             return ret;
         }
 
         // write the frame data to output file
         if(m_CodecContext->codec->type == AVMEDIA_TYPE_VIDEO)
         {
-            ret = m_mediator->output_video_frame();
+            if(m_mediator != nullptr)
+            {
+                ret = m_mediator->output_video_frame();
+            }
         }
         else if(m_CodecContext->codec->type == AVMEDIA_TYPE_AUDIO)
         {
-            // TBD
-            ret = m_mediator->output_audio_frame();
+            if(m_mediator != nullptr)
+            {
+                ret = m_mediator->output_audio_frame();
+            }
         }
         else
         {
@@ -99,4 +102,13 @@ int decoder::decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame)
     }
     
     return ret;
+}
+
+const std::string decoder::err2str(int errnum)
+{
+    if(m_mediator == nullptr)
+    {
+        return {};
+    }
+    return m_mediator->err2str(errnum);
 }
