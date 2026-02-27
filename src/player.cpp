@@ -169,7 +169,14 @@ int player::run(int argc, char **argv)
 
         // Create windows
         m_VideoOutput = std::make_unique<videooutput>(m_Width, m_Height, this);
-        
+        if(m_VideoOutput)
+        {
+            if(!m_VideoOutput->StartThread())
+            {
+                LOGE("start thread fail");
+                return -1;
+            }
+        }
         ret = av_image_alloc(m_VideoDtsData, m_VideoDtsLineSize, m_Width, m_Height, m_PixelFormat, 1);
         if (ret < 0)
         {
@@ -183,6 +190,14 @@ int player::run(int argc, char **argv)
     if (open_codec_context(&m_AudioStreamIndex, m_FormatContext, AVMEDIA_TYPE_AUDIO) >= 0)
     {
         m_AudioOutput = std::make_unique<audiooutput>(this);
+        if(m_AudioOutput)
+        {
+            if(!m_AudioOutput->StartThread())
+            {
+                LOGE("start thread fail");
+                return -1;
+            }
+        }
         m_AudioStream = m_FormatContext->streams[m_AudioStreamIndex];
     }
  

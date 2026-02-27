@@ -8,13 +8,14 @@
 class output
 {
 public:
-    output();
+    output() = default;
     virtual ~output();
     virtual void push_queue(UniqueFramePtr FramePtr) final;
     virtual void start();
     virtual void stop();
     virtual void clear();
     virtual const double get_clock();
+    virtual bool StartThread();
 protected:
     virtual void ThreadProcessFramePtr() = 0;
 

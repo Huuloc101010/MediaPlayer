@@ -1,11 +1,16 @@
 #include "output.h"
 
-output::output() : m_ThreadShow(&output::ThreadProcessFramePtr, this) {}
 
 output::~output()
 {
     m_Exiting = true;
     m_QueueSafe.release();
+}
+
+bool output::StartThread()
+{
+    m_ThreadShow = std::jthread(&output::ThreadProcessFramePtr, this);
+    return true;
 }
 
 void output::push_queue(UniqueFramePtr FramePtr)
