@@ -21,29 +21,20 @@ extern "C"
 
 #define NAME_WINDOW "Video Media Player"
 
-struct AVFrameDeleter
+template<typename T, void(*FreeFunction)(T**)>
+struct UniquePtrDeleter
 {
-    void operator()(AVFrame* frame) const
+    void operator()(T* resource) const
     {
-        if(frame)
+        if(resource)
         {
-            av_frame_free(&frame);
+            FreeFunction(&resource);
         }
     }
 };
-
-struct AVPacketDeleter
-{
-    void operator()(AVPacket* packet) const
-    {
-        if(packet)
-        {
-            av_packet_free(&packet);
-        }
-    }
-};
-using UniqueFramePtr = std::unique_ptr<AVFrame, AVFrameDeleter>;
-using UniquePacketPtr = std::unique_ptr<AVPacket, AVPacketDeleter>;
+using UniqueFramePtr      = std::unique_ptr<AVFrame, UniquePtrDeleter<AVFrame, av_frame_free>>;
+using UniquePacketPtr     = std::unique_ptr<AVPacket, UniquePtrDeleter<AVPacket, av_packet_free>>;
+using UniqueFormatContext = std::unique_ptr<AVFormatContext, UniquePtrDeleter<AVFormatContext, avformat_close_input>>;
 
 
 struct yuv

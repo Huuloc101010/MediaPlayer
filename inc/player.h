@@ -45,7 +45,6 @@ private:
     int open_codec_context(int *stream_idx, AVFormatContext *m_FormatContext, enum AVMediaType type);
     int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     bool config_audio_output();
-    void clean_resource();
     void loop_read_frame();
     int decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame, const bool IsFlushDecoder = false);
 
@@ -54,13 +53,10 @@ private:
     std::unique_ptr<videodecoder>   m_VideoDecoder = nullptr;
     std::unique_ptr<audiodecoder>   m_AudioDecoder = nullptr;
    
-    enum AVPixelFormat              m_PixelFormat{};
-    AVFormatContext*                m_FormatContext = nullptr;
+    UniqueFormatContext             m_FormatContext = nullptr;
     AVStream*                       m_VideoStream = nullptr, *m_AudioStream = nullptr;
-    uint8_t*                        m_VideoDtsData[4] = {nullptr};
     UniqueFramePtr                  m_Frame = nullptr;
     int                             m_Width{}, m_Height{};
-    int                             m_VideoDtsLineSize[4];
     int                             m_VideoDtsBuffSize{};
     int                             m_VideoStreamIndex = -1;
     int                             m_AudioStreamIndex = -1;
