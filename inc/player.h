@@ -47,6 +47,7 @@ private:
     bool config_audio_output();
     void clean_resource();
     void loop_read_frame();
+    int decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame, const bool IsFlushDecoder = false);
 
     std::unique_ptr<videooutput>    m_VideoOutput  = nullptr;
     std::unique_ptr<audiooutput>    m_AudioOutput  = nullptr;
@@ -58,7 +59,6 @@ private:
     AVStream*                       m_VideoStream = nullptr, *m_AudioStream = nullptr;
     uint8_t*                        m_VideoDtsData[4] = {nullptr};
     UniqueFramePtr                  m_Frame = nullptr;
-    UniquePacketPtr                 m_Packet = nullptr;
     int                             m_Width{}, m_Height{};
     int                             m_VideoDtsLineSize[4];
     int                             m_VideoDtsBuffSize{};

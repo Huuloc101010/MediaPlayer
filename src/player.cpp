@@ -220,14 +220,6 @@ int player::run(int argc, char **argv)
         return -1;
     }
  
-    m_Packet.reset(av_packet_alloc());
-    if(!m_Packet)
-    {
-        LOGE("Could not allocate packet");
-        ret = AVERROR(ENOMEM);
-        clean_resource();
-        return -1;
-    }
     loop_read_frame();
     LOGI("Demuxing succeeded");
     while(true);
@@ -273,36 +265,54 @@ int player::run(int argc, char **argv)
 
 void player::loop_read_frame()
 {
+    // first allocate
+    UniquePacketPtr Packet(av_packet_alloc());
     int ret = 0;
     /* read frames from the file */
-    while (av_read_frame(m_FormatContext, m_Packet.get()) >= 0)
+    while (av_read_frame(m_FormatContext, Packet.get()) >= 0)
     {
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it
-        if(m_Packet->stream_index == m_VideoStreamIndex)
+        if(Packet == nullptr)
         {
-            ret = m_VideoDecoder->decode_packet(std::move(m_Packet), m_Frame);
+            
         }
-        else if(m_Packet->stream_index == m_AudioStreamIndex)
+        ret = decode_packet(std::move(Packet), m_Frame);
+        if(ret != 0)
         {
-            ret = m_AudioDecoder->decode_packet(std::move(m_Packet), m_Frame);
+            LOGE("decode fail");
+            break;
         }
-
         // realocate
-        m_Packet.reset(av_packet_alloc());
-
-        if(ret < 0) break;
+        Packet.reset(av_packet_alloc());
     }
  
     /* flush the decoders */
-    if(m_VideoDecoder)
+    if(decode_packet(nullptr, m_Frame, true) != 0)
     {
-        m_VideoDecoder->decode_packet(nullptr, m_Frame);
+        LOGE("Flush decoder fail");
     }
-    if(m_AudioDecoder)
+}
+
+int player::decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame, const bool IsFlushDecoder)
+{
+    if(IsFlushDecoder)
     {
-        m_AudioDecoder->decode_packet(nullptr, m_Frame);
+        /* flush the decoders */
+        if(m_VideoDecoder) m_VideoDecoder->decode_packet(nullptr, frame);
+        if(m_AudioDecoder) m_AudioDecoder->decode_packet(nullptr, frame);
+        return 0;
     }
+    int ret = -1;
+    if((pkt->stream_index == m_VideoStreamIndex) && (m_VideoDecoder))
+    {
+        ret = m_VideoDecoder->decode_packet(std::move(pkt), frame);
+    }
+    else if((pkt->stream_index == m_AudioStreamIndex) && (m_AudioDecoder))
+    {
+        ret = m_AudioDecoder->decode_packet(std::move(pkt), frame);
+    }
+    return ret;
 }
 
 void player::clean_resource()
