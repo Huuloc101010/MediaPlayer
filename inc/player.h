@@ -43,7 +43,6 @@ private:
     int output_video_frame() override;
     int output_audio_frame() override;
     int open_codec_context(int *stream_idx, AVFormatContext *m_FormatContext, enum AVMediaType type);
-    int get_format_from_sample_fmt(const char **fmt, enum AVSampleFormat sample_fmt);
     bool config_audio_output();
     void loop_read_frame();
     int decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame, const bool IsFlushDecoder = false);
