@@ -64,7 +64,7 @@ int player::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum A
     ret = av_find_best_stream(fmt_ctx, type, -1, -1, NULL, 0);
     if (ret < 0)
     {
-        LOGE("Could not find {} stream in input file {}", av_get_media_type_string(type), m_SourceFileName);
+        LOGE("Could not find {} stream in input file ", av_get_media_type_string(type)/*, SourceFileName*/);
         return ret;
     }
     else
@@ -103,18 +103,20 @@ int player::run(int argc, char **argv)
 {
     m_VideoDecoder = std::make_unique<videodecoder>(this);
     m_AudioDecoder = std::make_unique<audiodecoder>(this);
+    m_VideoOutput  = std::make_unique<videooutput>(this);
+    m_AudioOutput  = std::make_unique<audiooutput>(this);
     int ret = 0;
     if (argc != 2)
     {
         LOGE("In valid parameter: usage {} video.mp4", argv[0]);
         exit(1);
     }
-    m_SourceFileName = argv[1];
+    std::string SourceFileName = argv[1];
     /* open input file, and allocate format context */
     AVFormatContext* FormatContext = nullptr;
-    if (avformat_open_input(&FormatContext, m_SourceFileName.c_str(), NULL, NULL) < 0)
+    if (avformat_open_input(&FormatContext, SourceFileName.c_str(), NULL, NULL) < 0)
     {
-        LOGE("Could not open source file {}", m_SourceFileName);
+        LOGE("Could not open source file {}", SourceFileName);
         exit(1);
     }
     m_FormatContext.reset(FormatContext);
@@ -129,48 +131,31 @@ int player::run(int argc, char **argv)
     {
         m_VideoStream = m_FormatContext->streams[m_VideoStreamIndex];
         
-        
-        /* allocate image where the decoded image will be put */
-        if(m_VideoDecoder)
-        {
-            m_Width = m_VideoDecoder->GetWidth();
-            m_Height = m_VideoDecoder->GetHeight();
-        }
-
         // Create windows
-        m_VideoOutput = std::make_unique<videooutput>(m_Width, m_Height, this);
-        if(m_VideoOutput)
+        if(ConfigVideoOutput() == false)
         {
-            if(!m_VideoOutput->StartThread())
-            {
-                LOGE("start thread fail");
-                return -1;
-            }
+            return -1;
         }
+        // mediator->
         if (ret < 0)
         {
             LOGE("Could not allocate raw video buffer");
             return -1;
         }
-        m_VideoDtsBuffSize = ret;
     }
     
     if (open_codec_context(&m_AudioStreamIndex, m_FormatContext.get(), AVMEDIA_TYPE_AUDIO) >= 0)
     {
-        m_AudioOutput = std::make_unique<audiooutput>(this);
-        if(m_AudioOutput)
+        if(ConfigAudioOutput() == false)
         {
-            if(!m_AudioOutput->StartThread())
-            {
-                LOGE("start thread fail");
-                return -1;
-            }
+            LOGE("config audio output fail");
+            return -1;
         }
         m_AudioStream = m_FormatContext->streams[m_AudioStreamIndex];
     }
  
     /* dump input information to stderr */
-    av_dump_format(m_FormatContext.get(), 0, m_SourceFileName.c_str(), 0);
+    av_dump_format(m_FormatContext.get(), 0, SourceFileName.c_str(), 0);
  
     if (!m_AudioStream && !m_VideoStream)
     {
@@ -189,6 +174,41 @@ int player::run(int argc, char **argv)
     LOGI("Demuxing succeeded");
     while(true);
     return ret;
+}
+
+bool player::ConfigVideoOutput()
+{
+    /* allocate image where the decoded image will be put */
+    if(m_VideoOutput)
+    {
+        m_Width = m_VideoDecoder->GetWidth();
+        m_Height = m_VideoDecoder->GetHeight();
+        m_VideoOutput->Config(m_Width, m_Height);
+        if(!m_VideoOutput->StartThread())
+        {
+            LOGE("start thread fail");
+            return false;
+        }
+    }
+    else
+    {
+        LOGE("m_VideoOutput = nullptr");
+        return false;
+    }
+    return true;
+}
+
+bool player::ConfigAudioOutput()
+{
+    if(m_AudioOutput)
+    {
+        if(!m_AudioOutput->StartThread())
+        {
+            LOGE("start thread fail");
+            return false;
+        }
+    }
+    return true;
 }
 
 void player::loop_read_frame()
@@ -255,11 +275,21 @@ double player::GetAudioClock()
 
 AVRational player::GetTimeBaseAudio()
 {
+    if(m_AudioStream == nullptr)
+    {
+        LOGE("m_AudioStream = nullptr");
+        return {};
+    }
     return m_AudioStream->time_base;
 }
 
 AVRational player::GetTimeBaseVideo()
 {
+    if(m_VideoStream == nullptr)
+    {
+        LOGE("m_VideoStream = nullptr");
+        return {};
+    }
     return m_VideoStream->time_base;
 }
 

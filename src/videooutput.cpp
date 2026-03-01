@@ -3,12 +3,10 @@
 #include "log.h"
 #include "mediator.h"
 
-videooutput::videooutput(const int width,const int height, mediator* mediator)
-: m_ThreadCheckEvent(&videooutput::checkevent, this),
-  m_Mediator(mediator)
+videooutput::videooutput(mediator* mediator)
+            : m_ThreadCheckEvent(&videooutput::checkevent, this)
+            , m_Mediator(mediator)
 {
-    m_Width = width;
-    m_Height = height;
 }
 
 videooutput::~videooutput()
@@ -190,4 +188,10 @@ void videooutput::ThreadProcessFramePtr()
         // video - audio = ( -0.04 -> 0) show frame
         ConvertFramePtrToRawData(std::move(FramePtr));
     }
+}
+
+void videooutput::Config(const int Width, const int Height)
+{
+    m_Width = Width;
+    m_Height = Height;
 }

@@ -11,6 +11,8 @@ public:
     virtual int output_audio_frame() = 0;
     virtual const std::string err2str(int errnum) = 0;
     virtual std::atomic<PlayerState>& GetCurrentState() = 0;
+    virtual bool ConfigVideoOutput() = 0;
+    virtual bool ConfigAudioOutput() = 0;
 };
 
 #endif /* _MEDIATOR_ */

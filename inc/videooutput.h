@@ -15,11 +15,12 @@ class mediator;
 class videooutput : public output
 {
 public:
-    videooutput(const int width,const int height, mediator* mediator);
+    videooutput(mediator* mediator);
     ~videooutput();
     bool UpdateYUVTexture(const yuv& ndata);
     bool ConvertFramePtrToRawData(UniqueFramePtr frame);
     void ThreadProcessFramePtr() override;
+    void Config(const int Width, const int Height);
 
 private:
     void checkevent();

@@ -37,6 +37,8 @@ public:
     AVRational GetTimeBaseVideo() override;
     const std::string err2str(int errnum) override;
     std::atomic<PlayerState>& GetCurrentState() override;
+    bool ConfigVideoOutput() override;
+    bool ConfigAudioOutput() override;
 
 private:
     std::string ts2timestr(int64_t ts, AVRational tb);
