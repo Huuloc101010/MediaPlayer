@@ -11,7 +11,7 @@ public:
 
     virtual ~decoder();
     int init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par);
-    int decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame);
+    int decode_packet(UniquePacketPtr pkt);
     const std::string err2str(int errnum);
 protected:
     mediator*        m_mediator = nullptr;

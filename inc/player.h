@@ -8,6 +8,7 @@
 #include "mediator.h"
 #include "videodecoder.h"
 #include "audiodecoder.h"
+#include "demuxer.h"
 
 extern "C"
 {
@@ -39,29 +40,21 @@ public:
     std::atomic<PlayerState>& GetCurrentState() override;
     bool ConfigVideoOutput() override;
     bool ConfigAudioOutput() override;
+    bool InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) override;
+    bool InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) override;
 
 private:
     std::string ts2timestr(int64_t ts, AVRational tb);
-    int output_video_frame() override;
-    int output_audio_frame() override;
-    int open_codec_context(int *stream_idx, AVFormatContext *m_FormatContext, enum AVMediaType type);
+    int output_video_frame(UniqueFramePtr frame) override;
+    int output_audio_frame(UniqueFramePtr frame) override;
     bool config_audio_output();
-    void loop_read_frame();
-    int decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame, const bool IsFlushDecoder = false);
+    int decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder = false) override;
 
+    std::unique_ptr<demuxer>        m_Demuxer      = nullptr;
     std::unique_ptr<videooutput>    m_VideoOutput  = nullptr;
     std::unique_ptr<audiooutput>    m_AudioOutput  = nullptr;
     std::unique_ptr<videodecoder>   m_VideoDecoder = nullptr;
     std::unique_ptr<audiodecoder>   m_AudioDecoder = nullptr;
-   
-    UniqueFormatContext             m_FormatContext = nullptr;
-    AVStream*                       m_VideoStream = nullptr, *m_AudioStream = nullptr;
-    UniqueFramePtr                  m_Frame = nullptr;
-    int                             m_Width{}, m_Height{};
-    int                             m_VideoDtsBuffSize{};
-    int                             m_VideoStreamIndex = -1;
-    int                             m_AudioStreamIndex = -1;
-    std::string                     m_SourceFileName{};
     std::atomic<PlayerState>        m_PlayerState = PlayerState::IDLE;
 
 };

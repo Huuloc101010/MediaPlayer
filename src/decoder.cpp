@@ -48,10 +48,15 @@ int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
     return 0;
 }
 
-int decoder::decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame)
+int decoder::decode_packet(UniquePacketPtr pkt)
 {
     int ret = 0;
-
+    UniqueFramePtr frame(av_frame_alloc());
+    if(frame == nullptr)
+    {
+        LOGE("AVFrame pointer is null");
+        return -1;
+    }
     // submit the packet to the decoder
     ret = avcodec_send_packet(m_CodecContext, pkt.get());
     if (ret < 0)
@@ -85,14 +90,16 @@ int decoder::decode_packet(UniquePacketPtr pkt, UniqueFramePtr& frame)
         {
             if(m_mediator != nullptr)
             {
-                ret = m_mediator->output_video_frame();
+                ret = m_mediator->output_video_frame(std::move(frame));
+                frame.reset(av_frame_alloc());
             }
         }
         else if(m_CodecContext->codec->type == AVMEDIA_TYPE_AUDIO)
         {
             if(m_mediator != nullptr)
             {
-                ret = m_mediator->output_audio_frame();
+                ret = m_mediator->output_audio_frame(std::move(frame));
+                frame.reset(av_frame_alloc());
             }
         }
         else

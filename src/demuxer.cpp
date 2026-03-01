@@ -1,0 +1,181 @@
+#include "demuxer.h"
+#include "define.h"
+#include "mediator.h"
+
+demuxer::demuxer(mediator* mediator)
+{
+    m_Mediator = mediator;
+}
+
+int demuxer::Play(int argc, char **argv)
+{
+    int ret = 0;
+    if (argc != 2)
+    {
+        LOGE("In valid parameter: usage {} video.mp4", argv[0]);
+        exit(1);
+    }
+    std::string SourceFileName = argv[1];
+    /* open input file, and allocate format context */
+    AVFormatContext* FormatContext = nullptr;
+    if (avformat_open_input(&FormatContext, SourceFileName.c_str(), NULL, NULL) < 0)
+    {
+        LOGE("Could not open source file {}", SourceFileName);
+        exit(1);
+    }
+    m_FormatContext.reset(FormatContext);
+    /* retrieve stream information */
+    if (avformat_find_stream_info(m_FormatContext.get(), NULL) < 0)
+    {
+        LOGE("Could not find stream information");
+        exit(1);
+    }
+ 
+    if(open_codec_context(&m_VideoStreamIndex, m_FormatContext.get(), AVMEDIA_TYPE_VIDEO) >= 0)
+    {
+        m_VideoStream = m_FormatContext->streams[m_VideoStreamIndex];
+        
+        // Create windows
+        if(m_Mediator->ConfigVideoOutput() == false)
+        {
+            return -1;
+        }
+        // mediator->
+        if (ret < 0)
+        {
+            LOGE("Could not allocate raw video buffer");
+            return -1;
+        }
+    }
+    
+    if (open_codec_context(&m_AudioStreamIndex, m_FormatContext.get(), AVMEDIA_TYPE_AUDIO) >= 0)
+    {
+        if(m_Mediator->ConfigAudioOutput() == false)
+        {
+            LOGE("config audio output fail");
+            return -1;
+        }
+        m_AudioStream = m_FormatContext->streams[m_AudioStreamIndex];
+    }
+ 
+    /* dump input information to stderr */
+    av_dump_format(m_FormatContext.get(), 0, SourceFileName.c_str(), 0);
+ 
+    if (!m_AudioStream && !m_VideoStream)
+    {
+        LOGE("Could not find audio or video stream in the input, aborting");
+        return 1;
+    }
+ 
+    loop_read_frame();
+    LOGI("Demuxing succeeded");
+    while(true);
+    return ret;
+}
+
+void demuxer::loop_read_frame()
+{
+    // first allocate
+    UniquePacketPtr Packet(av_packet_alloc());
+    int ret = 0;
+    /* read frames from the file */
+    while (av_read_frame(m_FormatContext.get(), Packet.get()) >= 0)
+    {
+        // check if the packet belongs to a stream we are interested in, otherwise
+        // skip it
+        if(Packet == nullptr)
+        {
+            
+        }
+        ret = m_Mediator->decode_packet(std::move(Packet));
+        if(ret != 0)
+        {
+            LOGE("decode fail");
+            break;
+        }
+        // realocate
+        Packet.reset(av_packet_alloc());
+    }
+ 
+    /* flush the decoders */
+    if(m_Mediator->decode_packet(nullptr, true) != 0)
+    {
+        LOGE("Flush decoder fail");
+    }
+}
+
+
+
+int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type)
+{
+    int ret, stream_index;
+    AVStream *st;
+    //const AVCodec *dec = NULL;
+ 
+    ret = av_find_best_stream(fmt_ctx, type, -1, -1, NULL, 0);
+    if (ret < 0)
+    {
+        LOGE("Could not find {} stream in input file ", av_get_media_type_string(type)/*, SourceFileName*/);
+        return ret;
+    }
+    else
+    {
+        stream_index = ret;
+        st = fmt_ctx->streams[stream_index];
+        if(type == AVMEDIA_TYPE_VIDEO)
+        {
+            if(m_Mediator->InitVideoDecoder(st->codecpar->codec_id, st->codecpar) == 0)
+            {
+                LOGI("Init video decoder success");
+            }
+            else
+            {
+                LOGE("Init video decoder fail");
+            } 
+        }
+        if(type == AVMEDIA_TYPE_AUDIO)
+        {
+            if(m_Mediator->InitAudioDecoder(st->codecpar->codec_id, st->codecpar) == 0)
+            {
+                LOGI("Init audio decoder success");
+            }
+            else
+            {
+                LOGE("Init audio decoder fail");
+            }
+        }
+        *stream_idx = stream_index;
+    }
+ 
+    return 0;
+}
+
+AVRational demuxer::GetTimeBaseVideo()
+{
+    if(m_VideoStream == nullptr)
+    {
+        LOGE("m_VideoStream = nullptr");
+        return {};
+    }
+    return m_VideoStream->time_base;
+}
+
+AVRational demuxer::GetTimeBaseAudio()
+{
+    if(m_AudioStream == nullptr)
+    {
+        LOGE("m_AudioStream = nullptr");
+        return {};
+    }
+    return m_AudioStream->time_base;
+}
+
+const int demuxer::GetVideoStreamIndex()
+{
+    return m_VideoStreamIndex;
+}
+
+const int demuxer::GetAudioStreamIndex()
+{
+    return m_AudioStreamIndex;
+}
