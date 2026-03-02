@@ -5,6 +5,15 @@
 int main(int argc, char** argv)
 {
     player lplayer;
-    lplayer.run(argc, argv);
+    try
+    {
+        lplayer.run(argc, argv);
+    }
+    catch(const std::exception& e)
+    {
+        LOGE("{}", e.what());
+        return -1;
+    }
+    
     return 0;
 }

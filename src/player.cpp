@@ -63,7 +63,7 @@ int player::run(int argc, char **argv)
     int Ret = -1;
     if(m_Demuxer != nullptr)
     {
-        Ret = m_Demuxer->Play(argc, argv);
+        Ret = m_Demuxer->Play(argv[1]);
     }
     
     LOGI("Demuxing succeeded");

@@ -10,7 +10,7 @@ class demuxer
 public:
     demuxer(mediator* mediator);
     ~demuxer() = default;
-    int Play(int argc, char **argv);
+    int Play(const std::string& Mediafile);
     void loop_read_frame();
     int open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type);
     AVRational GetTimeBaseVideo();

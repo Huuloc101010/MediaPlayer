@@ -7,20 +7,14 @@ demuxer::demuxer(mediator* mediator)
     m_Mediator = mediator;
 }
 
-int demuxer::Play(int argc, char **argv)
+int demuxer::Play(const std::string& Mediafile)
 {
     int ret = 0;
-    if (argc != 2)
-    {
-        LOGE("In valid parameter: usage {} video.mp4", argv[0]);
-        exit(1);
-    }
-    std::string SourceFileName = argv[1];
     /* open input file, and allocate format context */
     AVFormatContext* FormatContext = nullptr;
-    if (avformat_open_input(&FormatContext, SourceFileName.c_str(), NULL, NULL) < 0)
+    if (avformat_open_input(&FormatContext, Mediafile.c_str(), NULL, NULL) < 0)
     {
-        LOGE("Could not open source file {}", SourceFileName);
+        LOGE("Could not open source file {}", Mediafile);
         exit(1);
     }
     m_FormatContext.reset(FormatContext);
@@ -59,7 +53,7 @@ int demuxer::Play(int argc, char **argv)
     }
  
     /* dump input information to stderr */
-    av_dump_format(m_FormatContext.get(), 0, SourceFileName.c_str(), 0);
+    av_dump_format(m_FormatContext.get(), 0, Mediafile.c_str(), 0);
  
     if (!m_AudioStream && !m_VideoStream)
     {
