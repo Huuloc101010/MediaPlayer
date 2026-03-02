@@ -4,7 +4,6 @@
 #include <mutex>
 #include <thread>
 #include <shared_mutex>
-#include <SDL2/SDL.h>
 #include <iostream>
 #include <memory>
 #include "define.h"
@@ -20,17 +19,9 @@ public:
     bool UpdateYUVTexture(const yuv& ndata);
     bool ConvertFramePtrToRawData(UniqueFramePtr frame);
     void ThreadProcessFramePtr() override;
-    void Config(const int Width, const int Height);
 
 private:
-    bool init();
-    void destroy();
     mediator*            m_Mediator{};
-    int                  m_Width = 0;
-    int                  m_Height = 0;
-    SDL_Window*          m_Window = nullptr;
-    SDL_Renderer*        m_Renderer = nullptr;
-    SDL_Texture*         m_Texture = nullptr;
 };
 
 #endif /*_VIDEO_OUTPUT_*/

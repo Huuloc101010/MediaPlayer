@@ -10,6 +10,7 @@
 #include "audiodecoder.h"
 #include "demuxer.h"
 #include "controller.h"
+#include "view.h"
 
 extern "C"
 {
@@ -43,6 +44,8 @@ public:
     bool ConfigAudioOutput() override;
     bool InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) override;
     bool InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) override;
+    bool InitView() override;
+    bool UpdateYUVTexture(const yuv& ndata) override;
 
 private:
     std::string ts2timestr(int64_t ts, AVRational tb);
@@ -57,6 +60,7 @@ private:
     std::unique_ptr<videodecoder>   m_VideoDecoder = nullptr;
     std::unique_ptr<audiodecoder>   m_AudioDecoder = nullptr;
     std::unique_ptr<controller>     m_Controller   = nullptr;
+    std::unique_ptr<view>           m_View         = nullptr;
     std::atomic<PlayerState>        m_PlayerState = PlayerState::IDLE;
 
 };

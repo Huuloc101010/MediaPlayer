@@ -20,6 +20,30 @@ std::string player::ts2timestr(int64_t ts, AVRational tb)
     return buf;
 }
 
+bool player::InitView()
+{
+    bool RetVal = false;
+    if(m_View)
+    {
+        RetVal = m_View->init();
+    }
+    if(RetVal == false)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool player::UpdateYUVTexture(const yuv& ndata)
+{
+    bool RetVal = false;
+    if(m_View)
+    {
+        RetVal = m_View->UpdateYUVTexture(ndata);
+    }
+    return RetVal;
+}
+
 int player::output_video_frame(UniqueFramePtr frame)
 {
     if(frame == nullptr)
@@ -61,6 +85,7 @@ int player::run(int argc, char **argv)
     m_VideoOutput  = std::make_unique<videooutput>(this);
     m_AudioOutput  = std::make_unique<audiooutput>(this);
     m_Controller   = std::make_unique<controller>(this);
+    m_View         = std::make_unique<view>();
     int Ret = -1;
     if(m_Demuxer != nullptr)
     {
@@ -78,7 +103,7 @@ bool player::ConfigVideoOutput()
     {
         int m_Width = m_VideoDecoder->GetWidth();
         int m_Height = m_VideoDecoder->GetHeight();
-        m_VideoOutput->Config(m_Width, m_Height);
+        m_View->Config(m_Width, m_Height);
         if(!m_VideoOutput->StartThread())
         {
             LOGE("start thread fail");

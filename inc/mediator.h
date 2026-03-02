@@ -16,6 +16,8 @@ public:
     virtual int decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder = false) = 0;
     virtual bool InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) = 0;
     virtual bool InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) = 0;
+    virtual bool InitView() = 0;
+    virtual bool UpdateYUVTexture(const yuv& ndata) = 0;
 };
 
 #endif /* _MEDIATOR_ */
