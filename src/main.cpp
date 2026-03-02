@@ -4,10 +4,10 @@
 #include "videooutput.h"
 int main(int argc, char** argv)
 {
-    player lplayer;
+    player Player;
     try
     {
-        lplayer.run(argc, argv);
+        Player.Start(argv[1]);
     }
     catch(const std::exception& e)
     {

@@ -34,7 +34,7 @@ public:
     player() = default;
     ~player() = default;
  
-    int run(int argc, char **argv);
+    int Start(const std::string& Mediafile);
     double GetAudioClock() override;
     AVRational GetTimeBaseAudio() override;
     AVRational GetTimeBaseVideo() override;

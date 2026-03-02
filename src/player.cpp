@@ -77,7 +77,7 @@ int player::output_audio_frame(UniqueFramePtr frame)
     return 0;
 }
 
-int player::run(int argc, char **argv)
+int player::Start(const std::string& Mediafile)
 {
     m_Demuxer      = std::make_unique<demuxer>(this);
     m_VideoDecoder = std::make_unique<videodecoder>(this);
@@ -89,7 +89,7 @@ int player::run(int argc, char **argv)
     int Ret = -1;
     if(m_Demuxer != nullptr)
     {
-        Ret = m_Demuxer->Play(argv[1]);
+        Ret = m_Demuxer->Play(Mediafile);
     }
     
     LOGI("Demuxing succeeded");
