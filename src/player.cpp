@@ -133,6 +133,16 @@ bool player::ConfigAudioOutput()
 
 int player::decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder)
 {
+    if((pkt == nullptr) && (IsFlushDecoder == false))
+    {
+        LOGE("packet is nullptr");
+        return -1;
+    }
+    if(m_Demuxer == nullptr)
+    {
+        LOGE("m_Demuxer is nullptr");
+        return -1;
+    }
     if(IsFlushDecoder)
     {
         /* flush the decoders */
@@ -189,7 +199,7 @@ std::atomic<PlayerState>& player::GetCurrentState()
 
 bool player::InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 {
-    if(m_VideoDecoder->init_decoder(codecID, codec_par) != 0)
+    if(m_VideoDecoder && (m_VideoDecoder->init_decoder(codecID, codec_par) != 0))
     {
         LOGE("Init Video Decoder fail");
         return false;
@@ -199,7 +209,7 @@ bool player::InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_
 
 bool player::InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 {
-    if(m_AudioDecoder->init_decoder(codecID, codec_par) != 0)
+    if(m_AudioDecoder && (m_AudioDecoder->init_decoder(codecID, codec_par) != 0))
     {
         LOGE("Init Audio Decoder fail");
         return false;

@@ -43,12 +43,14 @@ bool videooutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
 
 void videooutput::ThreadProcessFramePtr()
 {
-    if(m_Mediator)
+    if(m_Mediator == nullptr)
     {
-        if(m_Mediator->InitView() == false)
-        {
-            return;
-        }
+        LOGE("m_Mediator is null");
+        return;
+    }
+    if(m_Mediator->InitView() == false)
+    {
+        return;
     }
 
     while(!m_Exiting)

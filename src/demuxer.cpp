@@ -15,14 +15,19 @@ int demuxer::Play(const std::string& Mediafile)
     if (avformat_open_input(&FormatContext, Mediafile.c_str(), NULL, NULL) < 0)
     {
         LOGE("Could not open source file {}", Mediafile);
-        exit(1);
+        return -1;
     }
     m_FormatContext.reset(FormatContext);
+    if((m_FormatContext == nullptr) || (m_Mediator == nullptr))
+    {
+        LOGE("m_FormatContext or m_Mediator is nullptr");
+        return -1;
+    }
     /* retrieve stream information */
     if (avformat_find_stream_info(m_FormatContext.get(), NULL) < 0)
     {
         LOGE("Could not find stream information");
-        exit(1);
+        return -1;
     }
  
     if(open_codec_context(&m_VideoStreamIndex, m_FormatContext.get(), AVMEDIA_TYPE_VIDEO) >= 0)
@@ -32,12 +37,6 @@ int demuxer::Play(const std::string& Mediafile)
         // Create windows
         if(m_Mediator->ConfigVideoOutput() == false)
         {
-            return -1;
-        }
-        // mediator->
-        if (ret < 0)
-        {
-            LOGE("Could not allocate raw video buffer");
             return -1;
         }
     }
@@ -77,9 +76,9 @@ void demuxer::loop_read_frame()
     {
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it
-        if(Packet == nullptr)
+        if((Packet == nullptr) || (m_Mediator == nullptr))
         {
-            
+            LOGE("Packet or m_Mediator is null");
         }
         ret = m_Mediator->decode_packet(std::move(Packet));
         if(ret != 0)
@@ -102,6 +101,11 @@ void demuxer::loop_read_frame()
 
 int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type)
 {
+    if((stream_idx == nullptr) || (fmt_ctx == nullptr))
+    {
+        LOGE("stream_idx or fmt_ctx is nullptr");
+        return -1;
+    }
     int ret, stream_index;
     AVStream *st;
     //const AVCodec *dec = NULL;

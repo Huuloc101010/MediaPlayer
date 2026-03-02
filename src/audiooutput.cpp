@@ -79,6 +79,10 @@ void audiooutput::push(const uint8_t* data, size_t size)
 
 void audiooutput::sdl_callback(void* userdata, Uint8* stream, int len)
 {
+    if((userdata == nullptr) || (stream == nullptr))
+    {
+        return;
+    }
     static_cast<audiooutput*>(userdata)->callback(stream, len);
 }
 
@@ -182,9 +186,9 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
     }
 }
 
-bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
+bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
 {
-    if(m_frame == nullptr)
+    if(Frame == nullptr)
     {
         return false;
     }
@@ -192,13 +196,13 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
     {
         return false;
     }
-    double first_pts = m_frame->best_effort_timestamp * av_q2d(m_Mediator->GetTimeBaseAudio());
+    double first_pts = Frame->best_effort_timestamp * av_q2d(m_Mediator->GetTimeBaseAudio());
     uint64_t ch_layout =
-    m_frame->channel_layout ?
-    m_frame->channel_layout :
-    av_get_default_channel_layout(m_frame->channels);
+    Frame->channel_layout ?
+    Frame->channel_layout :
+    av_get_default_channel_layout(Frame->channels);
    
-    if(!config(m_frame->sample_rate,m_frame->channels ,AUDIO_S16SYS, first_pts))
+    if(!config(Frame->sample_rate,Frame->channels ,AUDIO_S16SYS, first_pts))
     {
         std::cerr << "config audio error" << std::endl;
         return false;
@@ -210,10 +214,10 @@ bool audiooutput::config_audio_output(UniqueFramePtr& m_frame)
     nullptr,
     ch_layout,
     AV_SAMPLE_FMT_S16,
-    m_frame->sample_rate,
-    m_frame->channel_layout,
-    (AVSampleFormat)m_frame->format,
-    m_frame->sample_rate,
+    Frame->sample_rate,
+    Frame->channel_layout,
+    (AVSampleFormat)Frame->format,
+    Frame->sample_rate,
 
     0, nullptr);
     if(!m_SwrContext || swr_init(m_SwrContext))

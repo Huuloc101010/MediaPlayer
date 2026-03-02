@@ -50,6 +50,11 @@ int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 
 int decoder::decode_packet(UniquePacketPtr pkt)
 {
+    if((m_CodecContext == nullptr) || (m_mediator == nullptr))
+    {
+        LOGE("m_CodecContext or m_mediator is nullptr");
+        return -1;
+    }
     int ret = 0;
     UniqueFramePtr frame(av_frame_alloc());
     if(frame == nullptr)
