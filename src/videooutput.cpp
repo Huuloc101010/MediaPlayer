@@ -3,19 +3,13 @@
 #include "log.h"
 #include "mediator.h"
 
-videooutput::videooutput(mediator* mediator)
-            : m_ThreadCheckEvent(&videooutput::checkevent, this)
-            , m_Mediator(mediator)
+videooutput::videooutput(mediator* mediator) : m_Mediator(mediator)
 {
 }
 
 videooutput::~videooutput()
 {
     m_Exiting = true;
-    if(m_ThreadCheckEvent.joinable())
-    {
-        m_ThreadCheckEvent.join();
-    }
     destroy();
 }
 
@@ -99,25 +93,6 @@ void videooutput::destroy()
     }
     SDL_Quit();
 }
-
-void videooutput::checkevent()
-{
-    while(!m_Exiting)
-    {
-        while(SDL_PollEvent(&m_Event))
-        {
-            if(m_Event.type == SDL_QUIT)
-            {
-                LOGI("Event SDL_QUIT");
-                LOGW("Exitting");
-                exit(0);
-            }
-        }
-        // decrease cpu workload
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-
 
 bool videooutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
 {

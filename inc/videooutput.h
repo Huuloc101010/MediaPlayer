@@ -23,17 +23,14 @@ public:
     void Config(const int Width, const int Height);
 
 private:
-    void checkevent();
     bool init();
     void destroy();
     mediator*            m_Mediator{};
-    std::jthread         m_ThreadCheckEvent;
     int                  m_Width = 0;
     int                  m_Height = 0;
     SDL_Window*          m_Window = nullptr;
     SDL_Renderer*        m_Renderer = nullptr;
     SDL_Texture*         m_Texture = nullptr;
-    SDL_Event            m_Event;
 };
 
 #endif /*_VIDEO_OUTPUT_*/

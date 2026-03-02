@@ -9,6 +9,7 @@
 #include "videodecoder.h"
 #include "audiodecoder.h"
 #include "demuxer.h"
+#include "controller.h"
 
 extern "C"
 {
@@ -55,6 +56,7 @@ private:
     std::unique_ptr<audiooutput>    m_AudioOutput  = nullptr;
     std::unique_ptr<videodecoder>   m_VideoDecoder = nullptr;
     std::unique_ptr<audiodecoder>   m_AudioDecoder = nullptr;
+    std::unique_ptr<controller>     m_Controller   = nullptr;
     std::atomic<PlayerState>        m_PlayerState = PlayerState::IDLE;
 
 };

@@ -60,6 +60,7 @@ int player::run(int argc, char **argv)
     m_AudioDecoder = std::make_unique<audiodecoder>(this);
     m_VideoOutput  = std::make_unique<videooutput>(this);
     m_AudioOutput  = std::make_unique<audiooutput>(this);
+    m_Controller   = std::make_unique<controller>(this);
     int Ret = -1;
     if(m_Demuxer != nullptr)
     {
