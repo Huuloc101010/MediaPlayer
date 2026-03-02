@@ -5,6 +5,7 @@
 #include <mutex>
 #include <deque>
 #include <memory>
+#include <SDL2/SDL.h>
 #include "log.h"
 extern "C"
 {
@@ -21,8 +22,20 @@ extern "C"
 
 #define NAME_WINDOW "Video Media Player"
 
+template<typename T, void(*FreeFunction)(T*)>
+struct UniquePtrDeleterLevel1
+{
+    void operator()(T* resource) const
+    {
+        if(resource)
+        {
+            FreeFunction(resource);
+        }
+    }
+};
+
 template<typename T, void(*FreeFunction)(T**)>
-struct UniquePtrDeleter
+struct UniquePtrDeleterLevel2
 {
     void operator()(T* resource) const
     {
@@ -32,9 +45,17 @@ struct UniquePtrDeleter
         }
     }
 };
-using UniqueFramePtr      = std::unique_ptr<AVFrame, UniquePtrDeleter<AVFrame, av_frame_free>>;
-using UniquePacketPtr     = std::unique_ptr<AVPacket, UniquePtrDeleter<AVPacket, av_packet_free>>;
-using UniqueFormatContext = std::unique_ptr<AVFormatContext, UniquePtrDeleter<AVFormatContext, avformat_close_input>>;
+
+// SDL2 resource
+using UniqueWindowPtr     = std::unique_ptr<SDL_Window, UniquePtrDeleterLevel1<SDL_Window, SDL_DestroyWindow>>;
+using UniqueRenderPtr     = std::unique_ptr<SDL_Renderer, UniquePtrDeleterLevel1<SDL_Renderer, SDL_DestroyRenderer>>;
+using UniqueTexturePtr    = std::unique_ptr<SDL_Texture, UniquePtrDeleterLevel1<SDL_Texture, SDL_DestroyTexture>>;
+
+
+// ffmpeg resource
+using UniqueFramePtr      = std::unique_ptr<AVFrame, UniquePtrDeleterLevel2<AVFrame, av_frame_free>>;
+using UniquePacketPtr     = std::unique_ptr<AVPacket, UniquePtrDeleterLevel2<AVPacket, av_packet_free>>;
+using UniqueFormatContext = std::unique_ptr<AVFormatContext, UniquePtrDeleterLevel2<AVFormatContext, avformat_close_input>>;
 
 
 struct yuv

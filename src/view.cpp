@@ -7,7 +7,7 @@ view::view()
 
 view::~view()
 {
-    destroy();
+    SDL_Quit();
 }
 
 bool view::init()
@@ -18,15 +18,15 @@ bool view::init()
         return false;
     }
 
-    m_Window = SDL_CreateWindow(NAME_WINDOW,
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_SHOWN);
+    m_Window.reset(SDL_CreateWindow(NAME_WINDOW,
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_SHOWN));
     if(m_Window == nullptr)
     {
         LOGE("Create window SDL fail: {}", SDL_GetError());
         return false;
     }
     LOGI("Create windows success");
-    m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED);
+    m_Renderer.reset(SDL_CreateRenderer(m_Window.get(), -1, SDL_RENDERER_ACCELERATED));
     if(m_Renderer == nullptr)
     {
         std::cerr << "Create renderer SDL fail: " << SDL_GetError() << std::endl;
@@ -34,8 +34,8 @@ bool view::init()
         return false;
     }
     LOGI("create render success");
-    m_Texture = SDL_CreateTexture(m_Renderer, 
-        SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, m_Width, m_Height);
+    m_Texture.reset(SDL_CreateTexture(m_Renderer.get(), 
+        SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, m_Width, m_Height));
     if (m_Texture == nullptr)
     {
         LOGE("Create texture SDL fail: {}", SDL_GetError());
@@ -54,7 +54,7 @@ void view::Config(const int Width, const int Height)
 bool view::UpdateYUVTexture(const yuv& ndata)
 {
     // Push data to GPU
-    if(SDL_UpdateYUVTexture(m_Texture, NULL, 
+    if(SDL_UpdateYUVTexture(m_Texture.get(), NULL, 
         ndata.plane_y, ndata.linesize_y,           
         ndata.plane_u, ndata.linesize_u,       
         ndata.plane_v, ndata.linesize_v) < 0)
@@ -63,37 +63,16 @@ bool view::UpdateYUVTexture(const yuv& ndata)
         return false;
     }     
 
-    if(SDL_RenderClear(m_Renderer) < 0)
+    if(SDL_RenderClear(m_Renderer.get()) < 0)
     {
         LOGE("render clear fail");
         return false;
     }
-    if(SDL_RenderCopy(m_Renderer, m_Texture, NULL, NULL) < 0)
+    if(SDL_RenderCopy(m_Renderer.get(), m_Texture.get(), NULL, NULL) < 0)
     {
         LOGE("Render copy fail");
         return false;
     }
-    SDL_RenderPresent(m_Renderer);
+    SDL_RenderPresent(m_Renderer.get());
     return true;
-}
-
-
-void view::destroy()
-{
-    if (m_Texture)
-    {
-        SDL_DestroyTexture(m_Texture);
-        m_Texture = nullptr;
-    }
-    if (m_Renderer)
-    {
-        SDL_DestroyRenderer(m_Renderer);
-        m_Renderer = nullptr;
-    }
-    if (m_Window)
-    {
-        SDL_DestroyWindow(m_Window);
-        m_Window = nullptr;
-    }
-    SDL_Quit();
 }
