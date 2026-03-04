@@ -45,7 +45,30 @@ int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
         LOGE("Failed to open {} codec", av_get_media_type_string(codec_par->codec_type));
         return ret;
     }
+    m_ThreadDecode = std::jthread(&decoder::ThreadDecode, this);
     return 0;
+}
+
+void decoder::ThreadDecode()
+{
+    UniquePacketPtr Packet = nullptr;
+    while(true)
+    {
+        auto PacketOpt = m_QueueSafe.pop();
+        if(PacketOpt == std::nullopt)
+        {
+            LOGW("Null opt");
+            continue;
+        }
+        Packet = std::move(PacketOpt.value());
+        decode_packet(std::move(Packet));
+    }
+
+}
+
+void decoder::PushPacket(UniquePacketPtr Packet)
+{
+    m_QueueSafe.push(std::move(Packet));
 }
 
 int decoder::decode_packet(UniquePacketPtr pkt)

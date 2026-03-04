@@ -150,20 +150,19 @@ int player::decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder)
     if(IsFlushDecoder)
     {
         /* flush the decoders */
-        if(m_VideoDecoder) m_VideoDecoder->decode_packet(nullptr);
-        if(m_AudioDecoder) m_AudioDecoder->decode_packet(nullptr);
+        if(m_VideoDecoder) m_VideoDecoder->PushPacket(nullptr);
+        if(m_AudioDecoder) m_AudioDecoder->PushPacket(nullptr);
         return 0;
     }
-    int ret = -1;
     if((pkt->stream_index == m_Demuxer->GetVideoStreamIndex()) && (m_VideoDecoder))
     {
-        ret = m_VideoDecoder->decode_packet(std::move(pkt));
+        m_VideoDecoder->PushPacket(std::move(pkt));
     }
     else if((pkt->stream_index == m_Demuxer->GetAudioStreamIndex()) && (m_AudioDecoder))
     {
-        ret = m_AudioDecoder->decode_packet(std::move(pkt));
+        m_AudioDecoder->PushPacket(std::move(pkt));
     }
-    return ret;
+    return 0;
 }
 
 double player::GetAudioClock()

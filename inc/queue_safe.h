@@ -4,6 +4,7 @@
 #include <optional>
 #include <deque>
 #include <condition_variable>
+#include "log.h"
 
 template<typename T>
 class queue_safe

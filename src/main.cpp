@@ -5,9 +5,9 @@
 int main(int argc, char** argv)
 {
     player Player;
-    Player.Config(argv[1]);
     try
     {
+        Player.Config(argv[1]);
         Player.Start();
     }
     catch(const std::exception& e)
