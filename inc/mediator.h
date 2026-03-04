@@ -18,6 +18,7 @@ public:
     virtual bool InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) = 0;
     virtual bool InitView() = 0;
     virtual bool UpdateYUVTexture(const yuv& ndata) = 0;
+    virtual void PushEvent(PlayerEvent Event) = 0;
 };
 
 #endif /* _MEDIATOR_ */

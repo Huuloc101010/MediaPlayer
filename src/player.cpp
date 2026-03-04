@@ -5,6 +5,196 @@
 #include "audiooutput.h"
 #include "log.h"
 
+player::player() : m_TheadProcessEvent(&player::TheadProcessEvent, this)
+{
+    m_MapProcessing =
+    {
+        {PlayerEvent::QUIT,  [this](){EventQuit();}},
+        {PlayerEvent::STOP,  [this](){EventStop();}},
+        {PlayerEvent::NEXT,  [this](){EventNext();}},
+        {PlayerEvent::PAUSE, [this](){EventPause();}},
+        {PlayerEvent::PLAY,  [this](){EventPlay();}},
+    };
+}
+
+void player::EventQuit()
+{
+    LOGW("Received event quit");
+    exit(0);
+}
+
+void player::EventStop()
+{
+    switch(m_PlayerState.load())
+    {
+        case PlayerState::IDLE:
+        {
+
+            break;
+        }
+
+        case PlayerState::STOPPED:
+        {
+
+            break;
+        }
+
+        case PlayerState::PLAYING:
+        {
+
+            break;
+        }
+
+        case PlayerState::PAUSED:
+        {
+
+            break;
+        }
+
+        case PlayerState::EXITING:
+        {
+
+            break;
+        }
+    }
+    LOGW("Received event stop");
+}
+
+void player::EventNext()
+{
+    switch(m_PlayerState.load())
+    {
+        case PlayerState::IDLE:
+        {
+
+            break;
+        }
+
+        case PlayerState::STOPPED:
+        {
+
+            break;
+        }
+
+        case PlayerState::PLAYING:
+        {
+
+            break;
+        }
+
+        case PlayerState::PAUSED:
+        {
+
+            break;
+        }
+
+        case PlayerState::EXITING:
+        {
+
+            break;
+        }
+    }
+    LOGW("Received event next");
+}
+
+void player::EventPause()
+{
+    switch(m_PlayerState.load())
+    {
+        case PlayerState::IDLE:
+        {
+
+            break;
+        }
+
+        case PlayerState::STOPPED:
+        {
+
+            break;
+        }
+
+        case PlayerState::PLAYING:
+        {
+
+            break;
+        }
+
+        case PlayerState::PAUSED:
+        {
+
+            break;
+        }
+
+        case PlayerState::EXITING:
+        {
+
+            break;
+        }
+    }
+    LOGW("Received event pause");
+}
+
+void player::EventPlay()
+{
+    switch(m_PlayerState.load())
+    {
+        case PlayerState::IDLE:
+        {
+
+            break;
+        }
+
+        case PlayerState::STOPPED:
+        {
+
+            break;
+        }
+
+        case PlayerState::PLAYING:
+        {
+
+            break;
+        }
+
+        case PlayerState::PAUSED:
+        {
+
+            break;
+        }
+
+        case PlayerState::EXITING:
+        {
+
+            break;
+        }
+    }
+    LOGW("Received event play");
+}
+
+void player::PushEvent(PlayerEvent Event)
+{
+    m_PlayerEvent.push(Event);
+}
+
+void player::TheadProcessEvent()
+{
+    while(true)
+    {
+        auto EventOpt = m_PlayerEvent.pop();
+        if(EventOpt == std::nullopt)
+        {
+            LOGW("Event null Opt");
+            continue;
+        }
+        PlayerEvent Event = EventOpt.value();
+        LOGI("Received event {}", static_cast<int>(Event));
+        if(m_MapProcessing.at(Event))
+        {
+            m_MapProcessing.at(Event)();
+        }
+    }
+}
+
 void player::Config(const std::string& MediaFile)
 {
     m_CurrentMedia = MediaFile;

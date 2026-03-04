@@ -2,6 +2,7 @@
 #define _DECODER_
 
 #include <thread>
+#include <functional>
 #include "define.h"
 #include "mediator.h"
 #include "queue_safe.h"

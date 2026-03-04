@@ -90,6 +90,16 @@ enum class PlayerState : uint8_t
     STOPPED,
     PLAYING,
     PAUSED,
+    EXITING,
 };
 
+enum class PlayerEvent : uint8_t
+{
+    QUIT,
+    //START,
+    STOP,
+    NEXT,
+    PAUSE,
+    PLAY,
+};
 #endif /*_DEFINE_*/

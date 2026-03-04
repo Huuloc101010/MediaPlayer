@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <map>
 #include "define.h"
 #include "mediator.h"
 #include "videodecoder.h"
@@ -31,11 +32,12 @@ class audiooutput;
 class player : public mediator
 {
 public:
-    player() = default;
+    player();
     ~player() = default;
 
     void Config(const std::string& MediaFile);
     int Start();
+    void PushEvent(PlayerEvent Event) override;
 
 private:
     double GetAudioClock() override;
@@ -54,6 +56,13 @@ private:
     int output_audio_frame(UniqueFramePtr frame) override;
     bool config_audio_output();
     int decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder = false) override;
+    void TheadProcessEvent();
+
+    void EventQuit();
+    void EventStop();
+    void EventNext();
+    void EventPause();
+    void EventPlay();
 
     std::unique_ptr<demuxer>        m_Demuxer      = nullptr;
     std::unique_ptr<videooutput>    m_VideoOutput  = nullptr;
@@ -63,7 +72,11 @@ private:
     std::unique_ptr<controller>     m_Controller   = nullptr;
     std::unique_ptr<view>           m_View         = nullptr;
     std::atomic<PlayerState>        m_PlayerState  = PlayerState::IDLE;
-    std::string                     m_CurrentMedia = {}; 
+    queue_safe<PlayerEvent>         m_PlayerEvent  = {};
+    std::string                     m_CurrentMedia = {};
+    std::thread                     m_TheadProcessEvent;
+
+    std::map<PlayerEvent, std::function<void()>>     m_MapProcessing = {};
 
 };
 
