@@ -2,6 +2,7 @@
 
 videodecoder::videodecoder(mediator* mediator) : decoder(mediator)
 {
+    SetLimitQueueDecoder(LIMIT_QUEUE_VIDEO_PACKET);
 }
 
 const int videodecoder::GetWidth()

@@ -18,6 +18,11 @@ void output::push_queue(UniqueFramePtr FramePtr)
     m_QueueSafe.push(std::move(FramePtr));
 }
 
+void output::SetLimitQueueOutput(const int LimitValue)
+{
+    m_QueueSafe.SetLimitQueue(LimitValue);
+}
+
 void output::start()
 {
     LOGW("Not Implement");

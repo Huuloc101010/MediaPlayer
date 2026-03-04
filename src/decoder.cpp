@@ -71,6 +71,11 @@ void decoder::PushPacket(UniquePacketPtr Packet)
     m_QueueSafe.push(std::move(Packet));
 }
 
+void decoder::SetLimitQueueDecoder(const int LimitValue)
+{
+    m_QueueSafe.SetLimitQueue(LimitValue);
+}
+
 int decoder::decode_packet(UniquePacketPtr pkt)
 {
     if((m_CodecContext == nullptr) || (m_mediator == nullptr))

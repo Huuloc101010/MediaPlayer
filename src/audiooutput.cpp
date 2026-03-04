@@ -6,6 +6,7 @@
 audiooutput::audiooutput(mediator* mediator)
                         : m_Mediator(mediator)
 {
+    SetLimitQueueOutput(LIMIT_QUEUE_AUDIO_FRAME);
     if(SDL_Init(SDL_INIT_AUDIO) < 0)
     {
         SDL_Log("SDL_Init failed: %s", SDL_GetError());

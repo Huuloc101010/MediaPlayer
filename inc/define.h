@@ -21,6 +21,10 @@ extern "C"
 }
 
 #define NAME_WINDOW "Video Media Player"
+#define LIMIT_QUEUE_VIDEO_PACKET 50
+#define LIMIT_QUEUE_AUDIO_PACKET 100
+#define LIMIT_QUEUE_VIDEO_FRAME  7
+#define LIMIT_QUEUE_AUDIO_FRAME  20
 
 template<typename T, void(*FreeFunction)(T*)>
 struct UniquePtrDeleterLevel1

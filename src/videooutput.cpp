@@ -5,6 +5,7 @@
 
 videooutput::videooutput(mediator* mediator) : m_Mediator(mediator)
 {
+    SetLimitQueueOutput(LIMIT_QUEUE_VIDEO_FRAME);
 }
 
 videooutput::~videooutput()

@@ -2,6 +2,7 @@
 
 audiodecoder::audiodecoder(mediator* mediator) : decoder(mediator)
 {
+    SetLimitQueueDecoder(LIMIT_QUEUE_AUDIO_PACKET);
 }
 
 AVSampleFormat audiodecoder::GetSampleFormat()

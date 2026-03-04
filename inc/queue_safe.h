@@ -17,7 +17,9 @@ public:
     void push(T data)
     {
         std::unique_lock<std::mutex> lock(m_mutex);
-         m_condition_variable.wait(lock, [this]
+        // Log for debug only
+        //LOGE("Current Queue size [{}]", m_queue.size());
+        m_condition_variable.wait(lock, [this]
         {
             return  m_Exiting
                  || m_LimitValue == 0
