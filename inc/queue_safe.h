@@ -17,6 +17,16 @@ public:
     void push(T data)
     {
         std::unique_lock<std::mutex> lock(m_mutex);
+         m_condition_variable.wait(lock, [this]
+        {
+            return  m_Exiting
+                 || m_LimitValue == 0
+                 || m_queue.size() < m_LimitValue;
+        });
+        if(m_Exiting)
+        {
+            return;
+        }
         m_queue.push_back(std::move(data));
         lock.unlock();
         m_condition_variable.notify_one();
@@ -35,7 +45,15 @@ public:
         }
         auto value = std::move(m_queue.front());
         m_queue.pop_front();
+        lock.unlock();
+        m_condition_variable.notify_one();
         return std::move(value);
+    }
+
+    void SetLimitQueue(const int LimitValue)
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_LimitValue = LimitValue;
     }
 
     void release()
@@ -49,11 +67,13 @@ public:
 
     void clear()
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::unique_lock<std::mutex> lock(m_mutex);
         m_queue.clear();
+        lock.unlock();
+        m_condition_variable.notify_all();
     }
 private:
-
+    int                     m_LimitValue{};
     std::mutex              m_mutex;
     std::deque<T>           m_queue;
     bool                    m_Exiting = false;
