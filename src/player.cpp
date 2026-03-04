@@ -5,6 +5,10 @@
 #include "audiooutput.h"
 #include "log.h"
 
+void player::Config(const std::string& MediaFile)
+{
+    m_CurrentMedia = MediaFile;
+}
 
 const std::string player::err2str(int errnum)
 {
@@ -77,7 +81,7 @@ int player::output_audio_frame(UniqueFramePtr frame)
     return 0;
 }
 
-int player::Start(const std::string& Mediafile)
+int player::Start()
 {
     m_Demuxer      = std::make_unique<demuxer>(this);
     m_VideoDecoder = std::make_unique<videodecoder>(this);
@@ -89,7 +93,7 @@ int player::Start(const std::string& Mediafile)
     int Ret = -1;
     if(m_Demuxer != nullptr)
     {
-        Ret = m_Demuxer->Play(Mediafile);
+        Ret = m_Demuxer->Play(m_CurrentMedia);
     }
     
     LOGI("Demuxing succeeded");

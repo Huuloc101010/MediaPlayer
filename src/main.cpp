@@ -5,13 +5,19 @@
 int main(int argc, char** argv)
 {
     player Player;
+    Player.Config(argv[1]);
     try
     {
-        Player.Start(argv[1]);
+        Player.Start();
     }
     catch(const std::exception& e)
     {
         LOGE("{}", e.what());
+        return -1;
+    }
+    catch(...)
+    {
+        LOGE("Exception has occurred");
         return -1;
     }
     

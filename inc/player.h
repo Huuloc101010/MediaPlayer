@@ -33,8 +33,11 @@ class player : public mediator
 public:
     player() = default;
     ~player() = default;
- 
-    int Start(const std::string& Mediafile);
+
+    void Config(const std::string& MediaFile);
+    int Start();
+
+private:
     double GetAudioClock() override;
     AVRational GetTimeBaseAudio() override;
     AVRational GetTimeBaseVideo() override;
@@ -46,8 +49,6 @@ public:
     bool InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) override;
     bool InitView() override;
     bool UpdateYUVTexture(const yuv& ndata) override;
-
-private:
     std::string ts2timestr(int64_t ts, AVRational tb);
     int output_video_frame(UniqueFramePtr frame) override;
     int output_audio_frame(UniqueFramePtr frame) override;
@@ -61,7 +62,8 @@ private:
     std::unique_ptr<audiodecoder>   m_AudioDecoder = nullptr;
     std::unique_ptr<controller>     m_Controller   = nullptr;
     std::unique_ptr<view>           m_View         = nullptr;
-    std::atomic<PlayerState>        m_PlayerState = PlayerState::IDLE;
+    std::atomic<PlayerState>        m_PlayerState  = PlayerState::IDLE;
+    std::string                     m_CurrentMedia = {}; 
 
 };
 
