@@ -8,7 +8,14 @@ controller::controller(mediator* mediator) : m_Mediator(mediator)
                                            , m_ThreadCheckEvent(&controller::checkevent, this)
 
 {
-
+    m_KeyCodeMap =
+    {
+        {SDLK_ESCAPE,PlayerEvent::QUIT},
+        {SDLK_UP,    PlayerEvent::STOP},
+        {SDLK_RIGHT, PlayerEvent::NEXT},
+        {SDLK_LEFT,  PlayerEvent::PAUSE},
+        {SDLK_DOWN,  PlayerEvent::PLAY}
+    };
 }
 
 void controller::checkevent()
@@ -28,19 +35,10 @@ void controller::checkevent()
 
                 case SDL_KEYDOWN:
                 {
-                    switch(Event.key.keysym.sym)
+                    if(m_KeyCodeMap.count(Event.key.keysym.sym))
                     {
-                        case SDLK_SPACE:
-                        {
-                            if(m_Mediator) m_Mediator->PushEvent(PlayerEvent::STOP);
-                            break;
-                        }
-
-                        case SDLK_RIGHT:
-                        {
-                            if(m_Mediator) m_Mediator->PushEvent(PlayerEvent::NEXT);
-                            break;
-                        }
+                        PlayerEvent PlayerEvent = m_KeyCodeMap[Event.key.keysym.sym];
+                        if(m_Mediator) m_Mediator->PushEvent(PlayerEvent);
                     }
                     break;
                 }
