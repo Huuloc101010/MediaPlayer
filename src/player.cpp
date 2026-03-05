@@ -29,13 +29,13 @@ void player::EventStop()
     {
         case PlayerState::IDLE:
         {
-
+            // Do not thing
             break;
         }
 
         case PlayerState::STOPPED:
         {
-
+            // Do not thing
             break;
         }
 
@@ -53,7 +53,7 @@ void player::EventStop()
 
         case PlayerState::EXITING:
         {
-
+            // Do not thing
             break;
         }
     }
@@ -283,7 +283,7 @@ int player::Start()
     int Ret = -1;
     if(m_Demuxer != nullptr)
     {
-        Ret = m_Demuxer->Play(m_CurrentMedia);
+        Ret = m_Demuxer->StartPlay(m_CurrentMedia);
     }
     
     LOGI("Demuxing succeeded");

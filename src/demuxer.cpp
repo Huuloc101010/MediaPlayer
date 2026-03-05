@@ -7,7 +7,7 @@ demuxer::demuxer(mediator* mediator)
     m_Mediator = mediator;
 }
 
-int demuxer::Play(const std::string& Mediafile)
+int demuxer::StartPlay(const std::string& Mediafile)
 {
     int ret = 0;
     /* open input file, and allocate format context */

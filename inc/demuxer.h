@@ -2,15 +2,16 @@
 #define _DEMUXER_
 
 #include "define.h"
+#include "controlfunction.h"
 
 class mediator;
 
-class demuxer
+class demuxer : controlfunction
 {
 public:
     demuxer(mediator* mediator);
     ~demuxer() = default;
-    int Play(const std::string& Mediafile);
+    int StartPlay(const std::string& Mediafile);
     void loop_read_frame();
     int open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type);
     AVRational GetTimeBaseVideo();
