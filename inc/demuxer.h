@@ -6,7 +6,7 @@
 
 class mediator;
 
-class demuxer : controlfunction
+class demuxer : public controlfunction
 {
 public:
     demuxer(mediator* mediator);

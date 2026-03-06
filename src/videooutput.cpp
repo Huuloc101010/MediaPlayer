@@ -54,8 +54,16 @@ void videooutput::ThreadProcessFramePtr()
         return;
     }
 
-    while(!m_Exiting)
+    while(m_PlayerState != PlayerState::EXITING)
     {
+        
+
+        if(CheckStateExit())
+        {
+            return;
+        }
+        CheckStateSleep();
+        
         auto retval = std::move(m_QueueSafe.pop());
         if(retval == std::nullopt)
         {
@@ -64,7 +72,7 @@ void videooutput::ThreadProcessFramePtr()
         }
         UniqueFramePtr FramePtr = std::move(retval.value());
         double audio_pts = m_Mediator->GetAudioClock();
-        LOGE("audio clock: {}", audio_pts);
+        //LOGE("audio clock: {}", audio_pts);
 
         double video_pts = 0;
         if(FramePtr->best_effort_timestamp != AV_NOPTS_VALUE)
@@ -74,7 +82,7 @@ void videooutput::ThreadProcessFramePtr()
         }
         m_Clock.last_frame_pts.store(m_Clock.pts.load());
         m_Clock.pts = video_pts;
-        LOGW("video clock: {}", m_Clock.pts.load());
+        //LOGW("video clock: {}", m_Clock.pts.load());
 
         double diff = video_pts - audio_pts;
 

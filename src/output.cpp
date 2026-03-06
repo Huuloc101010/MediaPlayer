@@ -23,16 +23,6 @@ void output::SetLimitQueueOutput(const int LimitValue)
     m_QueueSafe.SetLimitQueue(LimitValue);
 }
 
-void output::start()
-{
-    LOGW("Not Implement");
-}
-
-void output::stop()
-{
-    LOGW("Not Implement");
-}
-
 void output::clear()
 {
     LOGW("Not Implement");

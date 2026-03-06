@@ -90,6 +90,14 @@ int decoder::decode_packet(UniquePacketPtr pkt)
         LOGE("AVFrame pointer is null");
         return -1;
     }
+
+    //control flow here
+    if(CheckStateExit())
+    {
+        return 0;
+    }
+    CheckStateSleep();
+
     // submit the packet to the decoder
     ret = avcodec_send_packet(m_CodecContext, pkt.get());
     if (ret < 0)

@@ -8,10 +8,11 @@
 #include <memory>
 #include "define.h"
 #include "output.h"
+#include "controlfunction.h"
 
 class mediator;
 
-class videooutput : public output
+class videooutput : public output, public controlfunction
 {
 public:
     videooutput(mediator* mediator);

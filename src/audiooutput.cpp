@@ -17,7 +17,7 @@ audiooutput::audiooutput(mediator* mediator)
 
 audiooutput::~audiooutput()
 {
-    stop();
+    SDLStop();
     swr_free(&m_SwrContext);
 }
 
@@ -48,7 +48,7 @@ bool audiooutput::config(int sample_rate,
     return true;
 }
 
-void audiooutput::start()
+void audiooutput::SDLStart()
 {
     if(m_DeviceId)
     {
@@ -56,7 +56,15 @@ void audiooutput::start()
     }
 }
 
-void audiooutput::stop()
+void audiooutput::SDLPause()
+{
+    if(m_DeviceId)
+    {
+        SDL_PauseAudioDevice(m_DeviceId, 1);
+    }
+}
+
+void audiooutput::SDLStop()
 {
     if(m_DeviceId)
     {
@@ -89,6 +97,7 @@ void audiooutput::sdl_callback(void* userdata, Uint8* stream, int len)
 
 void audiooutput::callback(Uint8* stream, int len)
 {
+    LOGE("Callback called");
     std::memset(stream, 0, len); // silence if not enable data
 
     std::lock_guard<std::mutex> lock(m_Mutex);
@@ -208,7 +217,7 @@ bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
         std::cerr << "config audio error" << std::endl;
         return false;
     }
-    start();
+    SDLStart();
     // init software context
     
     m_SwrContext = swr_alloc_set_opts(
@@ -235,6 +244,12 @@ void audiooutput::ThreadProcessFramePtr()
 {
     while(!m_Exiting)
     {
+        if(CheckStateExit())
+        {
+            return;
+        }
+        CheckStateSleep();
+
         auto retval = std::move(m_QueueSafe.pop());
         if(retval == std::nullopt)
         {
@@ -243,4 +258,22 @@ void audiooutput::ThreadProcessFramePtr()
         }
         audio_convert(std::move(retval.value()));
     }
+}
+
+void audiooutput::Play()
+{
+    controlfunction::Play();
+    audiooutput::SDLStart();
+}
+
+void audiooutput::Pause()
+{
+    controlfunction::Play();
+    audiooutput::SDLPause();
+}
+
+void audiooutput::Stop()
+{
+    controlfunction::Stop();
+    audiooutput::SDLStop();
 }

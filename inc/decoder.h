@@ -6,8 +6,9 @@
 #include "define.h"
 #include "mediator.h"
 #include "queue_safe.h"
+#include "controlfunction.h"
 
-class decoder
+class decoder : public controlfunction
 {
 public:
     decoder(mediator* mediator);

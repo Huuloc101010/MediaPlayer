@@ -1,3 +1,4 @@
+#include <thread>
 #include "demuxer.h"
 #include "define.h"
 #include "mediator.h"
@@ -74,6 +75,12 @@ void demuxer::loop_read_frame()
     /* read frames from the file */
     while (av_read_frame(m_FormatContext.get(), Packet.get()) >= 0)
     {
+        if(CheckStateExit())
+        {
+            return;
+        }
+        CheckStateSleep();
+
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it
         if((Packet == nullptr) || (m_Mediator == nullptr))

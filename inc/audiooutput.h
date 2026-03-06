@@ -8,10 +8,11 @@
 #include <thread>
 #include "define.h"
 #include "output.h"
+#include "controlfunction.h"
 
 class mediator;
 
-class audiooutput : public output
+class audiooutput : public output , public controlfunction
 {
 public:
     audiooutput(mediator* mediator);
@@ -22,15 +23,19 @@ public:
                 SDL_AudioFormat format, int first_pts,
                 int samples = 1024);
 
-    void start() override;
-    void stop() override;
+    void SDLStart();
+    void SDLPause();
+    void SDLStop();
+
     const double get_clock() override;
     // Push PCM data (interleaved)
     void push(const uint8_t* data, size_t size);
 
     void clear() override;
     void audio_convert(UniqueFramePtr FramePtr);
-
+    void Play() override;
+    void Pause() override;
+    void Stop() override;
 private:
     static void sdl_callback(void* userdata, Uint8* stream, int len);
     void callback(Uint8* stream, int len);
