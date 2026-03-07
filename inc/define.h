@@ -96,7 +96,6 @@ enum class PlayerState : uint8_t
 enum class PlayerEvent : uint8_t
 {
     QUIT,
-    //START,
     STOP,
     NEXT,
     PAUSE,

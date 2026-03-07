@@ -21,6 +21,7 @@ public:
 
 private:
     mediator*              m_Mediator{};
+    std::jthread           m_ThreadReadFrame;
     UniqueFormatContext    m_FormatContext = nullptr;
     AVStream*              m_VideoStream = nullptr;
     AVStream*              m_AudioStream = nullptr;

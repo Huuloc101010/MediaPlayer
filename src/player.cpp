@@ -175,7 +175,6 @@ int player::output_video_frame(UniqueFramePtr frame)
     if(m_VideoOutput)
     {
         m_VideoOutput->push_queue(std::move(frame));
-        /* reallocate */
     }
     else
     {

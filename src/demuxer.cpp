@@ -61,9 +61,8 @@ int demuxer::StartPlay(const std::string& Mediafile)
         return 1;
     }
  
-    loop_read_frame();
+    m_ThreadReadFrame = std::jthread(&demuxer::loop_read_frame, this);
     LOGI("Demuxing succeeded");
-    while(true);
     return ret;
 }
 
