@@ -4,42 +4,43 @@
 void controlfunction::Play()
 {
     m_PlayerState = PlayerState::PLAYING;
+    m_PlayerState.notify_all();
 }
 
 void controlfunction::Pause()
 {
     m_PlayerState = PlayerState::PAUSED;
+    m_PlayerState.notify_all();
 }
 
 void controlfunction::Stop()
 {
     m_PlayerState = PlayerState::STOPPED;
+    m_PlayerState.notify_all();
 }
 
 void controlfunction::Exit()
 {
     m_PlayerState = PlayerState::EXITING;
+    m_PlayerState.notify_all();
 }
 
 void controlfunction::CheckStateSleep()
 {
-    static const std::unordered_set<PlayerState> SetStateWait =
+    while(true)
     {
-        PlayerState::IDLE,
-        PlayerState::PAUSED,
-    };
-    while(SetStateWait.count(m_PlayerState.load()))
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        PlayerState CurrentState = m_PlayerState.load();
+        if((CurrentState != PlayerState::IDLE)
+        && (CurrentState != PlayerState::PAUSED))
+        {
+            break;
+        }
+        m_PlayerState.wait(CurrentState);
     }
 }
 
 bool controlfunction::CheckStateExit()
 {
-    static const std::unordered_set<PlayerState> SetStateExit =
-    {
-        PlayerState::EXITING,
-        PlayerState::STOPPED,
-    };
-    return SetStateExit.count(m_PlayerState.load());
+    PlayerState CurrentState = m_PlayerState.load();
+    return (CurrentState == PlayerState::EXITING) || (CurrentState == PlayerState::STOPPED);
 }
