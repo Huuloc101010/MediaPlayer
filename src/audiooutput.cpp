@@ -242,7 +242,7 @@ bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
 
 void audiooutput::ThreadProcessFramePtr()
 {
-    while(!m_Exiting)
+    while(m_PlayerState.load() != PlayerState::EXITING)
     {
         if(CheckStateExit())
         {

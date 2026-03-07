@@ -10,7 +10,7 @@ videooutput::videooutput(mediator* mediator) : m_Mediator(mediator)
 
 videooutput::~videooutput()
 {
-    m_Exiting = true;
+    // Do not thing
 }
 
 bool videooutput::ConvertFramePtrToRawData(UniqueFramePtr frame)

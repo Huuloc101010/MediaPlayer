@@ -52,7 +52,7 @@ int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 void decoder::ThreadDecode()
 {
     UniquePacketPtr Packet = nullptr;
-    while(true)
+    while(m_PlayerState.load() != PlayerState::EXITING)
     {
         auto PacketOpt = m_QueueSafe.pop();
         if(PacketOpt == std::nullopt)

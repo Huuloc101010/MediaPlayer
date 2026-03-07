@@ -3,7 +3,6 @@
 
 output::~output()
 {
-    m_Exiting = true;
     m_QueueSafe.release();
 }
 
