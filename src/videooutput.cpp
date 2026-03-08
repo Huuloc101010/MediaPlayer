@@ -13,6 +13,26 @@ videooutput::~videooutput()
     // Do not thing
 }
 
+void videooutput::Play()
+{
+    controlfunction::Play();
+}
+void videooutput::Pause()
+{
+    controlfunction::Pause();
+}
+
+void videooutput::Stop()
+{
+    controlfunction::Stop();
+}
+
+void videooutput::Exit()
+{
+    controlfunction::Exit();
+    m_QueueSafe.release();
+}
+
 bool videooutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
 {
     if(frame == nullptr)
@@ -56,7 +76,6 @@ void videooutput::ThreadProcessFramePtr()
 
     while(m_PlayerState != PlayerState::EXITING)
     {
-        
 
         if(CheckStateExit())
         {

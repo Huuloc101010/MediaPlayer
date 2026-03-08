@@ -41,7 +41,7 @@ public:
         {
             return  m_Exiting || m_queue.size();
         });
-        if(m_queue.empty() && m_Exiting)
+        if(m_queue.empty() || m_Exiting)
         {
             return std::nullopt;
         }

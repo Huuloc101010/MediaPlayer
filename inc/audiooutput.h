@@ -12,7 +12,7 @@
 
 class mediator;
 
-class audiooutput : public output , public controlfunction
+class audiooutput : public output
 {
 public:
     audiooutput(mediator* mediator);
@@ -36,6 +36,7 @@ public:
     void Play() override;
     void Pause() override;
     void Stop() override;
+    void Exit() override;
 private:
     static void sdl_callback(void* userdata, Uint8* stream, int len);
     void callback(Uint8* stream, int len);

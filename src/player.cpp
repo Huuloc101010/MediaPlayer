@@ -53,6 +53,12 @@ void player::EventNext()
         case PlayerState::PLAYING:
         case PlayerState::PAUSED:
         case PlayerState::EXITING:
+        if(m_Demuxer)      m_Demuxer      ->Exit();
+        if(m_VideoOutput)  m_VideoOutput  ->Exit();
+        if(m_AudioOutput)  m_AudioOutput  ->Exit();
+        if(m_VideoDecoder) m_VideoDecoder ->Exit();
+        if(m_AudioDecoder) m_AudioDecoder ->Exit();
+        if(m_Controller)   m_Controller   ->Exit();
         break;
     }
     LOGW("Received event next");

@@ -12,7 +12,7 @@
 
 class mediator;
 
-class videooutput : public output, public controlfunction
+class videooutput : public output
 {
 public:
     videooutput(mediator* mediator);
@@ -20,7 +20,10 @@ public:
     bool UpdateYUVTexture(const yuv& ndata);
     bool ConvertFramePtrToRawData(UniqueFramePtr frame);
     void ThreadProcessFramePtr() override;
-
+    void Play() override;
+    void Pause() override;
+    void Stop() override;
+    void Exit() override;
 private:
     mediator*            m_Mediator{};
 };

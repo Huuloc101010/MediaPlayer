@@ -4,8 +4,9 @@
 #include <thread>
 #include <queue_safe.h>
 #include "define.h"
+#include "controlfunction.h"
 
-class output
+class output : public controlfunction
 {
 public:
     output() = default;

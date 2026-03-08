@@ -160,3 +160,9 @@ const std::string decoder::err2str(int errnum)
     }
     return m_mediator->err2str(errnum);
 }
+
+void decoder::Exit()
+{
+    controlfunction::Exit();
+    m_QueueSafe.release();
+}

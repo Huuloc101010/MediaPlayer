@@ -146,7 +146,11 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
             LOGI("config audio success");
         }
     });
-
+    if(m_SwrContext == nullptr)
+    {
+        LOGE("m_SwrContext is null");
+        return;
+    }
     int out_samples = av_rescale_rnd(
         swr_get_delay(m_SwrContext, FramePtr->sample_rate) + FramePtr->nb_samples,
         FramePtr->sample_rate,
@@ -199,10 +203,12 @@ bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
 {
     if(Frame == nullptr)
     {
+        LOGE("Frame is null");
         return false;
     }
     if(m_Mediator == nullptr)
     {
+        LOGE("Mediator is null");
         return false;
     }
     double first_pts = Frame->best_effort_timestamp * av_q2d(m_Mediator->GetTimeBaseAudio());
@@ -267,7 +273,7 @@ void audiooutput::Play()
 
 void audiooutput::Pause()
 {
-    controlfunction::Play();
+    controlfunction::Pause();
     audiooutput::SDLPause();
 }
 
@@ -275,4 +281,10 @@ void audiooutput::Stop()
 {
     controlfunction::Stop();
     audiooutput::SDLStop();
+}
+
+void audiooutput::Exit()
+{
+    controlfunction::Exit();
+    m_QueueSafe.release();
 }
