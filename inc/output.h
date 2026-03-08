@@ -16,6 +16,7 @@ public:
     virtual void clear();
     virtual const double get_clock();
     virtual bool StartThread();
+    virtual void Exit() override;
 protected:
     virtual void ThreadProcessFramePtr() = 0;
 

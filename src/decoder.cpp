@@ -7,6 +7,10 @@ decoder::decoder(mediator* mediator): m_mediator(mediator)
 
 decoder::~decoder()
 {
+    if(m_ThreadDecode.joinable())
+    {
+        m_ThreadDecode.join();
+    }
     if(m_CodecContext)
     {
         avcodec_free_context(&m_CodecContext);
@@ -165,4 +169,8 @@ void decoder::Exit()
 {
     controlfunction::Exit();
     m_QueueSafe.release();
+    if(m_ThreadDecode.joinable())
+    {
+        m_ThreadDecode.join();
+    }
 }

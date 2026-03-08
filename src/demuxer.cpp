@@ -72,6 +72,11 @@ void demuxer::loop_read_frame()
     UniquePacketPtr Packet(av_packet_alloc());
     int ret = 0;
     /* read frames from the file */
+    if(m_FormatContext == nullptr)
+    {
+        LOGE("FormatContext is null");
+        return;
+    }
     while (av_read_frame(m_FormatContext.get(), Packet.get()) >= 0)
     {
         if(CheckStateExit())
@@ -85,6 +90,7 @@ void demuxer::loop_read_frame()
         if((Packet == nullptr) || (m_Mediator == nullptr))
         {
             LOGE("Packet or m_Mediator is null");
+            continue;
         }
         ret = m_Mediator->decode_packet(std::move(Packet));
         if(ret != 0)
@@ -103,7 +109,14 @@ void demuxer::loop_read_frame()
     }
 }
 
-
+void demuxer::Exit()
+{
+    controlfunction::Exit();
+    if(m_ThreadReadFrame.joinable())
+    {
+        m_ThreadReadFrame.join();
+    }
+}
 
 int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type)
 {
@@ -128,7 +141,7 @@ int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum 
         st = fmt_ctx->streams[stream_index];
         if(type == AVMEDIA_TYPE_VIDEO)
         {
-            if(m_Mediator->InitVideoDecoder(st->codecpar->codec_id, st->codecpar) == 0)
+            if(m_Mediator->InitVideoDecoder(st->codecpar->codec_id, st->codecpar) == true)
             {
                 LOGI("Init video decoder success");
             }
@@ -139,7 +152,7 @@ int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum 
         }
         if(type == AVMEDIA_TYPE_AUDIO)
         {
-            if(m_Mediator->InitAudioDecoder(st->codecpar->codec_id, st->codecpar) == 0)
+            if(m_Mediator->InitAudioDecoder(st->codecpar->codec_id, st->codecpar) == true)
             {
                 LOGI("Init audio decoder success");
             }

@@ -10,7 +10,10 @@ videooutput::videooutput(mediator* mediator) : m_Mediator(mediator)
 
 videooutput::~videooutput()
 {
-    // Do not thing
+    if(m_ThreadShow.joinable())
+    {
+        m_ThreadShow.join();
+    }
 }
 
 void videooutput::Play()
@@ -31,6 +34,7 @@ void videooutput::Exit()
 {
     controlfunction::Exit();
     m_QueueSafe.release();
+    output::Exit();
 }
 
 bool videooutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
@@ -86,7 +90,7 @@ void videooutput::ThreadProcessFramePtr()
         auto retval = std::move(m_QueueSafe.pop());
         if(retval == std::nullopt)
         {
-            LOGW("nullopt");
+            //LOGW("nullopt");
             continue;
         }
         UniqueFramePtr FramePtr = std::move(retval.value());

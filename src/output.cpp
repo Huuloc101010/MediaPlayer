@@ -12,6 +12,14 @@ bool output::StartThread()
     return true;
 }
 
+void output::Exit()
+{
+    if(m_ThreadShow.joinable())
+    {
+        m_ThreadShow.join();
+    }
+}
+
 void output::push_queue(UniqueFramePtr FramePtr)
 {
     m_QueueSafe.push(std::move(FramePtr));

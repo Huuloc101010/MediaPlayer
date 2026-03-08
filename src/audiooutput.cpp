@@ -6,18 +6,16 @@
 audiooutput::audiooutput(mediator* mediator)
                         : m_Mediator(mediator)
 {
-    SetLimitQueueOutput(LIMIT_QUEUE_AUDIO_FRAME);
-    if(SDL_Init(SDL_INIT_AUDIO) < 0)
-    {
-        SDL_Log("SDL_Init failed: %s", SDL_GetError());
-        exit(1);
-    }
 
 }
 
 audiooutput::~audiooutput()
 {
     SDLStop();
+    if(m_ThreadShow.joinable())
+    {
+        m_ThreadShow.join();
+    }
     swr_free(&m_SwrContext);
 }
 
@@ -37,11 +35,16 @@ bool audiooutput::config(int sample_rate,
     want.samples = samples;
     want.callback = sdl_callback;
     want.userdata = this;
-
-    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
-    if (!m_DeviceId)
+    SetLimitQueueOutput(LIMIT_QUEUE_AUDIO_FRAME);
+    if(SDL_Init(SDL_INIT_AUDIO) < 0)
     {
-        SDL_Log("SDL_OpenAudioDevice failed: %s", SDL_GetError());
+        SDL_Log("SDL_Init failed: %s", SDL_GetError());
+        return false;
+    }
+    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
+    if(!m_DeviceId)
+    {
+        LOGE("SDL_OpenAudioDevice failed: {}", SDL_GetError());
         return false;
     }
 
@@ -136,7 +139,7 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
     std::call_once(m_OnceFlag,
     [&](void)->void
     {
-        if(!config_audio_output(FramePtr))
+        if(config_audio_output(FramePtr) == false)
         {
             LOGE("config audio fail");
             return;
@@ -217,9 +220,10 @@ bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
     Frame->channel_layout :
     av_get_default_channel_layout(Frame->channels);
    
-    if(!config(Frame->sample_rate,Frame->channels ,AUDIO_S16SYS, first_pts))
+    if(config(Frame->sample_rate,Frame->channels ,AUDIO_S16SYS, first_pts) == false)
     {
         std::cerr << "config audio error" << std::endl;
+        LOGE("config audio error");
         return false;
     }
     SDLStart();
@@ -287,4 +291,5 @@ void audiooutput::Exit()
 {
     controlfunction::Exit();
     m_QueueSafe.release();
+    output::Exit();
 }

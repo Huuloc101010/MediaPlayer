@@ -75,7 +75,7 @@ private:
     std::unique_ptr<view>           m_View         = nullptr;
     queue_safe<PlayerEvent>         m_PlayerEvent  = {};
     std::string                     m_CurrentMedia = {};
-    std::thread                     m_TheadProcessEvent;
+    std::jthread                    m_TheadProcessEvent;
 
     std::map<PlayerEvent, std::function<void()>>     m_MapProcessing = {};
 

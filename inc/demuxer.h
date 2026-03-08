@@ -18,6 +18,7 @@ public:
     AVRational GetTimeBaseAudio();
     const int GetVideoStreamIndex();
     const int GetAudioStreamIndex();
+    void Exit() override;
 
 private:
     mediator*              m_Mediator{};
