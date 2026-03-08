@@ -7,6 +7,10 @@ decoder::decoder(mediator* mediator): m_mediator(mediator)
 
 decoder::~decoder()
 {
+    if(m_ThreadDecode.joinable())
+    {
+        m_ThreadDecode.join();
+    }
     if(m_CodecContext)
     {
         avcodec_free_context(&m_CodecContext);
@@ -52,7 +56,7 @@ int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 void decoder::ThreadDecode()
 {
     UniquePacketPtr Packet = nullptr;
-    while(true)
+    while(m_PlayerState.load() != PlayerState::EXITING)
     {
         auto PacketOpt = m_QueueSafe.pop();
         if(PacketOpt == std::nullopt)
@@ -90,6 +94,14 @@ int decoder::decode_packet(UniquePacketPtr pkt)
         LOGE("AVFrame pointer is null");
         return -1;
     }
+
+    //control flow here
+    if(CheckStateExit())
+    {
+        return 0;
+    }
+    CheckStateSleep();
+
     // submit the packet to the decoder
     ret = avcodec_send_packet(m_CodecContext, pkt.get());
     if (ret < 0)
@@ -151,4 +163,14 @@ const std::string decoder::err2str(int errnum)
         return {};
     }
     return m_mediator->err2str(errnum);
+}
+
+void decoder::Exit()
+{
+    controlfunction::Exit();
+    m_QueueSafe.release();
+    if(m_ThreadDecode.joinable())
+    {
+        m_ThreadDecode.join();
+    }
 }

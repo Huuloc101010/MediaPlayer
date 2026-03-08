@@ -5,10 +5,11 @@
 #include <unordered_map>
 #include <memory>
 #include <define.h>
+#include "controlfunction.h"
 
 class mediator;
 
-class controller
+class controller : public controlfunction
 {
 public:
     controller(mediator* mediator);

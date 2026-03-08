@@ -20,10 +20,10 @@ controller::controller(mediator* mediator) : m_Mediator(mediator)
 
 void controller::checkevent()
 {
-    SDL_Event Event;
-    while(true)
+    SDL_Event Event{};
+    while(m_PlayerState.load() != PlayerState::EXITING)
     {
-        while(SDL_PollEvent(&Event))
+        while((SDL_PollEvent(&Event)) && m_PlayerState.load() != PlayerState::EXITING)
         {
             switch(Event.type)
             {

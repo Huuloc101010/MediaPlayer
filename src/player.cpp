@@ -27,36 +27,20 @@ void player::EventStop()
 {
     switch(m_PlayerState.load())
     {
-        case PlayerState::IDLE:
-        {
-
-            break;
-        }
-
-        case PlayerState::STOPPED:
-        {
-
-            break;
-        }
 
         case PlayerState::PLAYING:
-        {
-
-            break;
-        }
-
         case PlayerState::PAUSED:
         {
-
+            if(m_Demuxer)      m_Demuxer     ->Stop();
+            if(m_VideoOutput)  m_VideoOutput ->Stop();
+            if(m_AudioOutput)  m_AudioOutput ->Stop();
+            if(m_VideoDecoder) m_VideoDecoder->Stop();
+            if(m_AudioDecoder) m_AudioDecoder->Stop();
             break;
         }
 
-        case PlayerState::EXITING:
-        {
-
-            break;
-        }
     }
+    m_PlayerState = PlayerState::STOPPED;
     LOGW("Received event stop");
 }
 
@@ -65,34 +49,21 @@ void player::EventNext()
     switch(m_PlayerState.load())
     {
         case PlayerState::IDLE:
-        {
-
-            break;
-        }
-
         case PlayerState::STOPPED:
-        {
-
-            break;
-        }
-
         case PlayerState::PLAYING:
-        {
-
-            break;
-        }
-
         case PlayerState::PAUSED:
-        {
-
-            break;
-        }
-
         case PlayerState::EXITING:
-        {
-
-            break;
-        }
+        m_PlayerState = PlayerState::EXITING;
+        if(m_Demuxer)      m_Demuxer      ->Exit();
+        if(m_VideoOutput)  m_VideoOutput  ->Exit();
+        if(m_AudioOutput)  m_AudioOutput  ->Exit();
+        if(m_VideoDecoder) m_VideoDecoder ->Exit();
+        if(m_AudioDecoder) m_AudioDecoder ->Exit();
+        if(m_Controller)   m_Controller   ->Exit();
+        m_PlayerState = PlayerState::IDLE;
+        m_PlayerEvent.clear();
+        player::Start();
+        break;
     }
     LOGW("Received event next");
 }
@@ -101,36 +72,19 @@ void player::EventPause()
 {
     switch(m_PlayerState.load())
     {
-        case PlayerState::IDLE:
-        {
-
-            break;
-        }
-
-        case PlayerState::STOPPED:
-        {
-
-            break;
-        }
 
         case PlayerState::PLAYING:
         {
-
+            if(m_Demuxer)      m_Demuxer      ->Pause();
+            if(m_VideoOutput)  m_VideoOutput  ->Pause();
+            if(m_AudioOutput)  m_AudioOutput  ->Pause();
+            if(m_VideoDecoder) m_VideoDecoder ->Pause();
+            if(m_AudioDecoder) m_AudioDecoder ->Pause();
             break;
         }
 
-        case PlayerState::PAUSED:
-        {
-
-            break;
-        }
-
-        case PlayerState::EXITING:
-        {
-
-            break;
-        }
     }
+    m_PlayerState = PlayerState::PAUSED;
     LOGW("Received event pause");
 }
 
@@ -138,36 +92,19 @@ void player::EventPlay()
 {
     switch(m_PlayerState.load())
     {
+        case PlayerState::PAUSED:
         case PlayerState::IDLE:
         {
-
+            if(m_Demuxer)      m_Demuxer     ->Play();
+            if(m_VideoOutput)  m_VideoOutput ->Play();
+            if(m_AudioOutput)  m_AudioOutput ->Play();
+            if(m_VideoDecoder) m_VideoDecoder->Play();
+            if(m_AudioDecoder) m_AudioDecoder->Play();
             break;
         }
 
-        case PlayerState::STOPPED:
-        {
-
-            break;
-        }
-
-        case PlayerState::PLAYING:
-        {
-
-            break;
-        }
-
-        case PlayerState::PAUSED:
-        {
-
-            break;
-        }
-
-        case PlayerState::EXITING:
-        {
-
-            break;
-        }
     }
+    m_PlayerState = PlayerState::PLAYING;
     LOGW("Received event play");
 }
 
@@ -248,7 +185,6 @@ int player::output_video_frame(UniqueFramePtr frame)
     if(m_VideoOutput)
     {
         m_VideoOutput->push_queue(std::move(frame));
-        /* reallocate */
     }
     else
     {
@@ -280,10 +216,11 @@ int player::Start()
     m_AudioOutput  = std::make_unique<audiooutput>(this);
     m_Controller   = std::make_unique<controller>(this);
     m_View         = std::make_unique<view>();
+    LOGI("Create new object success");
     int Ret = -1;
     if(m_Demuxer != nullptr)
     {
-        Ret = m_Demuxer->Play(m_CurrentMedia);
+        Ret = m_Demuxer->StartPlay(m_CurrentMedia);
     }
     
     LOGI("Demuxing succeeded");

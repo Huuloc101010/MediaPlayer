@@ -6,8 +6,9 @@
 #include "define.h"
 #include "mediator.h"
 #include "queue_safe.h"
+#include "controlfunction.h"
 
-class decoder
+class decoder : public controlfunction
 {
 public:
     decoder(mediator* mediator);
@@ -17,6 +18,7 @@ public:
     const std::string err2str(int errnum);
     void PushPacket(UniquePacketPtr Packet);
     virtual void SetLimitQueueDecoder(const int LimitValue);
+    void Exit() override; 
 protected:
     void ThreadDecode();
     int decode_packet(UniquePacketPtr pkt);

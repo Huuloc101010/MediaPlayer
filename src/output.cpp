@@ -3,7 +3,6 @@
 
 output::~output()
 {
-    m_Exiting = true;
     m_QueueSafe.release();
 }
 
@@ -11,6 +10,14 @@ bool output::StartThread()
 {
     m_ThreadShow = std::jthread(&output::ThreadProcessFramePtr, this);
     return true;
+}
+
+void output::Exit()
+{
+    if(m_ThreadShow.joinable())
+    {
+        m_ThreadShow.join();
+    }
 }
 
 void output::push_queue(UniqueFramePtr FramePtr)
@@ -21,16 +28,6 @@ void output::push_queue(UniqueFramePtr FramePtr)
 void output::SetLimitQueueOutput(const int LimitValue)
 {
     m_QueueSafe.SetLimitQueue(LimitValue);
-}
-
-void output::start()
-{
-    LOGW("Not Implement");
-}
-
-void output::stop()
-{
-    LOGW("Not Implement");
 }
 
 void output::clear()

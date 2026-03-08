@@ -8,6 +8,7 @@
 #include <memory>
 #include "define.h"
 #include "output.h"
+#include "controlfunction.h"
 
 class mediator;
 
@@ -19,7 +20,10 @@ public:
     bool UpdateYUVTexture(const yuv& ndata);
     bool ConvertFramePtrToRawData(UniqueFramePtr frame);
     void ThreadProcessFramePtr() override;
-
+    void Play() override;
+    void Pause() override;
+    void Stop() override;
+    void Exit() override;
 private:
     mediator*            m_Mediator{};
 };

@@ -12,6 +12,7 @@
 #include "demuxer.h"
 #include "controller.h"
 #include "view.h"
+#include "controlfunction.h"
 
 extern "C"
 {
@@ -30,6 +31,7 @@ class videooutput;
 class audiooutput;
 
 class player : public mediator
+             , public controlfunction
 {
 public:
     player();
@@ -71,10 +73,9 @@ private:
     std::unique_ptr<audiodecoder>   m_AudioDecoder = nullptr;
     std::unique_ptr<controller>     m_Controller   = nullptr;
     std::unique_ptr<view>           m_View         = nullptr;
-    std::atomic<PlayerState>        m_PlayerState  = PlayerState::IDLE;
     queue_safe<PlayerEvent>         m_PlayerEvent  = {};
     std::string                     m_CurrentMedia = {};
-    std::thread                     m_TheadProcessEvent;
+    std::jthread                    m_TheadProcessEvent;
 
     std::map<PlayerEvent, std::function<void()>>     m_MapProcessing = {};
 

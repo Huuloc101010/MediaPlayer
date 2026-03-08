@@ -1,3 +1,4 @@
+#include <thread>
 #include "demuxer.h"
 #include "define.h"
 #include "mediator.h"
@@ -7,7 +8,7 @@ demuxer::demuxer(mediator* mediator)
     m_Mediator = mediator;
 }
 
-int demuxer::Play(const std::string& Mediafile)
+int demuxer::StartPlay(const std::string& Mediafile)
 {
     int ret = 0;
     /* open input file, and allocate format context */
@@ -60,9 +61,8 @@ int demuxer::Play(const std::string& Mediafile)
         return 1;
     }
  
-    loop_read_frame();
+    m_ThreadReadFrame = std::jthread(&demuxer::loop_read_frame, this);
     LOGI("Demuxing succeeded");
-    while(true);
     return ret;
 }
 
@@ -72,13 +72,25 @@ void demuxer::loop_read_frame()
     UniquePacketPtr Packet(av_packet_alloc());
     int ret = 0;
     /* read frames from the file */
+    if(m_FormatContext == nullptr)
+    {
+        LOGE("FormatContext is null");
+        return;
+    }
     while (av_read_frame(m_FormatContext.get(), Packet.get()) >= 0)
     {
+        if(CheckStateExit())
+        {
+            return;
+        }
+        CheckStateSleep();
+
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it
         if((Packet == nullptr) || (m_Mediator == nullptr))
         {
             LOGE("Packet or m_Mediator is null");
+            continue;
         }
         ret = m_Mediator->decode_packet(std::move(Packet));
         if(ret != 0)
@@ -97,7 +109,14 @@ void demuxer::loop_read_frame()
     }
 }
 
-
+void demuxer::Exit()
+{
+    controlfunction::Exit();
+    if(m_ThreadReadFrame.joinable())
+    {
+        m_ThreadReadFrame.join();
+    }
+}
 
 int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type)
 {
@@ -122,7 +141,7 @@ int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum 
         st = fmt_ctx->streams[stream_index];
         if(type == AVMEDIA_TYPE_VIDEO)
         {
-            if(m_Mediator->InitVideoDecoder(st->codecpar->codec_id, st->codecpar) == 0)
+            if(m_Mediator->InitVideoDecoder(st->codecpar->codec_id, st->codecpar) == true)
             {
                 LOGI("Init video decoder success");
             }
@@ -133,7 +152,7 @@ int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum 
         }
         if(type == AVMEDIA_TYPE_AUDIO)
         {
-            if(m_Mediator->InitAudioDecoder(st->codecpar->codec_id, st->codecpar) == 0)
+            if(m_Mediator->InitAudioDecoder(st->codecpar->codec_id, st->codecpar) == true)
             {
                 LOGI("Init audio decoder success");
             }

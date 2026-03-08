@@ -20,6 +20,8 @@ int main(int argc, char** argv)
         LOGE("Exception has occurred");
         return -1;
     }
-    
+    // Sleep this thread forever
+    std::atomic<bool> SleepForever = true;
+    SleepForever.wait(true);
     return 0;
 }

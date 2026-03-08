@@ -6,18 +6,16 @@
 audiooutput::audiooutput(mediator* mediator)
                         : m_Mediator(mediator)
 {
-    SetLimitQueueOutput(LIMIT_QUEUE_AUDIO_FRAME);
-    if(SDL_Init(SDL_INIT_AUDIO) < 0)
-    {
-        SDL_Log("SDL_Init failed: %s", SDL_GetError());
-        exit(1);
-    }
 
 }
 
 audiooutput::~audiooutput()
 {
-    stop();
+    SDLStop();
+    if(m_ThreadShow.joinable())
+    {
+        m_ThreadShow.join();
+    }
     swr_free(&m_SwrContext);
 }
 
@@ -37,18 +35,23 @@ bool audiooutput::config(int sample_rate,
     want.samples = samples;
     want.callback = sdl_callback;
     want.userdata = this;
-
-    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
-    if (!m_DeviceId)
+    SetLimitQueueOutput(LIMIT_QUEUE_AUDIO_FRAME);
+    if(SDL_Init(SDL_INIT_AUDIO) < 0)
     {
-        SDL_Log("SDL_OpenAudioDevice failed: %s", SDL_GetError());
+        SDL_Log("SDL_Init failed: %s", SDL_GetError());
+        return false;
+    }
+    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
+    if(!m_DeviceId)
+    {
+        LOGE("SDL_OpenAudioDevice failed: {}", SDL_GetError());
         return false;
     }
 
     return true;
 }
 
-void audiooutput::start()
+void audiooutput::SDLStart()
 {
     if(m_DeviceId)
     {
@@ -56,7 +59,15 @@ void audiooutput::start()
     }
 }
 
-void audiooutput::stop()
+void audiooutput::SDLPause()
+{
+    if(m_DeviceId)
+    {
+        SDL_PauseAudioDevice(m_DeviceId, 1);
+    }
+}
+
+void audiooutput::SDLStop()
 {
     if(m_DeviceId)
     {
@@ -128,7 +139,7 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
     std::call_once(m_OnceFlag,
     [&](void)->void
     {
-        if(!config_audio_output(FramePtr))
+        if(config_audio_output(FramePtr) == false)
         {
             LOGE("config audio fail");
             return;
@@ -138,7 +149,11 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
             LOGI("config audio success");
         }
     });
-
+    if(m_SwrContext == nullptr)
+    {
+        LOGE("m_SwrContext is null");
+        return;
+    }
     int out_samples = av_rescale_rnd(
         swr_get_delay(m_SwrContext, FramePtr->sample_rate) + FramePtr->nb_samples,
         FramePtr->sample_rate,
@@ -191,10 +206,12 @@ bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
 {
     if(Frame == nullptr)
     {
+        LOGE("Frame is null");
         return false;
     }
     if(m_Mediator == nullptr)
     {
+        LOGE("Mediator is null");
         return false;
     }
     double first_pts = Frame->best_effort_timestamp * av_q2d(m_Mediator->GetTimeBaseAudio());
@@ -203,12 +220,13 @@ bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
     Frame->channel_layout :
     av_get_default_channel_layout(Frame->channels);
    
-    if(!config(Frame->sample_rate,Frame->channels ,AUDIO_S16SYS, first_pts))
+    if(config(Frame->sample_rate,Frame->channels ,AUDIO_S16SYS, first_pts) == false)
     {
         std::cerr << "config audio error" << std::endl;
+        LOGE("config audio error");
         return false;
     }
-    start();
+    SDLStart();
     // init software context
     
     m_SwrContext = swr_alloc_set_opts(
@@ -233,8 +251,14 @@ bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
 
 void audiooutput::ThreadProcessFramePtr()
 {
-    while(!m_Exiting)
+    while(m_PlayerState.load() != PlayerState::EXITING)
     {
+        if(CheckStateExit())
+        {
+            return;
+        }
+        CheckStateSleep();
+
         auto retval = std::move(m_QueueSafe.pop());
         if(retval == std::nullopt)
         {
@@ -243,4 +267,29 @@ void audiooutput::ThreadProcessFramePtr()
         }
         audio_convert(std::move(retval.value()));
     }
+}
+
+void audiooutput::Play()
+{
+    controlfunction::Play();
+    audiooutput::SDLStart();
+}
+
+void audiooutput::Pause()
+{
+    controlfunction::Pause();
+    audiooutput::SDLPause();
+}
+
+void audiooutput::Stop()
+{
+    controlfunction::Stop();
+    audiooutput::SDLStop();
+}
+
+void audiooutput::Exit()
+{
+    controlfunction::Exit();
+    m_QueueSafe.release();
+    output::Exit();
 }
