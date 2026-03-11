@@ -5,6 +5,7 @@
 #include <format>
 #include <string_view>
 #include <unordered_set>
+#include <thread>
 
 // ===== ANSI COLOR =====
 #define COLOR_RED     "\033[31m"
@@ -29,6 +30,7 @@ void log_implement(std::string_view color,
     if(cerr.count(color))
     {
         std::cerr << color
+                  << "[" << std::this_thread::get_id() << "]"
                   << "[" << file << ":" << line << "] "
                   << func << "(): "
                   << std::format(fmt, std::forward<Args>(args)...)
@@ -38,6 +40,7 @@ void log_implement(std::string_view color,
     else
     {
         std::cout << color
+                  << "[" << std::this_thread::get_id() << "]"
                   << "[" << file << ":" << line << "] "
                   << func << "(): "
                   << std::format(fmt, std::forward<Args>(args)...)

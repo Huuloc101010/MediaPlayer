@@ -4,6 +4,7 @@
 #include <optional>
 #include <deque>
 #include <condition_variable>
+#include <shared_mutex>
 #include "log.h"
 
 template<typename T>
@@ -73,6 +74,12 @@ public:
         m_queue.clear();
         lock.unlock();
         m_condition_variable.notify_all();
+    }
+
+    int size()
+    {
+        std::shared_lock<std::mutex> lock(m_mutex);
+        return m_queue.size();
     }
 private:
     int                     m_LimitValue{};
