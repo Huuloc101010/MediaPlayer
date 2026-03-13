@@ -14,6 +14,7 @@ class controller : public controlfunction
 public:
     controller(mediator* mediator);
     ~controller() = default;
+    void Exit() override;
 private:
     void checkevent();
     mediator*          m_Mediator = nullptr;

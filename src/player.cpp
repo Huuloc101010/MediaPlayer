@@ -36,6 +36,7 @@ void player::EventStop()
             if(m_AudioOutput)  m_AudioOutput ->Stop();
             if(m_VideoDecoder) m_VideoDecoder->Stop();
             if(m_AudioDecoder) m_AudioDecoder->Stop();
+            if(m_View)         m_View        ->Stop();
             break;
         }
 
@@ -54,12 +55,21 @@ void player::EventNext()
         case PlayerState::PAUSED:
         case PlayerState::EXITING:
         m_PlayerState = PlayerState::EXITING;
-        if(m_Demuxer)      m_Demuxer      ->Exit();
-        if(m_VideoOutput)  m_VideoOutput  ->Exit();
-        if(m_AudioOutput)  m_AudioOutput  ->Exit();
-        if(m_VideoDecoder) m_VideoDecoder ->Exit();
-        if(m_AudioDecoder) m_AudioDecoder ->Exit();
+        LOGW("1");
         if(m_Controller)   m_Controller   ->Exit();
+        LOGW("2");
+        if(m_View)         m_View         ->Exit();
+        LOGW("3");
+        if(m_VideoOutput)  m_VideoOutput  ->Exit();
+        LOGW("4");
+        if(m_AudioOutput)  m_AudioOutput  ->Exit();
+        LOGW("5");
+        if(m_VideoDecoder) m_VideoDecoder ->Exit();
+        LOGW("6");
+        if(m_AudioDecoder) m_AudioDecoder ->Exit();
+        LOGW("7");
+        if(m_Demuxer)      m_Demuxer      ->Exit();
+        LOGW("8");
         m_PlayerState = PlayerState::IDLE;
         m_PlayerEvent.clear();
         player::Start();
@@ -80,6 +90,7 @@ void player::EventPause()
             if(m_AudioOutput)  m_AudioOutput  ->Pause();
             if(m_VideoDecoder) m_VideoDecoder ->Pause();
             if(m_AudioDecoder) m_AudioDecoder ->Pause();
+            if(m_View)         m_View         ->Pause();
             break;
         }
 
@@ -100,6 +111,7 @@ void player::EventPlay()
             if(m_AudioOutput)  m_AudioOutput ->Play();
             if(m_VideoDecoder) m_VideoDecoder->Play();
             if(m_AudioDecoder) m_AudioDecoder->Play();
+            if(m_View)         m_View        ->Play();
             break;
         }
 
@@ -209,12 +221,19 @@ int player::output_audio_frame(UniqueFramePtr frame)
 
 int player::Start()
 {
+    LOGE("1");
     m_Demuxer      = std::make_unique<demuxer>(this);
+    LOGE("2");
     m_VideoDecoder = std::make_unique<videodecoder>(this);
+    LOGE("3");
     m_AudioDecoder = std::make_unique<audiodecoder>(this);
+    LOGE("4");
     m_VideoOutput  = std::make_unique<videooutput>(this);
+    LOGE("5");
     m_AudioOutput  = std::make_unique<audiooutput>(this);
+    LOGE("6");
     m_Controller   = std::make_unique<controller>(this);
+    LOGE("7");
     m_View         = std::make_unique<view>();
     LOGI("Create new object success");
     int Ret = -1;

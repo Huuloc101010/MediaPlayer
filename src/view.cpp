@@ -7,6 +7,12 @@ view::view()
 
 view::~view()
 {
+    //SDL_Quit();
+}
+
+void view::Exit()
+{
+    controlfunction::Exit();
     SDL_Quit();
 }
 
@@ -71,6 +77,10 @@ bool view::UpdateYUVTexture(const yuv& ndata)
     if(SDL_RenderCopy(m_Renderer.get(), m_Texture.get(), NULL, NULL) < 0)
     {
         LOGE("Render copy fail");
+        return false;
+    }
+    if(m_PlayerState.load() != PlayerState::PLAYING)
+    {
         return false;
     }
     SDL_RenderPresent(m_Renderer.get());

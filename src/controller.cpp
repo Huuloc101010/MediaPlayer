@@ -48,3 +48,12 @@ void controller::checkevent()
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
+
+void controller::Exit()
+{
+    controlfunction::Exit();
+    if(m_ThreadCheckEvent.joinable())
+    {
+        m_ThreadCheckEvent.join();
+    }
+}

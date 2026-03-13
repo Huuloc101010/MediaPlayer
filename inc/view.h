@@ -3,8 +3,9 @@
 
 #include <SDL2/SDL.h>
 #include "define.h"
+#include "controlfunction.h"
 
-class view
+class view : public controlfunction
 {
 public:
     view();
@@ -12,7 +13,7 @@ public:
     bool init();
     void Config(const int Width, const int Height);
     bool UpdateYUVTexture(const yuv& ndata);
-
+    void Exit() override;
 private:
     int                  m_Width    = 0;
     int                  m_Height   = 0;
