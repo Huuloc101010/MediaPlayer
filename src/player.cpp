@@ -249,7 +249,7 @@ int player::Start()
 bool player::ConfigVideoOutput()
 {
     /* allocate image where the decoded image will be put */
-    if(m_VideoOutput)
+    if(m_VideoOutput && m_VideoDecoder && m_View)
     {
         int m_Width = m_VideoDecoder->GetWidth();
         int m_Height = m_VideoDecoder->GetHeight();
