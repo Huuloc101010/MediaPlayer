@@ -56,7 +56,7 @@ int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 void decoder::ThreadDecode()
 {
     UniquePacketPtr Packet = nullptr;
-    while(m_PlayerState.load() != PlayerState::EXITING)
+    while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::STOPPED))
     {
         auto PacketOpt = m_QueueSafe.pop();
         if(PacketOpt == std::nullopt)
@@ -165,10 +165,15 @@ const std::string decoder::err2str(int errnum)
     return m_mediator->err2str(errnum);
 }
 
+void decoder::Stop()
+{
+    controlfunction::Stop();
+    m_QueueSafe.release();
+}
+
 void decoder::Exit()
 {
     controlfunction::Exit();
-    m_QueueSafe.release();
     if(m_ThreadDecode.joinable())
     {
         m_ThreadDecode.join();

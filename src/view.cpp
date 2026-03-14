@@ -56,6 +56,10 @@ void view::Config(const int Width, const int Height)
 
 bool view::UpdateYUVTexture(const yuv& ndata)
 {
+    if(m_PlayerState.load() != PlayerState::PLAYING)
+    {
+        return false;
+    }
     // Push data to GPU
     if(SDL_UpdateYUVTexture(m_Texture.get(), NULL, 
         ndata.plane_y, ndata.linesize_y,           
@@ -76,10 +80,7 @@ bool view::UpdateYUVTexture(const yuv& ndata)
         LOGE("Render copy fail");
         return false;
     }
-    if(m_PlayerState.load() != PlayerState::PLAYING)
-    {
-        return false;
-    }
+    
     SDL_RenderPresent(m_Renderer.get());
     return true;
 }
@@ -129,15 +130,16 @@ void view::Pause()
 void view::Stop()
 {
     controlfunction::Stop();
+    clear();
     view::SDLStop();
+    SDL_Quit();
 }
 
 void view::Exit()
 {
     controlfunction::Exit();
-   // m_QueueSafe.release();
-    //view::Exit();
     view::SDLStop();
+    clear();
 }
 
 void view::SDLStart()

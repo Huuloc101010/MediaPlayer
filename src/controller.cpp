@@ -21,9 +21,9 @@ controller::controller(mediator* mediator) : m_Mediator(mediator)
 void controller::checkevent()
 {
     SDL_Event Event{};
-    while(m_PlayerState.load() != PlayerState::EXITING)
+    while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::STOPPED))
     {
-        while((SDL_PollEvent(&Event)) && m_PlayerState.load() != PlayerState::EXITING)
+        while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::STOPPED) && (SDL_PollEvent(&Event)))
         {
             switch(Event.type)
             {

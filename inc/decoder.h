@@ -18,6 +18,7 @@ public:
     const std::string err2str(int errnum);
     void PushPacket(UniquePacketPtr Packet);
     virtual void SetLimitQueueDecoder(const int LimitValue);
+    void Stop() override;
     void Exit() override; 
 protected:
     void ThreadDecode();

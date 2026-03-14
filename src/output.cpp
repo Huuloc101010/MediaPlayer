@@ -12,6 +12,12 @@ bool output::StartThread()
     return true;
 }
 
+void output::Stop()
+{
+    controlfunction::Stop();
+    m_QueueSafe.release();
+}
+
 void output::Exit()
 {
     if(m_ThreadShow.joinable())

@@ -20,6 +20,10 @@ player::player() : m_TheadProcessEvent(&player::TheadProcessEvent, this)
 void player::EventQuit()
 {
     LOGW("Received event quit");
+    LOGW("Received event quit");
+    LOGW("Received event quit");
+    LOGW("Received event quit");
+    LOGW("Received event quit");
     exit(0);
 }
 
@@ -54,22 +58,40 @@ void player::EventNext()
         case PlayerState::PLAYING:
         case PlayerState::PAUSED:
         case PlayerState::EXITING:
-        m_PlayerState = PlayerState::EXITING;
+
+        m_PlayerState = PlayerState::STOPPED;
         LOGW("1");
-        if(m_Controller)   m_Controller   ->Exit();
+        if(m_Controller)   m_Controller   ->Stop();
         LOGW("2");
-        if(m_View)         m_View         ->Exit();
+        if(m_Demuxer)      m_Demuxer      ->Stop();
         LOGW("3");
-        if(m_VideoOutput)  m_VideoOutput  ->Exit();
+        if(m_VideoDecoder) m_VideoDecoder ->Stop();
         LOGW("4");
-        if(m_AudioOutput)  m_AudioOutput  ->Exit();
+        if(m_AudioDecoder) m_AudioDecoder ->Stop();
         LOGW("5");
-        if(m_VideoDecoder) m_VideoDecoder ->Exit();
+        if(m_VideoOutput)  m_VideoOutput  ->Stop();
         LOGW("6");
-        if(m_AudioDecoder) m_AudioDecoder ->Exit();
+        if(m_AudioOutput)  m_AudioOutput  ->Stop();
         LOGW("7");
-        if(m_Demuxer)      m_Demuxer      ->Exit();
+        if(m_View)         m_View         ->Stop();
         LOGW("8");
+
+        m_PlayerState = PlayerState::EXITING;
+        LOGW("9");
+        if(m_Controller)   m_Controller   ->Exit();
+        LOGW("10");
+        if(m_View)         m_View         ->Exit();
+        LOGW("11");
+        if(m_VideoOutput)  m_VideoOutput  ->Exit();
+        LOGW("12");
+        if(m_AudioOutput)  m_AudioOutput  ->Exit();
+        LOGW("13");
+        if(m_AudioDecoder) m_AudioDecoder ->Exit();
+        LOGW("14");
+        if(m_VideoDecoder) m_VideoDecoder ->Exit();
+        LOGW("15");
+        if(m_Demuxer)      m_Demuxer      ->Exit();
+        LOGW("16");
         m_PlayerState = PlayerState::IDLE;
         m_PlayerEvent.clear();
         player::Start();

@@ -78,7 +78,7 @@ void videooutput::ThreadProcessFramePtr()
         return;
     }
 
-    while(m_PlayerState != PlayerState::EXITING)
+    while((m_PlayerState != PlayerState::EXITING) && (m_PlayerState != PlayerState::STOPPED))
     {
 
         if(CheckStateExit())
