@@ -3,6 +3,7 @@
 sudo -v
 sudo apt update
 sudo apt install -y \
+make \
 g++-13 \
 pkg-config \
 libsdl2-dev \
