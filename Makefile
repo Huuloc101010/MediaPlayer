@@ -11,7 +11,7 @@ TARGET = player
 $(TARGET): $(OBJ)
 	$(CXX) $(OBJ) -o $(TARGET) $(LIBS)
 
-buildmakeo: src/%.cpp
+build/%.o: src/%.cpp
 	mkdir -p build
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
