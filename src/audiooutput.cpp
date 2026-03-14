@@ -6,12 +6,11 @@
 audiooutput::audiooutput(mediator* mediator)
                         : m_Mediator(mediator)
 {
-
+    SetLimitQueueOutput(LIMIT_QUEUE_AUDIO_FRAME);
 }
 
 audiooutput::~audiooutput()
 {
-    SDLStop();
     if(m_ThreadShow.joinable())
     {
         m_ThreadShow.join();
@@ -19,108 +18,9 @@ audiooutput::~audiooutput()
     swr_free(&m_SwrContext);
 }
 
-bool audiooutput::config(int sample_rate,
-                         int channels,
-                         SDL_AudioFormat format,
-                         int first_pts,
-                         int samples)
-{
-    m_SampleRate = sample_rate;
-    m_FirstPts = first_pts;
-    m_Sample = samples;
-    SDL_AudioSpec want{};
-    want.freq = sample_rate;
-    want.channels = channels;
-    want.format = format;
-    want.samples = samples;
-    want.callback = sdl_callback;
-    want.userdata = this;
-    SetLimitQueueOutput(LIMIT_QUEUE_AUDIO_FRAME);
-    if(SDL_Init(SDL_INIT_AUDIO) < 0)
-    {
-        SDL_Log("SDL_Init failed: %s", SDL_GetError());
-        return false;
-    }
-    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
-    if(!m_DeviceId)
-    {
-        LOGE("SDL_OpenAudioDevice failed: {}", SDL_GetError());
-        return false;
-    }
-
-    return true;
-}
-
-void audiooutput::SDLStart()
-{
-    if(m_DeviceId)
-    {
-        SDL_PauseAudioDevice(m_DeviceId, 0);
-    }
-}
-
-void audiooutput::SDLPause()
-{
-    if(m_DeviceId)
-    {
-        SDL_PauseAudioDevice(m_DeviceId, 1);
-    }
-}
-
-void audiooutput::SDLStop()
-{
-    if(m_DeviceId)
-    {
-        SDL_PauseAudioDevice(m_DeviceId, 1);
-        SDL_CloseAudioDevice(m_DeviceId);
-        m_DeviceId = 0;
-    }
-}
-
-void audiooutput::clear()
-{
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_Deque.clear();
-}
-
-void audiooutput::push(const uint8_t* data, size_t size)
-{
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_Deque.insert(m_Deque.end(), data, data + size);
-}
-
-void audiooutput::sdl_callback(void* userdata, Uint8* stream, int len)
-{
-    if((userdata == nullptr) || (stream == nullptr))
-    {
-        return;
-    }
-    static_cast<audiooutput*>(userdata)->callback(stream, len);
-}
-
-void audiooutput::callback(Uint8* stream, int len)
-{
-    std::memset(stream, 0, len); // silence if not enable data
-
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
-    int to_copy = std::min<int>(len, m_Deque.size());
-    for(int i = 0; i < to_copy; ++i) 
-    {
-        stream[i] = m_Deque.front();
-        m_Deque.pop_front();
-    }
-
-    /* calculate audio timestamp */
-
-    m_TotalSamplePlayed += m_Sample;
-    m_Clock.last_frame_pts.store(m_Clock.pts);
-    m_Clock.pts = m_FirstPts + (static_cast<double>(m_TotalSamplePlayed) / m_SampleRate);
-    //LOGW("audio clock = {}", m_Clock.pts.load());
-}
 const double audiooutput::get_clock()
 {
-    return m_Clock.pts;
+    return 0;//m_Clock.pts;
 }
 
 void audiooutput::audio_convert(UniqueFramePtr FramePtr)
@@ -197,7 +97,12 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
 
     if(out.data && out.size > 0)
     {
-        push(out.data, out.size);
+        if(m_Mediator == nullptr)
+        {
+            LOGE("Mediator is null");
+            return;
+        }
+        m_Mediator->PushSDLAudioData(out.data, out.size);
         av_freep(&out.data);
     }
 }
@@ -220,14 +125,11 @@ bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
     Frame->channel_layout :
     av_get_default_channel_layout(Frame->channels);
    
-    if(config(Frame->sample_rate,Frame->channels ,AUDIO_S16SYS, first_pts) == false)
+    if(m_Mediator->AudioConfig(Frame->sample_rate,Frame->channels ,AUDIO_S16SYS, first_pts) == false)
     {
-        std::cerr << "config audio error" << std::endl;
         LOGE("config audio error");
         return false;
     }
-    SDLStart();
-    // init software context
     
     m_SwrContext = swr_alloc_set_opts(
     nullptr,
@@ -267,29 +169,4 @@ void audiooutput::ThreadProcessFramePtr()
         }
         audio_convert(std::move(retval.value()));
     }
-}
-
-void audiooutput::Play()
-{
-    controlfunction::Play();
-    audiooutput::SDLStart();
-}
-
-void audiooutput::Pause()
-{
-    controlfunction::Pause();
-    audiooutput::SDLPause();
-}
-
-void audiooutput::Stop()
-{
-    controlfunction::Stop();
-    audiooutput::SDLStop();
-}
-
-void audiooutput::Exit()
-{
-    controlfunction::Exit();
-    m_QueueSafe.release();
-    output::Exit();
 }

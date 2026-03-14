@@ -19,6 +19,12 @@ public:
     virtual bool InitView() = 0;
     virtual bool UpdateYUVTexture(const yuv& ndata) = 0;
     virtual void PushEvent(PlayerEvent Event) = 0;
+    virtual void PushSDLAudioData(const uint8_t* data, size_t size) = 0;
+    virtual bool AudioConfig(int sample_rate,
+                             int channels,
+                             SDL_AudioFormat format,
+                             int first_pts,
+                             int samples = 1024) = 0;
 };
 
 #endif /* _MEDIATOR_ */

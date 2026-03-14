@@ -58,7 +58,13 @@ private:
     int output_audio_frame(UniqueFramePtr frame) override;
     bool config_audio_output();
     int decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder = false) override;
+    void PushSDLAudioData(const uint8_t* data, size_t size) override;
     void TheadProcessEvent();
+    bool AudioConfig(int sample_rate,
+                     int channels,
+                     SDL_AudioFormat format,
+                     int first_pts,
+                     int samples = 1024) override;
 
     void EventQuit();
     void EventStop();

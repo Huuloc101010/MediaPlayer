@@ -314,9 +314,9 @@ int player::decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder)
 double player::GetAudioClock()
 {
     double audioclock{};
-    if(m_AudioOutput != nullptr)
+    if(m_View != nullptr)
     {
-        audioclock = m_AudioOutput->get_clock();
+        audioclock = m_View->get_clock();
     }
     return audioclock;
 }
@@ -364,4 +364,27 @@ bool player::InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_
         return false;
     }
     return true;
+}
+
+void player::PushSDLAudioData(const uint8_t* data, size_t size)
+{
+    if(m_View == nullptr)
+    {
+        LOGE("view ptr is null");
+    }
+    m_View->push(data, size);
+}
+
+bool player::AudioConfig(int sample_rate,
+                    int channels,
+                    SDL_AudioFormat format,
+                    int first_pts,
+                    int samples)
+{
+    if(m_View == nullptr)
+    {
+        LOGE("View is nullptr");
+        return false;
+    }
+    return m_View->config(sample_rate, channels, format, first_pts, samples);
 }
