@@ -87,10 +87,10 @@ void videooutput::ThreadProcessFramePtr()
         }
         CheckStateSleep();
         
-        auto retval = std::move(m_QueueSafe.pop());
+        auto retval = m_QueueSafe.pop();
         if(retval == std::nullopt)
         {
-            //LOGW("nullopt");
+            LOGW("nullopt");
             continue;
         }
         UniqueFramePtr FramePtr = std::move(retval.value());

@@ -187,12 +187,12 @@ AVRational demuxer::GetTimeBaseAudio()
     return m_AudioStream->time_base;
 }
 
-const int demuxer::GetVideoStreamIndex()
+int demuxer::GetVideoStreamIndex()
 {
     return m_VideoStreamIndex;
 }
 
-const int demuxer::GetAudioStreamIndex()
+int demuxer::GetAudioStreamIndex()
 {
     return m_AudioStreamIndex;
 }

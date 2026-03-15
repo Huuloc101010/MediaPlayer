@@ -5,7 +5,7 @@ videodecoder::videodecoder(mediator* mediator) : decoder(mediator)
     SetLimitQueueDecoder(LIMIT_QUEUE_VIDEO_PACKET);
 }
 
-const int videodecoder::GetWidth()
+int videodecoder::GetWidth()
 {
     if(m_CodecContext == nullptr)
     {
@@ -15,7 +15,7 @@ const int videodecoder::GetWidth()
     return m_CodecContext->width;
 }
 
-const int videodecoder::GetHeight()
+int videodecoder::GetHeight()
 {
     if(m_CodecContext == nullptr)
     {
@@ -25,7 +25,7 @@ const int videodecoder::GetHeight()
     return m_CodecContext->height;
 }
 
-const AVPixelFormat videodecoder::GetPixelFormat()
+AVPixelFormat videodecoder::GetPixelFormat()
 {
     if(m_CodecContext == nullptr)
     {

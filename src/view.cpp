@@ -212,7 +212,9 @@ void view::callback(Uint8* stream, int len)
     //LOGW("audio clock = {}", m_Clock.pts.load());
 }
 
-const double view::get_clock()
+
+
+double view::get_clock()
 {
     return m_Clock.pts;
 }

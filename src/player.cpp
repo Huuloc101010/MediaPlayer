@@ -43,7 +43,11 @@ void player::EventStop()
             if(m_View)         m_View        ->Stop();
             break;
         }
-
+        default:
+        {
+            LOGW("This event can't process in current state");
+            break;
+        }
     }
     m_PlayerState = PlayerState::STOPPED;
     LOGW("Received event stop");
@@ -58,44 +62,50 @@ void player::EventNext()
         case PlayerState::PLAYING:
         case PlayerState::PAUSED:
         case PlayerState::EXITING:
+        {
+            m_PlayerState = PlayerState::STOPPED;
+            LOGW("1");
+            if(m_Controller)   m_Controller   ->Stop();
+            LOGW("2");
+            if(m_Demuxer)      m_Demuxer      ->Stop();
+            LOGW("3");
+            if(m_VideoDecoder) m_VideoDecoder ->Stop();
+            LOGW("4");
+            if(m_AudioDecoder) m_AudioDecoder ->Stop();
+            LOGW("5");
+            if(m_VideoOutput)  m_VideoOutput  ->Stop();
+            LOGW("6");
+            if(m_AudioOutput)  m_AudioOutput  ->Stop();
+            LOGW("7");
+            if(m_View)         m_View         ->Stop();
+            LOGW("8");
 
-        m_PlayerState = PlayerState::STOPPED;
-        LOGW("1");
-        if(m_Controller)   m_Controller   ->Stop();
-        LOGW("2");
-        if(m_Demuxer)      m_Demuxer      ->Stop();
-        LOGW("3");
-        if(m_VideoDecoder) m_VideoDecoder ->Stop();
-        LOGW("4");
-        if(m_AudioDecoder) m_AudioDecoder ->Stop();
-        LOGW("5");
-        if(m_VideoOutput)  m_VideoOutput  ->Stop();
-        LOGW("6");
-        if(m_AudioOutput)  m_AudioOutput  ->Stop();
-        LOGW("7");
-        if(m_View)         m_View         ->Stop();
-        LOGW("8");
-
-        m_PlayerState = PlayerState::EXITING;
-        LOGW("9");
-        if(m_Controller)   m_Controller   ->Exit();
-        LOGW("10");
-        if(m_View)         m_View         ->Exit();
-        LOGW("11");
-        if(m_VideoOutput)  m_VideoOutput  ->Exit();
-        LOGW("12");
-        if(m_AudioOutput)  m_AudioOutput  ->Exit();
-        LOGW("13");
-        if(m_AudioDecoder) m_AudioDecoder ->Exit();
-        LOGW("14");
-        if(m_VideoDecoder) m_VideoDecoder ->Exit();
-        LOGW("15");
-        if(m_Demuxer)      m_Demuxer      ->Exit();
-        LOGW("16");
-        m_PlayerState = PlayerState::IDLE;
-        m_PlayerEvent.clear();
-        player::Start();
-        break;
+            m_PlayerState = PlayerState::EXITING;
+            LOGW("9");
+            if(m_Controller)   m_Controller   ->Exit();
+            LOGW("10");
+            if(m_View)         m_View         ->Exit();
+            LOGW("11");
+            if(m_VideoOutput)  m_VideoOutput  ->Exit();
+            LOGW("12");
+            if(m_AudioOutput)  m_AudioOutput  ->Exit();
+            LOGW("13");
+            if(m_AudioDecoder) m_AudioDecoder ->Exit();
+            LOGW("14");
+            if(m_VideoDecoder) m_VideoDecoder ->Exit();
+            LOGW("15");
+            if(m_Demuxer)      m_Demuxer      ->Exit();
+            LOGW("16");
+            m_PlayerState = PlayerState::IDLE;
+            m_PlayerEvent.clear();
+            player::Start();
+            break;
+        }
+        default:
+        {
+            LOGW("This event can't process in current state");
+            break;
+        }
     }
     LOGW("Received event next");
 }
@@ -115,7 +125,11 @@ void player::EventPause()
             if(m_View)         m_View         ->Pause();
             break;
         }
-
+        default:
+        {
+            LOGW("This event can't process in current state");
+            break;
+        }
     }
     m_PlayerState = PlayerState::PAUSED;
     LOGW("Received event pause");
@@ -134,6 +148,11 @@ void player::EventPlay()
             if(m_VideoDecoder) m_VideoDecoder->Play();
             if(m_AudioDecoder) m_AudioDecoder->Play();
             if(m_View)         m_View        ->Play();
+            break;
+        }
+        default:
+        {
+            LOGW("This event can't process in current state");
             break;
         }
 
@@ -171,7 +190,7 @@ void player::Config(const std::string& MediaFile)
     m_CurrentMedia = MediaFile;
 }
 
-const std::string player::err2str(int errnum)
+std::string player::err2str(int errnum)
 {
     std::string buf(AV_ERROR_MAX_STRING_SIZE, '\0');
     av_strerror(errnum, buf.data(), buf.size());
@@ -265,7 +284,7 @@ int player::Start()
     }
     
     LOGI("Demuxing succeeded");
-    return 0;
+    return Ret;
 }
 
 bool player::ConfigVideoOutput()

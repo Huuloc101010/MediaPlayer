@@ -30,7 +30,7 @@ public:
         int channels,
         SDL_AudioFormat format, int first_pts,
         int samples = 1024);
-    const double get_clock();
+    double get_clock();
 private:
     void sdl_callback(void* userdata, Uint8* stream, int len);
     void callback(Uint8* stream, int len);

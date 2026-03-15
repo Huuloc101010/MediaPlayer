@@ -156,7 +156,7 @@ int decoder::decode_packet(UniquePacketPtr pkt)
     return ret;
 }
 
-const std::string decoder::err2str(int errnum)
+std::string decoder::err2str(int errnum)
 {
     if(m_mediator == nullptr)
     {

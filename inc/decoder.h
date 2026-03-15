@@ -15,7 +15,7 @@ public:
 
     virtual ~decoder();
     int init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par);
-    const std::string err2str(int errnum);
+    std::string err2str(int errnum);
     void PushPacket(UniquePacketPtr Packet);
     virtual void SetLimitQueueDecoder(const int LimitValue);
     void Stop() override;

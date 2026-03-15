@@ -45,7 +45,7 @@ private:
     double GetAudioClock() override;
     AVRational GetTimeBaseAudio() override;
     AVRational GetTimeBaseVideo() override;
-    const std::string err2str(int errnum) override;
+    std::string err2str(int errnum) override;
     std::atomic<PlayerState>& GetCurrentState() override;
     bool ConfigVideoOutput() override;
     bool ConfigAudioOutput() override;

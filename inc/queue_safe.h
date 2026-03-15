@@ -82,7 +82,7 @@ public:
         return m_queue.size();
     }
 private:
-    int                     m_LimitValue{};
+    std::size_t              m_LimitValue{};
     std::mutex              m_mutex;
     std::deque<T>           m_queue;
     bool                    m_Exiting = false;

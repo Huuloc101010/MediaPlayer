@@ -16,8 +16,8 @@ public:
     int open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type);
     AVRational GetTimeBaseVideo();
     AVRational GetTimeBaseAudio();
-    const int GetVideoStreamIndex();
-    const int GetAudioStreamIndex();
+    int GetVideoStreamIndex();
+    int GetAudioStreamIndex();
     void Exit() override;
 
 private:

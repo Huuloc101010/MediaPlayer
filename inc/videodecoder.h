@@ -6,9 +6,9 @@ class videodecoder : public decoder
 {
 public:
     videodecoder(mediator* mediator);
-    const int GetWidth();
-    const int GetHeight();
-    const AVPixelFormat GetPixelFormat();
+    int GetWidth();
+    int GetHeight();
+    AVPixelFormat GetPixelFormat();
 };
 
 #endif /* _VIDEO_DECODER_ */

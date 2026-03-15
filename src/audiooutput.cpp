@@ -18,7 +18,7 @@ audiooutput::~audiooutput()
     swr_free(&m_SwrContext);
 }
 
-const double audiooutput::get_clock()
+double audiooutput::get_clock()
 {
     return 0;//m_Clock.pts;
 }
@@ -30,12 +30,8 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
         LOGE("FramePtr is nullptr");
         return;
     }
-    size_t unpadded_linesize = FramePtr->nb_samples * av_get_bytes_per_sample((AVSampleFormat)FramePtr->format);
  
-    //double pts = m_frame->best_effort_timestamp * av_q2d(m_audio_stream->time_base);
-    //LOGI("Audio pts:{}", pts);
-//    LOGI("Audio frame->nb_samples={}", frame->nb_samples);
-//    LOGE("{}", frame->pts);
+    //LOGE("{}", frame->pts);
     std::call_once(m_OnceFlag,
     [&](void)->void
     {
@@ -161,7 +157,7 @@ void audiooutput::ThreadProcessFramePtr()
         }
         CheckStateSleep();
 
-        auto retval = std::move(m_QueueSafe.pop());
+        auto retval = m_QueueSafe.pop();
         if(retval == std::nullopt)
         {
             LOGW("nullopt");

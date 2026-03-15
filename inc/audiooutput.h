@@ -18,7 +18,7 @@ public:
     audiooutput(mediator* mediator);
     ~audiooutput();
 
-    const double get_clock() override;
+    double get_clock() override;
     void audio_convert(UniqueFramePtr FramePtr);
 private:
     bool config_audio_output(UniqueFramePtr& frame);

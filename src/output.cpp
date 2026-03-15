@@ -41,7 +41,7 @@ void output::clear()
     LOGW("Not Implement");
 }
 
-const double output::get_clock()
+double output::get_clock()
 {
     LOGW("Not Implement");
     return {};

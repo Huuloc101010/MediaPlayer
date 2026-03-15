@@ -4,6 +4,7 @@
 #include "videooutput.h"
 int main(int argc, char** argv)
 {
+    (void)argc;
     player Player;
     try
     {
