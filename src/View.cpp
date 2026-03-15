@@ -22,7 +22,7 @@ bool View::Init()
     }
 
     m_Window.reset(SDL_CreateWindow(NAME_WINDOW,
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_SHOWN));
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_RESIZABLE));
     if(m_Window == nullptr)
     {
         LOGE("Create window SDL fail: {}", SDL_GetError());

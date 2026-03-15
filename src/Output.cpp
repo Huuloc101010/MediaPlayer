@@ -26,7 +26,7 @@ void Output::Exit()
     }
 }
 
-void Output::push_queue(UniqueFramePtr FramePtr)
+void Output::PushQueue(UniqueFramePtr FramePtr)
 {
     m_QueueSafe.Push(std::move(FramePtr));
 }

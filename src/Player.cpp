@@ -237,7 +237,7 @@ int Player::OutputVideoFrame(UniqueFramePtr frame)
     }
     if(m_VideoOutput)
     {
-        m_VideoOutput->push_queue(std::move(frame));
+        m_VideoOutput->PushQueue(std::move(frame));
     }
     else
     {
@@ -251,7 +251,7 @@ int Player::OutputAudioFrame(UniqueFramePtr frame)
 {
     if(m_AudioOutput)
     {
-        m_AudioOutput->push_queue(std::move(frame));
+        m_AudioOutput->PushQueue(std::move(frame));
     }
     else
     {

@@ -77,7 +77,7 @@ private:
     std::unique_ptr<AudioDecoder>   m_AudioDecoder = nullptr;
     std::unique_ptr<Controller>     m_Controller   = nullptr;
     std::unique_ptr<View>           m_View         = nullptr;
-    SafeQueue<PlayerEvent>         m_PlayerEvent  = {};
+    SafeQueue<PlayerEvent>          m_PlayerEvent  = {};
     std::string                     m_CurrentMedia = {};
     std::jthread                    m_TheadProcessEvent;
 

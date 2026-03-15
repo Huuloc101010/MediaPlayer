@@ -11,7 +11,7 @@ class Output : public ControlFunction
 public:
     Output() = default;
     virtual ~Output();
-    virtual void push_queue(UniqueFramePtr FramePtr) final;
+    virtual void PushQueue(UniqueFramePtr FramePtr) final;
     virtual void SetLimitQueueOutput(const int LimitValue);
     virtual void Clear();
     virtual double GetClock();
