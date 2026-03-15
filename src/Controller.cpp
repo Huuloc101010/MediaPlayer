@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
-#include "controller.h"
-#include "log.h"
-#include "define.h"
-#include "mediator.h"
+#include "Controller.h"
+#include "Log.h"
+#include "Define.h"
+#include "Mediator.h"
 
 controller::controller(mediator* mediator) : m_Mediator(mediator)
                                            , m_ThreadCheckEvent(&controller::checkevent, this)

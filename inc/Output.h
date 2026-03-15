@@ -2,9 +2,9 @@
 #define __OUTPUT_
 
 #include <thread>
-#include <queue_safe.h>
-#include "define.h"
-#include "controlfunction.h"
+#include <SafeQueue.h>
+#include "Define.h"
+#include "ControlFunction.h"
 
 class output : public controlfunction
 {

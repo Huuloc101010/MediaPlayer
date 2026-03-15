@@ -6,9 +6,9 @@
 #include <mutex>
 #include <cstdint>
 #include <thread>
-#include "define.h"
-#include "output.h"
-#include "controlfunction.h"
+#include "Define.h"
+#include "Output.h"
+#include "ControlFunction.h"
 
 class mediator;
 

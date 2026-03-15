@@ -1,7 +1,7 @@
 #ifndef _CONTROL_FUNCTION_
 #define _CONTROL_FUNCTION_
 
-#include "define.h"
+#include "Define.h"
 
 class controlfunction
 {

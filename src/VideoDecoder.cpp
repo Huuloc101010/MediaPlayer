@@ -1,4 +1,4 @@
-#include "videodecoder.h"
+#include "VideoDecoder.h"
 
 videodecoder::videodecoder(mediator* mediator) : decoder(mediator)
 {

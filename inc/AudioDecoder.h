@@ -1,6 +1,6 @@
 #ifndef _AUDIO_DECODER_
 #define _AUDIO_DECODER_
-#include "decoder.h"
+#include "Decoder.h"
 
 class audiodecoder : public decoder
 {

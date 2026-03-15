@@ -1,7 +1,7 @@
-#include "audiooutput.h"
-#include "log.h"
+#include "AudioOutput.h"
+#include "Log.h"
 #include <cstring>
-#include "mediator.h"
+#include "Mediator.h"
 
 audiooutput::audiooutput(mediator* mediator)
                         : m_Mediator(mediator)

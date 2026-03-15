@@ -3,10 +3,10 @@
 
 #include <thread>
 #include <functional>
-#include "define.h"
-#include "mediator.h"
-#include "queue_safe.h"
-#include "controlfunction.h"
+#include "Define.h"
+#include "Mediator.h"
+#include "SafeQueue.h"
+#include "ControlFunction.h"
 
 class decoder : public controlfunction
 {

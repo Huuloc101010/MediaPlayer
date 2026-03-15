@@ -1,8 +1,8 @@
 #ifndef _DEMUXER_
 #define _DEMUXER_
 
-#include "define.h"
-#include "controlfunction.h"
+#include "Define.h"
+#include "ControlFunction.h"
 
 class mediator;
 

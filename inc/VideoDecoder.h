@@ -1,6 +1,6 @@
 #ifndef _VIDEO_DECODER_
 #define _VIDEO_DECODER_
-#include "decoder.h"
+#include "Decoder.h"
 
 class videodecoder : public decoder
 {

@@ -6,7 +6,7 @@
 #include <deque>
 #include <memory>
 #include <SDL2/SDL.h>
-#include "log.h"
+#include "Log.h"
 extern "C"
 {
 #define __STDC_CONSTANT_MACROS

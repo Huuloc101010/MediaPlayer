@@ -1,4 +1,4 @@
-#include "decoder.h"
+#include "Decoder.h"
 
 
 decoder::decoder(mediator* mediator): m_mediator(mediator)

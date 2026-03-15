@@ -1,5 +1,5 @@
 #include <cstring>
-#include "view.h"
+#include "View.h"
 
 view::view()
 {

@@ -1,7 +1,7 @@
 #include <thread>
-#include "demuxer.h"
-#include "define.h"
-#include "mediator.h"
+#include "Demuxer.h"
+#include "Define.h"
+#include "Mediator.h"
 
 demuxer::demuxer(mediator* mediator)
 {

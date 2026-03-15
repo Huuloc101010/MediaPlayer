@@ -1,7 +1,5 @@
 #include <thread>
-#include "player.h"
-#include "audiooutput.h"
-#include "videooutput.h"
+#include "Player.h"
 int main(int argc, char** argv)
 {
     (void)argc;

@@ -5,14 +5,16 @@
 #include <memory>
 #include <mutex>
 #include <map>
-#include "define.h"
-#include "mediator.h"
-#include "videodecoder.h"
-#include "audiodecoder.h"
-#include "demuxer.h"
-#include "controller.h"
-#include "view.h"
-#include "controlfunction.h"
+#include "Define.h"
+#include "Mediator.h"
+#include "VideoDecoder.h"
+#include "AudioDecoder.h"
+#include "Demuxer.h"
+#include "Controller.h"
+#include "View.h"
+#include "ControlFunction.h"
+#include "VideoOutput.h"
+#include "AudioOutput.h"
 
 extern "C"
 {
@@ -26,9 +28,6 @@ extern "C"
 #include <libavformat/avformat.h>
 #include <libswresample/swresample.h>
 }
-
-class videooutput;
-class audiooutput;
 
 class player : public mediator
              , public controlfunction

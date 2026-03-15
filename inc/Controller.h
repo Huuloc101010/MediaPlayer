@@ -4,8 +4,8 @@
 #include <thread>
 #include <unordered_map>
 #include <memory>
-#include <define.h>
-#include "controlfunction.h"
+#include <Define.h>
+#include "ControlFunction.h"
 
 class mediator;
 

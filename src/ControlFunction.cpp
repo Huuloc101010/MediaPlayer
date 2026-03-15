@@ -1,4 +1,4 @@
-#include "controlfunction.h"
+#include "ControlFunction.h"
 #include "thread"
 
 void controlfunction::Play()

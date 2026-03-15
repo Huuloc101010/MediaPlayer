@@ -1,9 +1,9 @@
 #include <iostream>
 #include <unordered_map>
-#include "player.h"
-#include "videooutput.h"
-#include "audiooutput.h"
-#include "log.h"
+#include "Player.h"
+#include "VideoOutput.h"
+#include "AudioOutput.h"
+#include "Log.h"
 
 player::player() : m_TheadProcessEvent(&player::TheadProcessEvent, this)
 {

@@ -1,4 +1,4 @@
-#include "audiodecoder.h"
+#include "AudioDecoder.h"
 
 audiodecoder::audiodecoder(mediator* mediator) : decoder(mediator)
 {

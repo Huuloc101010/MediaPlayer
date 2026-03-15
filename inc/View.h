@@ -2,8 +2,8 @@
 #define _VIEW_
 
 #include <SDL2/SDL.h>
-#include "define.h"
-#include "controlfunction.h"
+#include "Define.h"
+#include "ControlFunction.h"
 
 class view : public controlfunction
 {

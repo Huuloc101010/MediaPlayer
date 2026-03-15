@@ -1,7 +1,7 @@
 #include <vector>
-#include "videooutput.h"
-#include "log.h"
-#include "mediator.h"
+#include "VideoOutput.h"
+#include "Log.h"
+#include "Mediator.h"
 
 videooutput::videooutput(mediator* mediator) : m_Mediator(mediator)
 {
