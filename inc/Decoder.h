@@ -14,7 +14,7 @@ public:
     Decoder(Mediator* Mediator);
 
     virtual ~Decoder();
-    int init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par);
+    int ConfigDecoder(const AVCodecID codecID, AVCodecParameters* codec_par);
     std::string err2str(int errnum);
     void PushPacket(UniquePacketPtr Packet);
     virtual void SetLimitQueueDecoder(const int LimitValue);
@@ -22,7 +22,7 @@ public:
     void Exit() override; 
 protected:
     void ThreadDecode();
-    int decode_packet(UniquePacketPtr pkt);
+    int DecodePacket(UniquePacketPtr pkt);
     Mediator*                    m_mediator = nullptr;
     AVCodecContext*              m_CodecContext = nullptr;
     SafeQueue<UniquePacketPtr>  m_QueueSafe{};

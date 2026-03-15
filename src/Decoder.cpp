@@ -16,7 +16,7 @@ Decoder::~Decoder()
         avcodec_free_context(&m_CodecContext);
     }
 }
-int Decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
+int Decoder::ConfigDecoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 {
     int ret = -1;
     const AVCodec *dec = NULL;
@@ -58,21 +58,21 @@ void Decoder::ThreadDecode()
     UniquePacketPtr Packet = nullptr;
     while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::STOPPED))
     {
-        auto PacketOpt = m_QueueSafe.pop();
+        auto PacketOpt = m_QueueSafe.Pop();
         if(PacketOpt == std::nullopt)
         {
             LOGW("Null opt");
             continue;
         }
         Packet = std::move(PacketOpt.value());
-        decode_packet(std::move(Packet));
+        DecodePacket(std::move(Packet));
     }
 
 }
 
 void Decoder::PushPacket(UniquePacketPtr Packet)
 {
-    m_QueueSafe.push(std::move(Packet));
+    m_QueueSafe.Push(std::move(Packet));
 }
 
 void Decoder::SetLimitQueueDecoder(const int LimitValue)
@@ -80,7 +80,7 @@ void Decoder::SetLimitQueueDecoder(const int LimitValue)
     m_QueueSafe.SetLimitQueue(LimitValue);
 }
 
-int Decoder::decode_packet(UniquePacketPtr pkt)
+int Decoder::DecodePacket(UniquePacketPtr pkt)
 {
     if((m_CodecContext == nullptr) || (m_mediator == nullptr))
     {
@@ -135,7 +135,7 @@ int Decoder::decode_packet(UniquePacketPtr pkt)
         {
             if(m_mediator != nullptr)
             {
-                ret = m_mediator->output_video_frame(std::move(frame));
+                ret = m_mediator->OutputVideoFrame(std::move(frame));
                 frame.reset(av_frame_alloc());
             }
         }
@@ -143,7 +143,7 @@ int Decoder::decode_packet(UniquePacketPtr pkt)
         {
             if(m_mediator != nullptr)
             {
-                ret = m_mediator->output_audio_frame(std::move(frame));
+                ret = m_mediator->OutputAudioFrame(std::move(frame));
                 frame.reset(av_frame_alloc());
             }
         }
@@ -168,7 +168,7 @@ std::string Decoder::err2str(int errnum)
 void Decoder::Stop()
 {
     ControlFunction::Stop();
-    m_QueueSafe.release();
+    m_QueueSafe.Release();
 }
 
 void Decoder::Exit()

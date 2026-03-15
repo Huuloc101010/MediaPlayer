@@ -13,7 +13,7 @@ View::~View()
 }
 
 
-bool View::init()
+bool View::Init()
 {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
     {
@@ -85,7 +85,7 @@ bool View::UpdateYUVTexture(const yuv& ndata)
     return true;
 }
 
-bool View::config(int sample_rate,
+bool View::Config(int sample_rate,
                          int channels,
                          SDL_AudioFormat format,
                          int first_pts,
@@ -100,7 +100,7 @@ bool View::config(int sample_rate,
     want.format = format;
     want.samples = samples;
     want.callback = [](void* userdata, Uint8* stream, int len)
-    {static_cast<View*>(userdata)->callback(stream, len);};
+    {static_cast<View*>(userdata)->Callback(stream, len);};
     want.userdata = this;
     m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
     LOGI("Open audio device success: {}", m_DeviceId);
@@ -130,7 +130,7 @@ void View::Pause()
 void View::Stop()
 {
     ControlFunction::Stop();
-    clear();
+    Clear();
     View::SDLStop();
     SDL_Quit();
 }
@@ -139,7 +139,7 @@ void View::Exit()
 {
     ControlFunction::Exit();
     View::SDLStop();
-    clear();
+    Clear();
 }
 
 void View::SDLStart()
@@ -169,28 +169,28 @@ void View::SDLStop()
     }
 }
 
-void View::clear()
+void View::Clear()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_Deque.clear();
 }
 
-void View::push(const uint8_t* data, size_t size)
+void View::Push(const uint8_t* data, size_t Size)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    m_Deque.insert(m_Deque.end(), data, data + size);
+    m_Deque.insert(m_Deque.end(), data, data + Size);
 }
 
-void View::sdl_callback(void* userdata, Uint8* stream, int len)
+void View::SDLCallback(void* userdata, Uint8* stream, int len)
 {
     if((userdata == nullptr) || (stream == nullptr))
     {
         return;
     }
-    static_cast<View*>(userdata)->callback(stream, len);
+    static_cast<View*>(userdata)->Callback(stream, len);
 }
 
-void View::callback(Uint8* stream, int len)
+void View::Callback(Uint8* stream, int len)
 {
    // LOGE("callback called");
     std::memset(stream, 0, len); // silence if not enable data
@@ -214,7 +214,7 @@ void View::callback(Uint8* stream, int len)
 
 
 
-double View::get_clock()
+double View::GetClock()
 {
     return m_Clock.pts;
 }

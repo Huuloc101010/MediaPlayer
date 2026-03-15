@@ -18,12 +18,12 @@ AudioOutput::~AudioOutput()
     swr_free(&m_SwrContext);
 }
 
-double AudioOutput::get_clock()
+double AudioOutput::GetClock()
 {
     return 0;//m_Clock.pts;
 }
 
-void AudioOutput::audio_convert(UniqueFramePtr FramePtr)
+void AudioOutput::AudioConvert(UniqueFramePtr FramePtr)
 {
     if(FramePtr == nullptr)
     {
@@ -35,7 +35,7 @@ void AudioOutput::audio_convert(UniqueFramePtr FramePtr)
     std::call_once(m_OnceFlag,
     [&](void)->void
     {
-        if(config_audio_output(FramePtr) == false)
+        if(ConfigAudioOutput(FramePtr) == false)
         {
             LOGE("config audio fail");
             return;
@@ -103,7 +103,7 @@ void AudioOutput::audio_convert(UniqueFramePtr FramePtr)
     }
 }
 
-bool AudioOutput::config_audio_output(UniqueFramePtr& Frame)
+bool AudioOutput::ConfigAudioOutput(UniqueFramePtr& Frame)
 {
     if(Frame == nullptr)
     {
@@ -157,12 +157,12 @@ void AudioOutput::ThreadProcessFramePtr()
         }
         CheckStateSleep();
 
-        auto retval = m_QueueSafe.pop();
+        auto retval = m_QueueSafe.Pop();
         if(retval == std::nullopt)
         {
             LOGW("nullopt");
             continue;
         }
-        audio_convert(std::move(retval.value()));
+        AudioConvert(std::move(retval.value()));
     }
 }

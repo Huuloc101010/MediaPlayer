@@ -14,12 +14,12 @@
 
 // ===== LOG CORE =====
 template<typename... Args>
-void log_implement(std::string_view color,
-                   std::string_view file,
-                   int line,
-                   std::string_view func,
-                   std::format_string<Args...> fmt,
-                   Args&&... args)
+void LogImplement(std::string_view color,
+                  std::string_view file,
+                  int line,
+                  std::string_view func,
+                  std::format_string<Args...> fmt,
+                  Args&&... args)
 {
     std::unordered_set<std::string_view> cerr =
     {
@@ -50,14 +50,14 @@ void log_implement(std::string_view color,
 }
 
 // ===== MACROS =====
-#define LOGE(fmt, ...) log_implement(COLOR_RED, __FILE_NAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
-#define LOGW(fmt, ...) log_implement(COLOR_YELLOW, __FILE_NAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
-#define LOGI(fmt, ...) log_implement("", __FILE_NAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+#define LOGE(fmt, ...) LogImplement(COLOR_RED, __FILE_NAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+#define LOGW(fmt, ...) LogImplement(COLOR_YELLOW, __FILE_NAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+#define LOGI(fmt, ...) LogImplement("", __FILE_NAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 
 // Always turn on log debug
 #define ENABLE_DEBUG
 #ifdef ENABLE_DEBUG
-    #define LOGD(fmt, ...) log_implement("", __FILE_NAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
+    #define LOGD(fmt, ...) LogImplement("", __FILE_NAME__, __LINE__, __func__, fmt, ##__VA_ARGS__)
 #else
     #define LOGD(fmt, ...) ((void)0)
 #endif

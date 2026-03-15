@@ -5,7 +5,7 @@
 #include "Mediator.h"
 
 Controller::Controller(Mediator* Mediator) : m_Mediator(Mediator)
-                                           , m_ThreadCheckEvent(&Controller::checkevent, this)
+                                           , m_ThreadCheckEvent(&Controller::CheckEvent, this)
 
 {
     m_KeyCodeMap =
@@ -18,7 +18,7 @@ Controller::Controller(Mediator* Mediator) : m_Mediator(Mediator)
     };
 }
 
-void Controller::checkevent()
+void Controller::CheckEvent()
 {
     SDL_Event Event{};
     while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::STOPPED))

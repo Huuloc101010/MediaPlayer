@@ -3,7 +3,7 @@
 
 Output::~Output()
 {
-    m_QueueSafe.release();
+    m_QueueSafe.Release();
 }
 
 bool Output::StartThread()
@@ -15,7 +15,7 @@ bool Output::StartThread()
 void Output::Stop()
 {
     ControlFunction::Stop();
-    m_QueueSafe.release();
+    m_QueueSafe.Release();
 }
 
 void Output::Exit()
@@ -28,7 +28,7 @@ void Output::Exit()
 
 void Output::push_queue(UniqueFramePtr FramePtr)
 {
-    m_QueueSafe.push(std::move(FramePtr));
+    m_QueueSafe.Push(std::move(FramePtr));
 }
 
 void Output::SetLimitQueueOutput(const int LimitValue)
@@ -36,12 +36,12 @@ void Output::SetLimitQueueOutput(const int LimitValue)
     m_QueueSafe.SetLimitQueue(LimitValue);
 }
 
-void Output::clear()
+void Output::Clear()
 {
     LOGW("Not Implement");
 }
 
-double Output::get_clock()
+double Output::GetClock()
 {
     LOGW("Not Implement");
     return {};

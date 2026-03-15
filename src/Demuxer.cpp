@@ -31,7 +31,7 @@ int Demuxer::StartPlay(const std::string& Mediafile)
         return -1;
     }
  
-    if(open_codec_context(&m_VideoStreamIndex, m_FormatContext.get(), AVMEDIA_TYPE_VIDEO) >= 0)
+    if(OpenCodecContext(&m_VideoStreamIndex, m_FormatContext.get(), AVMEDIA_TYPE_VIDEO) >= 0)
     {
         m_VideoStream = m_FormatContext->streams[m_VideoStreamIndex];
         
@@ -42,7 +42,7 @@ int Demuxer::StartPlay(const std::string& Mediafile)
         }
     }
     
-    if (open_codec_context(&m_AudioStreamIndex, m_FormatContext.get(), AVMEDIA_TYPE_AUDIO) >= 0)
+    if (OpenCodecContext(&m_AudioStreamIndex, m_FormatContext.get(), AVMEDIA_TYPE_AUDIO) >= 0)
     {
         if(m_Mediator->ConfigAudioOutput() == false)
         {
@@ -61,12 +61,12 @@ int Demuxer::StartPlay(const std::string& Mediafile)
         return 1;
     }
  
-    m_ThreadReadFrame = std::jthread(&Demuxer::loop_read_frame, this);
+    m_ThreadReadFrame = std::jthread(&Demuxer::ThreadReadFrame, this);
     LOGI("Demuxing succeeded");
     return ret;
 }
 
-void Demuxer::loop_read_frame()
+void Demuxer::ThreadReadFrame()
 {
     // first allocate
     UniquePacketPtr Packet(av_packet_alloc());
@@ -92,7 +92,7 @@ void Demuxer::loop_read_frame()
             LOGE("Packet or m_Mediator is null");
             continue;
         }
-        ret = m_Mediator->decode_packet(std::move(Packet));
+        ret = m_Mediator->DecodePacket(std::move(Packet));
         if(ret != 0)
         {
             LOGE("decode fail");
@@ -103,7 +103,7 @@ void Demuxer::loop_read_frame()
     }
  
     /* flush the decoders */
-    if(m_Mediator->decode_packet(nullptr, true) != 0)
+    if(m_Mediator->DecodePacket(nullptr, true) != 0)
     {
         LOGE("Flush decoder fail");
     }
@@ -118,7 +118,7 @@ void Demuxer::Exit()
     }
 }
 
-int Demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type)
+int Demuxer::OpenCodecContext(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type)
 {
     if((stream_idx == nullptr) || (fmt_ctx == nullptr))
     {

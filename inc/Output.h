@@ -13,8 +13,8 @@ public:
     virtual ~Output();
     virtual void push_queue(UniqueFramePtr FramePtr) final;
     virtual void SetLimitQueueOutput(const int LimitValue);
-    virtual void clear();
-    virtual double get_clock();
+    virtual void Clear();
+    virtual double GetClock();
     virtual bool StartThread();
     virtual void Stop() override;
     virtual void Exit() override;

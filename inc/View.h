@@ -10,7 +10,7 @@ class View : public ControlFunction
 public:
     View();
     ~View();
-    bool init();
+    bool Init();
     void Config(const int Width, const int Height);
     bool UpdateYUVTexture(const yuv& ndata);
     void Play() override;
@@ -22,18 +22,18 @@ public:
     void SDLPause();
     void SDLStop();
 
-    void push(const uint8_t* data, size_t size);
-    void clear();
+    void Push(const uint8_t* data, size_t Size);
+    void Clear();
     
-    bool config_audio_output(UniqueFramePtr& frame);
-    bool config(int sample_rate,
+    bool ConfigAudioOutput(UniqueFramePtr& frame);
+    bool Config(int sample_rate,
         int channels,
         SDL_AudioFormat format, int first_pts,
         int samples = 1024);
-    double get_clock();
+    double GetClock();
 private:
-    void sdl_callback(void* userdata, Uint8* stream, int len);
-    void callback(Uint8* stream, int len);
+    void SDLCallback(void* userdata, Uint8* stream, int len);
+    void Callback(Uint8* stream, int len);
 
     int                  m_Width    = 0;
     int                  m_Height   = 0;

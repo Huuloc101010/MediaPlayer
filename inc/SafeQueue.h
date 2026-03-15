@@ -15,7 +15,7 @@ public:
 
     ~SafeQueue() = default;
 
-    void push(T data)
+    void Push(T data)
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         // Log for debug only
@@ -35,7 +35,7 @@ public:
         m_condition_variable.notify_one();
     }
 
-    std::optional<T> pop()
+    std::optional<T> Pop()
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_condition_variable.wait(lock, [this]
@@ -59,7 +59,7 @@ public:
         m_LimitValue = LimitValue;
     }
 
-    void release()
+    void Release()
     {
         {
             std::lock_guard<std::mutex> lock(m_mutex);
@@ -68,7 +68,7 @@ public:
         m_condition_variable.notify_all();
     }
 
-    void clear()
+    void Clear()
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_queue.clear();
@@ -76,7 +76,7 @@ public:
         m_condition_variable.notify_all();
     }
 
-    int size()
+    int Size()
     {
         std::shared_lock<std::mutex> lock(m_mutex);
         return m_queue.size();

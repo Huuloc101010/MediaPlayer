@@ -53,11 +53,10 @@ private:
     bool InitView() override;
     bool UpdateYUVTexture(const yuv& ndata) override;
     std::string ts2timestr(int64_t ts, AVRational tb);
-    int output_video_frame(UniqueFramePtr frame) override;
-    int output_audio_frame(UniqueFramePtr frame) override;
-    bool config_audio_output();
-    int decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder = false) override;
-    void PushSDLAudioData(const uint8_t* data, size_t size) override;
+    int OutputVideoFrame(UniqueFramePtr frame) override;
+    int OutputAudioFrame(UniqueFramePtr frame) override;
+    int DecodePacket(UniquePacketPtr pkt, const bool IsFlushDecoder = false) override;
+    void PushSDLAudioData(const uint8_t* data, size_t Size) override;
     void TheadProcessEvent();
     bool AudioConfig(int sample_rate,
                      int channels,

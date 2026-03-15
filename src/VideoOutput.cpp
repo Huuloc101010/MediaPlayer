@@ -33,7 +33,7 @@ void VideoOutput::Stop()
 void VideoOutput::Exit()
 {
     ControlFunction::Exit();
-    m_QueueSafe.release();
+    m_QueueSafe.Release();
     Output::Exit();
 }
 
@@ -87,7 +87,7 @@ void VideoOutput::ThreadProcessFramePtr()
         }
         CheckStateSleep();
         
-        auto retval = m_QueueSafe.pop();
+        auto retval = m_QueueSafe.Pop();
         if(retval == std::nullopt)
         {
             LOGW("nullopt");

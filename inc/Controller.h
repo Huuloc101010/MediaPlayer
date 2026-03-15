@@ -16,7 +16,7 @@ public:
     ~Controller() = default;
     void Exit() override;
 private:
-    void checkevent();
+    void CheckEvent();
     Mediator*          m_Mediator = nullptr;
     std::jthread       m_ThreadCheckEvent;
 

@@ -18,10 +18,10 @@ public:
     AudioOutput(Mediator* Mediator);
     ~AudioOutput();
 
-    double get_clock() override;
-    void audio_convert(UniqueFramePtr FramePtr);
+    double GetClock() override;
+    void AudioConvert(UniqueFramePtr FramePtr);
 private:
-    bool config_audio_output(UniqueFramePtr& frame);
+    bool ConfigAudioOutput(UniqueFramePtr& frame);
     void ThreadProcessFramePtr() override;
 
     SwrContext*         m_SwrContext = nullptr;

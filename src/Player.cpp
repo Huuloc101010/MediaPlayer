@@ -97,7 +97,7 @@ void Player::EventNext()
             if(m_Demuxer)      m_Demuxer      ->Exit();
             LOGW("16");
             m_PlayerState = PlayerState::IDLE;
-            m_PlayerEvent.clear();
+            m_PlayerEvent.Clear();
             Player::Start();
             break;
         }
@@ -163,14 +163,14 @@ void Player::EventPlay()
 
 void Player::PushEvent(PlayerEvent Event)
 {
-    m_PlayerEvent.push(Event);
+    m_PlayerEvent.Push(Event);
 }
 
 void Player::TheadProcessEvent()
 {
     while(true)
     {
-        auto EventOpt = m_PlayerEvent.pop();
+        auto EventOpt = m_PlayerEvent.Pop();
         if(EventOpt == std::nullopt)
         {
             LOGW("Event null Opt");
@@ -209,7 +209,7 @@ bool Player::InitView()
     bool RetVal = false;
     if(m_View)
     {
-        RetVal = m_View->init();
+        RetVal = m_View->Init();
     }
     if(RetVal == false)
     {
@@ -228,7 +228,7 @@ bool Player::UpdateYUVTexture(const yuv& ndata)
     return RetVal;
 }
 
-int Player::output_video_frame(UniqueFramePtr frame)
+int Player::OutputVideoFrame(UniqueFramePtr frame)
 {
     if(frame == nullptr)
     {
@@ -247,7 +247,7 @@ int Player::output_video_frame(UniqueFramePtr frame)
     return 0;
 }
 
-int Player::output_audio_frame(UniqueFramePtr frame)
+int Player::OutputAudioFrame(UniqueFramePtr frame)
 {
     if(m_AudioOutput)
     {
@@ -322,7 +322,7 @@ bool Player::ConfigAudioOutput()
     return true;
 }
 
-int Player::decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder)
+int Player::DecodePacket(UniquePacketPtr pkt, const bool IsFlushDecoder)
 {
     if((pkt == nullptr) && (IsFlushDecoder == false))
     {
@@ -357,7 +357,7 @@ double Player::GetAudioClock()
     double audioclock{};
     if(m_View != nullptr)
     {
-        audioclock = m_View->get_clock();
+        audioclock = m_View->GetClock();
     }
     return audioclock;
 }
@@ -389,7 +389,7 @@ std::atomic<PlayerState>& Player::GetCurrentState()
 
 bool Player::InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 {
-    if(m_VideoDecoder && (m_VideoDecoder->init_decoder(codecID, codec_par) != 0))
+    if(m_VideoDecoder && (m_VideoDecoder->ConfigDecoder(codecID, codec_par) != 0))
     {
         LOGE("Init Video Decoder fail");
         return false;
@@ -399,7 +399,7 @@ bool Player::InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_
 
 bool Player::InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 {
-    if(m_AudioDecoder && (m_AudioDecoder->init_decoder(codecID, codec_par) != 0))
+    if(m_AudioDecoder && (m_AudioDecoder->ConfigDecoder(codecID, codec_par) != 0))
     {
         LOGE("Init Audio Decoder fail");
         return false;
@@ -407,13 +407,13 @@ bool Player::InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_
     return true;
 }
 
-void Player::PushSDLAudioData(const uint8_t* data, size_t size)
+void Player::PushSDLAudioData(const uint8_t* data, size_t Size)
 {
     if(m_View == nullptr)
     {
         LOGE("View ptr is null");
     }
-    m_View->push(data, size);
+    m_View->Push(data, Size);
 }
 
 bool Player::AudioConfig(int sample_rate,
@@ -427,5 +427,5 @@ bool Player::AudioConfig(int sample_rate,
         LOGE("View is nullptr");
         return false;
     }
-    return m_View->config(sample_rate, channels, format, first_pts, samples);
+    return m_View->Config(sample_rate, channels, format, first_pts, samples);
 }

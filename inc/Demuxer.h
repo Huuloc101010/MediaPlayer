@@ -12,8 +12,8 @@ public:
     Demuxer(Mediator* Mediator);
     ~Demuxer() = default;
     int StartPlay(const std::string& Mediafile);
-    void loop_read_frame();
-    int open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type);
+    void ThreadReadFrame();
+    int OpenCodecContext(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type);
     AVRational GetTimeBaseVideo();
     AVRational GetTimeBaseAudio();
     int GetVideoStreamIndex();
