@@ -5,11 +5,11 @@
 #include "Define.h"
 #include "ControlFunction.h"
 
-class view : public controlfunction
+class View : public ControlFunction
 {
 public:
-    view();
-    ~view();
+    View();
+    ~View();
     bool init();
     void Config(const int Width, const int Height);
     bool UpdateYUVTexture(const yuv& ndata);

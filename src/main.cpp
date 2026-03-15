@@ -3,7 +3,7 @@
 int main(int argc, char** argv)
 {
     (void)argc;
-    player Player;
+    Player Player;
     try
     {
         Player.Config(argv[1]);

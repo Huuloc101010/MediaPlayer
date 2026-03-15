@@ -3,12 +3,12 @@
 #include "Log.h"
 #include "Mediator.h"
 
-videooutput::videooutput(mediator* mediator) : m_Mediator(mediator)
+VideoOutput::VideoOutput(Mediator* Mediator) : m_Mediator(Mediator)
 {
     SetLimitQueueOutput(LIMIT_QUEUE_VIDEO_FRAME);
 }
 
-videooutput::~videooutput()
+VideoOutput::~VideoOutput()
 {
     if(m_ThreadShow.joinable())
     {
@@ -16,28 +16,28 @@ videooutput::~videooutput()
     }
 }
 
-void videooutput::Play()
+void VideoOutput::Play()
 {
-    controlfunction::Play();
+    ControlFunction::Play();
 }
-void videooutput::Pause()
+void VideoOutput::Pause()
 {
-    controlfunction::Pause();
-}
-
-void videooutput::Stop()
-{
-    controlfunction::Stop();
+    ControlFunction::Pause();
 }
 
-void videooutput::Exit()
+void VideoOutput::Stop()
 {
-    controlfunction::Exit();
+    ControlFunction::Stop();
+}
+
+void VideoOutput::Exit()
+{
+    ControlFunction::Exit();
     m_QueueSafe.release();
-    output::Exit();
+    Output::Exit();
 }
 
-bool videooutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
+bool VideoOutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
 {
     if(frame == nullptr)
     {
@@ -66,7 +66,7 @@ bool videooutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
     return 0;
 }
 
-void videooutput::ThreadProcessFramePtr()
+void VideoOutput::ThreadProcessFramePtr()
 {
     if(m_Mediator == nullptr)
     {

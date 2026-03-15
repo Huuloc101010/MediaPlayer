@@ -3,12 +3,12 @@
 #include "Define.h"
 #include "Mediator.h"
 
-demuxer::demuxer(mediator* mediator)
+Demuxer::Demuxer(Mediator* Mediator)
 {
-    m_Mediator = mediator;
+    m_Mediator = Mediator;
 }
 
-int demuxer::StartPlay(const std::string& Mediafile)
+int Demuxer::StartPlay(const std::string& Mediafile)
 {
     int ret = 0;
     /* open input file, and allocate format context */
@@ -61,12 +61,12 @@ int demuxer::StartPlay(const std::string& Mediafile)
         return 1;
     }
  
-    m_ThreadReadFrame = std::jthread(&demuxer::loop_read_frame, this);
+    m_ThreadReadFrame = std::jthread(&Demuxer::loop_read_frame, this);
     LOGI("Demuxing succeeded");
     return ret;
 }
 
-void demuxer::loop_read_frame()
+void Demuxer::loop_read_frame()
 {
     // first allocate
     UniquePacketPtr Packet(av_packet_alloc());
@@ -109,16 +109,16 @@ void demuxer::loop_read_frame()
     }
 }
 
-void demuxer::Exit()
+void Demuxer::Exit()
 {
-    controlfunction::Exit();
+    ControlFunction::Exit();
     if(m_ThreadReadFrame.joinable())
     {
         m_ThreadReadFrame.join();
     }
 }
 
-int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type)
+int Demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type)
 {
     if((stream_idx == nullptr) || (fmt_ctx == nullptr))
     {
@@ -167,7 +167,7 @@ int demuxer::open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum 
     return 0;
 }
 
-AVRational demuxer::GetTimeBaseVideo()
+AVRational Demuxer::GetTimeBaseVideo()
 {
     if(m_VideoStream == nullptr)
     {
@@ -177,7 +177,7 @@ AVRational demuxer::GetTimeBaseVideo()
     return m_VideoStream->time_base;
 }
 
-AVRational demuxer::GetTimeBaseAudio()
+AVRational Demuxer::GetTimeBaseAudio()
 {
     if(m_AudioStream == nullptr)
     {
@@ -187,12 +187,12 @@ AVRational demuxer::GetTimeBaseAudio()
     return m_AudioStream->time_base;
 }
 
-int demuxer::GetVideoStreamIndex()
+int Demuxer::GetVideoStreamIndex()
 {
     return m_VideoStreamIndex;
 }
 
-int demuxer::GetAudioStreamIndex()
+int Demuxer::GetAudioStreamIndex()
 {
     return m_AudioStreamIndex;
 }

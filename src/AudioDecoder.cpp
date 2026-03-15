@@ -1,11 +1,11 @@
 #include "AudioDecoder.h"
 
-audiodecoder::audiodecoder(mediator* mediator) : decoder(mediator)
+AudioDecoder::AudioDecoder(Mediator* Mediator) : Decoder(Mediator)
 {
     SetLimitQueueDecoder(LIMIT_QUEUE_AUDIO_PACKET);
 }
 
-AVSampleFormat audiodecoder::GetSampleFormat()
+AVSampleFormat AudioDecoder::GetSampleFormat()
 {
     if(m_CodecContext == nullptr)
     {

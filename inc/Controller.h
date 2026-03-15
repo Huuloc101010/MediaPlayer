@@ -7,17 +7,17 @@
 #include <Define.h>
 #include "ControlFunction.h"
 
-class mediator;
+class Mediator;
 
-class controller : public controlfunction
+class Controller : public ControlFunction
 {
 public:
-    controller(mediator* mediator);
-    ~controller() = default;
+    Controller(Mediator* Mediator);
+    ~Controller() = default;
     void Exit() override;
 private:
     void checkevent();
-    mediator*          m_Mediator = nullptr;
+    Mediator*          m_Mediator = nullptr;
     std::jthread       m_ThreadCheckEvent;
 
     std::unordered_map<SDL_Keycode, PlayerEvent> m_KeyCodeMap = {};

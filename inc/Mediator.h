@@ -1,7 +1,7 @@
 #ifndef _MEDIATOR_
 #define _MEDIATOR_
 
-class mediator
+class Mediator
 {
 public:
     virtual double GetAudioClock() = 0;

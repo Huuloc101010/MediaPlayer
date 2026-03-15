@@ -3,13 +3,13 @@
 #include <cstring>
 #include "Mediator.h"
 
-audiooutput::audiooutput(mediator* mediator)
-                        : m_Mediator(mediator)
+AudioOutput::AudioOutput(Mediator* Mediator)
+                        : m_Mediator(Mediator)
 {
     SetLimitQueueOutput(LIMIT_QUEUE_AUDIO_FRAME);
 }
 
-audiooutput::~audiooutput()
+AudioOutput::~AudioOutput()
 {
     if(m_ThreadShow.joinable())
     {
@@ -18,12 +18,12 @@ audiooutput::~audiooutput()
     swr_free(&m_SwrContext);
 }
 
-double audiooutput::get_clock()
+double AudioOutput::get_clock()
 {
     return 0;//m_Clock.pts;
 }
 
-void audiooutput::audio_convert(UniqueFramePtr FramePtr)
+void AudioOutput::audio_convert(UniqueFramePtr FramePtr)
 {
     if(FramePtr == nullptr)
     {
@@ -103,7 +103,7 @@ void audiooutput::audio_convert(UniqueFramePtr FramePtr)
     }
 }
 
-bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
+bool AudioOutput::config_audio_output(UniqueFramePtr& Frame)
 {
     if(Frame == nullptr)
     {
@@ -147,7 +147,7 @@ bool audiooutput::config_audio_output(UniqueFramePtr& Frame)
 }
 
 
-void audiooutput::ThreadProcessFramePtr()
+void AudioOutput::ThreadProcessFramePtr()
 {
     while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::EXITING))
     {

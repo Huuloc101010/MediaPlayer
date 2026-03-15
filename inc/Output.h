@@ -6,11 +6,11 @@
 #include "Define.h"
 #include "ControlFunction.h"
 
-class output : public controlfunction
+class Output : public ControlFunction
 {
 public:
-    output() = default;
-    virtual ~output();
+    Output() = default;
+    virtual ~Output();
     virtual void push_queue(UniqueFramePtr FramePtr) final;
     virtual void SetLimitQueueOutput(const int LimitValue);
     virtual void clear();
@@ -22,7 +22,7 @@ protected:
     virtual void ThreadProcessFramePtr() = 0;
 
     Clock                        m_Clock{};
-    queue_safe<UniqueFramePtr>   m_QueueSafe{};
+    SafeQueue<UniqueFramePtr>   m_QueueSafe{};
     std::jthread                 m_ThreadShow;
 };
 

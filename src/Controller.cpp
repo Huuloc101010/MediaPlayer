@@ -4,8 +4,8 @@
 #include "Define.h"
 #include "Mediator.h"
 
-controller::controller(mediator* mediator) : m_Mediator(mediator)
-                                           , m_ThreadCheckEvent(&controller::checkevent, this)
+Controller::Controller(Mediator* Mediator) : m_Mediator(Mediator)
+                                           , m_ThreadCheckEvent(&Controller::checkevent, this)
 
 {
     m_KeyCodeMap =
@@ -18,7 +18,7 @@ controller::controller(mediator* mediator) : m_Mediator(mediator)
     };
 }
 
-void controller::checkevent()
+void Controller::checkevent()
 {
     SDL_Event Event{};
     while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::STOPPED))
@@ -49,9 +49,9 @@ void controller::checkevent()
     }
 }
 
-void controller::Exit()
+void Controller::Exit()
 {
-    controlfunction::Exit();
+    ControlFunction::Exit();
     if(m_ThreadCheckEvent.joinable())
     {
         m_ThreadCheckEvent.join();

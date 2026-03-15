@@ -1,24 +1,24 @@
 #include "Output.h"
 
 
-output::~output()
+Output::~Output()
 {
     m_QueueSafe.release();
 }
 
-bool output::StartThread()
+bool Output::StartThread()
 {
-    m_ThreadShow = std::jthread(&output::ThreadProcessFramePtr, this);
+    m_ThreadShow = std::jthread(&Output::ThreadProcessFramePtr, this);
     return true;
 }
 
-void output::Stop()
+void Output::Stop()
 {
-    controlfunction::Stop();
+    ControlFunction::Stop();
     m_QueueSafe.release();
 }
 
-void output::Exit()
+void Output::Exit()
 {
     if(m_ThreadShow.joinable())
     {
@@ -26,22 +26,22 @@ void output::Exit()
     }
 }
 
-void output::push_queue(UniqueFramePtr FramePtr)
+void Output::push_queue(UniqueFramePtr FramePtr)
 {
     m_QueueSafe.push(std::move(FramePtr));
 }
 
-void output::SetLimitQueueOutput(const int LimitValue)
+void Output::SetLimitQueueOutput(const int LimitValue)
 {
     m_QueueSafe.SetLimitQueue(LimitValue);
 }
 
-void output::clear()
+void Output::clear()
 {
     LOGW("Not Implement");
 }
 
-double output::get_clock()
+double Output::get_clock()
 {
     LOGW("Not Implement");
     return {};

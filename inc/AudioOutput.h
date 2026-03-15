@@ -10,13 +10,13 @@
 #include "Output.h"
 #include "ControlFunction.h"
 
-class mediator;
+class Mediator;
 
-class audiooutput : public output
+class AudioOutput : public Output
 {
 public:
-    audiooutput(mediator* mediator);
-    ~audiooutput();
+    AudioOutput(Mediator* Mediator);
+    ~AudioOutput();
 
     double get_clock() override;
     void audio_convert(UniqueFramePtr FramePtr);
@@ -26,7 +26,7 @@ private:
 
     SwrContext*         m_SwrContext = nullptr;
     std::once_flag      m_OnceFlag{};
-    mediator*           m_Mediator{};
+    Mediator*           m_Mediator{};
 };
 
 #endif /* _AUDIO_OUTPUT_*/

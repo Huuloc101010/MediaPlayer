@@ -1,11 +1,11 @@
 #include "VideoDecoder.h"
 
-videodecoder::videodecoder(mediator* mediator) : decoder(mediator)
+VideoDecoder::VideoDecoder(Mediator* Mediator) : Decoder(Mediator)
 {
     SetLimitQueueDecoder(LIMIT_QUEUE_VIDEO_PACKET);
 }
 
-int videodecoder::GetWidth()
+int VideoDecoder::GetWidth()
 {
     if(m_CodecContext == nullptr)
     {
@@ -15,7 +15,7 @@ int videodecoder::GetWidth()
     return m_CodecContext->width;
 }
 
-int videodecoder::GetHeight()
+int VideoDecoder::GetHeight()
 {
     if(m_CodecContext == nullptr)
     {
@@ -25,7 +25,7 @@ int videodecoder::GetHeight()
     return m_CodecContext->height;
 }
 
-AVPixelFormat videodecoder::GetPixelFormat()
+AVPixelFormat VideoDecoder::GetPixelFormat()
 {
     if(m_CodecContext == nullptr)
     {

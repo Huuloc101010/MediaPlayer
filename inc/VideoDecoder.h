@@ -2,10 +2,10 @@
 #define _VIDEO_DECODER_
 #include "Decoder.h"
 
-class videodecoder : public decoder
+class VideoDecoder : public Decoder
 {
 public:
-    videodecoder(mediator* mediator);
+    VideoDecoder(Mediator* Mediator);
     int GetWidth();
     int GetHeight();
     AVPixelFormat GetPixelFormat();

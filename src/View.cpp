@@ -1,19 +1,19 @@
 #include <cstring>
 #include "View.h"
 
-view::view()
+View::View()
 {
     
 }
 
-view::~view()
+View::~View()
 {
     SDLStop();
     //SDL_Quit();
 }
 
 
-bool view::init()
+bool View::init()
 {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
     {
@@ -48,13 +48,13 @@ bool view::init()
     return true;
 }
 
-void view::Config(const int Width, const int Height)
+void View::Config(const int Width, const int Height)
 {
     m_Width = Width;
     m_Height = Height;
 }
 
-bool view::UpdateYUVTexture(const yuv& ndata)
+bool View::UpdateYUVTexture(const yuv& ndata)
 {
     if(m_PlayerState.load() != PlayerState::PLAYING)
     {
@@ -85,7 +85,7 @@ bool view::UpdateYUVTexture(const yuv& ndata)
     return true;
 }
 
-bool view::config(int sample_rate,
+bool View::config(int sample_rate,
                          int channels,
                          SDL_AudioFormat format,
                          int first_pts,
@@ -100,7 +100,7 @@ bool view::config(int sample_rate,
     want.format = format;
     want.samples = samples;
     want.callback = [](void* userdata, Uint8* stream, int len)
-    {static_cast<view*>(userdata)->callback(stream, len);};
+    {static_cast<View*>(userdata)->callback(stream, len);};
     want.userdata = this;
     m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
     LOGI("Open audio device success: {}", m_DeviceId);
@@ -109,40 +109,40 @@ bool view::config(int sample_rate,
         LOGE("SDL_OpenAudioDevice failed: {}", SDL_GetError());
         return false;
     }
-    view::Play();
+    View::Play();
     return true;
 }
 
 
-void view::Play()
+void View::Play()
 {
-    controlfunction::Play();
-    view::SDLStart();
-    LOGE("view::play");
+    ControlFunction::Play();
+    View::SDLStart();
+    LOGE("View::play");
 }
 
-void view::Pause()
+void View::Pause()
 {
-    controlfunction::Pause();
-    view::SDLPause();
+    ControlFunction::Pause();
+    View::SDLPause();
 }
 
-void view::Stop()
+void View::Stop()
 {
-    controlfunction::Stop();
+    ControlFunction::Stop();
     clear();
-    view::SDLStop();
+    View::SDLStop();
     SDL_Quit();
 }
 
-void view::Exit()
+void View::Exit()
 {
-    controlfunction::Exit();
-    view::SDLStop();
+    ControlFunction::Exit();
+    View::SDLStop();
     clear();
 }
 
-void view::SDLStart()
+void View::SDLStart()
 {
     LOGE("SDL start");
     if(m_DeviceId)
@@ -151,7 +151,7 @@ void view::SDLStart()
     }
 }
 
-void view::SDLPause()
+void View::SDLPause()
 {
     if(m_DeviceId)
     {
@@ -159,7 +159,7 @@ void view::SDLPause()
     }
 }
 
-void view::SDLStop()
+void View::SDLStop()
 {
     if(m_DeviceId)
     {
@@ -169,28 +169,28 @@ void view::SDLStop()
     }
 }
 
-void view::clear()
+void View::clear()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_Deque.clear();
 }
 
-void view::push(const uint8_t* data, size_t size)
+void View::push(const uint8_t* data, size_t size)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_Deque.insert(m_Deque.end(), data, data + size);
 }
 
-void view::sdl_callback(void* userdata, Uint8* stream, int len)
+void View::sdl_callback(void* userdata, Uint8* stream, int len)
 {
     if((userdata == nullptr) || (stream == nullptr))
     {
         return;
     }
-    static_cast<view*>(userdata)->callback(stream, len);
+    static_cast<View*>(userdata)->callback(stream, len);
 }
 
-void view::callback(Uint8* stream, int len)
+void View::callback(Uint8* stream, int len)
 {
    // LOGE("callback called");
     std::memset(stream, 0, len); // silence if not enable data
@@ -214,7 +214,7 @@ void view::callback(Uint8* stream, int len)
 
 
 
-double view::get_clock()
+double View::get_clock()
 {
     return m_Clock.pts;
 }

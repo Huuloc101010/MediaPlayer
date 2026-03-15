@@ -3,7 +3,7 @@
 
 #include "Define.h"
 
-class controlfunction
+class ControlFunction
 {
 public:
     virtual void Play() ;

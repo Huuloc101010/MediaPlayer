@@ -10,13 +10,13 @@
 #include "Output.h"
 #include "ControlFunction.h"
 
-class mediator;
+class Mediator;
 
-class videooutput : public output
+class VideoOutput : public Output
 {
 public:
-    videooutput(mediator* mediator);
-    ~videooutput();
+    VideoOutput(Mediator* Mediator);
+    ~VideoOutput();
     bool UpdateYUVTexture(const yuv& ndata);
     bool ConvertFramePtrToRawData(UniqueFramePtr frame);
     void ThreadProcessFramePtr() override;
@@ -25,7 +25,7 @@ public:
     void Stop() override;
     void Exit() override;
 private:
-    mediator*            m_Mediator{};
+    Mediator*            m_Mediator{};
 };
 
 #endif /*_VIDEO_OUTPUT_*/

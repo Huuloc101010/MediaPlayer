@@ -8,12 +8,12 @@
 #include "SafeQueue.h"
 #include "ControlFunction.h"
 
-class decoder : public controlfunction
+class Decoder : public ControlFunction
 {
 public:
-    decoder(mediator* mediator);
+    Decoder(Mediator* Mediator);
 
-    virtual ~decoder();
+    virtual ~Decoder();
     int init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par);
     std::string err2str(int errnum);
     void PushPacket(UniquePacketPtr Packet);
@@ -23,9 +23,9 @@ public:
 protected:
     void ThreadDecode();
     int decode_packet(UniquePacketPtr pkt);
-    mediator*                    m_mediator = nullptr;
+    Mediator*                    m_mediator = nullptr;
     AVCodecContext*              m_CodecContext = nullptr;
-    queue_safe<UniquePacketPtr>  m_QueueSafe{};
+    SafeQueue<UniquePacketPtr>  m_QueueSafe{};
     std::jthread                 m_ThreadDecode{};
 };
 

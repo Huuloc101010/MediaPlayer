@@ -1,11 +1,11 @@
 #include "Decoder.h"
 
 
-decoder::decoder(mediator* mediator): m_mediator(mediator)
+Decoder::Decoder(Mediator* Mediator): m_mediator(Mediator)
 {
 }
 
-decoder::~decoder()
+Decoder::~Decoder()
 {
     if(m_ThreadDecode.joinable())
     {
@@ -16,11 +16,11 @@ decoder::~decoder()
         avcodec_free_context(&m_CodecContext);
     }
 }
-int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
+int Decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 {
     int ret = -1;
     const AVCodec *dec = NULL;
-    /* find decoder for the stream */
+    /* find Decoder for the stream */
     dec = avcodec_find_decoder(codecID);
     if (!dec)
     {
@@ -28,7 +28,7 @@ int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
         return AVERROR(EINVAL);
     }
 
-    /* Allocate a codec context for the decoder */
+    /* Allocate a codec context for the Decoder */
     m_CodecContext = avcodec_alloc_context3(dec);
     if (!m_CodecContext)
     {
@@ -39,7 +39,7 @@ int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
     /* Copy codec parameters from input stream to output codec context */
     if ((ret = avcodec_parameters_to_context(m_CodecContext, codec_par)) < 0)
     {
-        LOGE("Failed to copy {} codec parameters to decoder context", av_get_media_type_string(codec_par->codec_type));
+        LOGE("Failed to copy {} codec parameters to Decoder context", av_get_media_type_string(codec_par->codec_type));
         return ret;
     }
 
@@ -49,11 +49,11 @@ int decoder::init_decoder(const AVCodecID codecID, AVCodecParameters* codec_par)
         LOGE("Failed to open {} codec", av_get_media_type_string(codec_par->codec_type));
         return ret;
     }
-    m_ThreadDecode = std::jthread(&decoder::ThreadDecode, this);
+    m_ThreadDecode = std::jthread(&Decoder::ThreadDecode, this);
     return 0;
 }
 
-void decoder::ThreadDecode()
+void Decoder::ThreadDecode()
 {
     UniquePacketPtr Packet = nullptr;
     while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::STOPPED))
@@ -70,17 +70,17 @@ void decoder::ThreadDecode()
 
 }
 
-void decoder::PushPacket(UniquePacketPtr Packet)
+void Decoder::PushPacket(UniquePacketPtr Packet)
 {
     m_QueueSafe.push(std::move(Packet));
 }
 
-void decoder::SetLimitQueueDecoder(const int LimitValue)
+void Decoder::SetLimitQueueDecoder(const int LimitValue)
 {
     m_QueueSafe.SetLimitQueue(LimitValue);
 }
 
-int decoder::decode_packet(UniquePacketPtr pkt)
+int Decoder::decode_packet(UniquePacketPtr pkt)
 {
     if((m_CodecContext == nullptr) || (m_mediator == nullptr))
     {
@@ -102,7 +102,7 @@ int decoder::decode_packet(UniquePacketPtr pkt)
     }
     CheckStateSleep();
 
-    // submit the packet to the decoder
+    // submit the packet to the Decoder
     ret = avcodec_send_packet(m_CodecContext, pkt.get());
     if (ret < 0)
     {
@@ -110,7 +110,7 @@ int decoder::decode_packet(UniquePacketPtr pkt)
         return ret;
     }
 
-    // get all the available frames from the decoder
+    // get all the available frames from the Decoder
     while (ret >= 0)
     {
         if(frame == nullptr)
@@ -156,7 +156,7 @@ int decoder::decode_packet(UniquePacketPtr pkt)
     return ret;
 }
 
-std::string decoder::err2str(int errnum)
+std::string Decoder::err2str(int errnum)
 {
     if(m_mediator == nullptr)
     {
@@ -165,15 +165,15 @@ std::string decoder::err2str(int errnum)
     return m_mediator->err2str(errnum);
 }
 
-void decoder::Stop()
+void Decoder::Stop()
 {
-    controlfunction::Stop();
+    ControlFunction::Stop();
     m_QueueSafe.release();
 }
 
-void decoder::Exit()
+void Decoder::Exit()
 {
-    controlfunction::Exit();
+    ControlFunction::Exit();
     if(m_ThreadDecode.joinable())
     {
         m_ThreadDecode.join();

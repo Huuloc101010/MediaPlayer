@@ -4,13 +4,13 @@
 #include "Define.h"
 #include "ControlFunction.h"
 
-class mediator;
+class Mediator;
 
-class demuxer : public controlfunction
+class Demuxer : public ControlFunction
 {
 public:
-    demuxer(mediator* mediator);
-    ~demuxer() = default;
+    Demuxer(Mediator* Mediator);
+    ~Demuxer() = default;
     int StartPlay(const std::string& Mediafile);
     void loop_read_frame();
     int open_codec_context(int *stream_idx, AVFormatContext *fmt_ctx, enum AVMediaType type);
@@ -21,7 +21,7 @@ public:
     void Exit() override;
 
 private:
-    mediator*              m_Mediator{};
+    Mediator*              m_Mediator{};
     std::jthread           m_ThreadReadFrame;
     UniqueFormatContext    m_FormatContext = nullptr;
     AVStream*              m_VideoStream = nullptr;

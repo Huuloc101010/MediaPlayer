@@ -29,12 +29,12 @@ extern "C"
 #include <libswresample/swresample.h>
 }
 
-class player : public mediator
-             , public controlfunction
+class Player : public Mediator
+             , public ControlFunction
 {
 public:
-    player();
-    ~player() = default;
+    Player();
+    ~Player() = default;
 
     void Config(const std::string& MediaFile);
     int Start();
@@ -71,14 +71,14 @@ private:
     void EventPause();
     void EventPlay();
 
-    std::unique_ptr<demuxer>        m_Demuxer      = nullptr;
-    std::unique_ptr<videooutput>    m_VideoOutput  = nullptr;
-    std::unique_ptr<audiooutput>    m_AudioOutput  = nullptr;
-    std::unique_ptr<videodecoder>   m_VideoDecoder = nullptr;
-    std::unique_ptr<audiodecoder>   m_AudioDecoder = nullptr;
-    std::unique_ptr<controller>     m_Controller   = nullptr;
-    std::unique_ptr<view>           m_View         = nullptr;
-    queue_safe<PlayerEvent>         m_PlayerEvent  = {};
+    std::unique_ptr<Demuxer>        m_Demuxer      = nullptr;
+    std::unique_ptr<VideoOutput>    m_VideoOutput  = nullptr;
+    std::unique_ptr<AudioOutput>    m_AudioOutput  = nullptr;
+    std::unique_ptr<VideoDecoder>   m_VideoDecoder = nullptr;
+    std::unique_ptr<AudioDecoder>   m_AudioDecoder = nullptr;
+    std::unique_ptr<Controller>     m_Controller   = nullptr;
+    std::unique_ptr<View>           m_View         = nullptr;
+    SafeQueue<PlayerEvent>         m_PlayerEvent  = {};
     std::string                     m_CurrentMedia = {};
     std::jthread                    m_TheadProcessEvent;
 

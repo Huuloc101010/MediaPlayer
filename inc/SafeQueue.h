@@ -8,12 +8,12 @@
 #include "Log.h"
 
 template<typename T>
-class queue_safe
+class SafeQueue
 {
 public:
-    queue_safe() = default;
+    SafeQueue() = default;
 
-    ~queue_safe() = default;
+    ~SafeQueue() = default;
 
     void push(T data)
     {

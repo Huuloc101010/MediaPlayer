@@ -5,7 +5,7 @@
 #include "AudioOutput.h"
 #include "Log.h"
 
-player::player() : m_TheadProcessEvent(&player::TheadProcessEvent, this)
+Player::Player() : m_TheadProcessEvent(&Player::TheadProcessEvent, this)
 {
     m_MapProcessing =
     {
@@ -17,7 +17,7 @@ player::player() : m_TheadProcessEvent(&player::TheadProcessEvent, this)
     };
 }
 
-void player::EventQuit()
+void Player::EventQuit()
 {
     LOGW("Received event quit");
     LOGW("Received event quit");
@@ -27,7 +27,7 @@ void player::EventQuit()
     exit(0);
 }
 
-void player::EventStop()
+void Player::EventStop()
 {
     switch(m_PlayerState.load())
     {
@@ -53,7 +53,7 @@ void player::EventStop()
     LOGW("Received event stop");
 }
 
-void player::EventNext()
+void Player::EventNext()
 {
     switch(m_PlayerState.load())
     {
@@ -98,7 +98,7 @@ void player::EventNext()
             LOGW("16");
             m_PlayerState = PlayerState::IDLE;
             m_PlayerEvent.clear();
-            player::Start();
+            Player::Start();
             break;
         }
         default:
@@ -110,7 +110,7 @@ void player::EventNext()
     LOGW("Received event next");
 }
 
-void player::EventPause()
+void Player::EventPause()
 {
     switch(m_PlayerState.load())
     {
@@ -135,7 +135,7 @@ void player::EventPause()
     LOGW("Received event pause");
 }
 
-void player::EventPlay()
+void Player::EventPlay()
 {
     switch(m_PlayerState.load())
     {
@@ -161,12 +161,12 @@ void player::EventPlay()
     LOGW("Received event play");
 }
 
-void player::PushEvent(PlayerEvent Event)
+void Player::PushEvent(PlayerEvent Event)
 {
     m_PlayerEvent.push(Event);
 }
 
-void player::TheadProcessEvent()
+void Player::TheadProcessEvent()
 {
     while(true)
     {
@@ -185,26 +185,26 @@ void player::TheadProcessEvent()
     }
 }
 
-void player::Config(const std::string& MediaFile)
+void Player::Config(const std::string& MediaFile)
 {
     m_CurrentMedia = MediaFile;
 }
 
-std::string player::err2str(int errnum)
+std::string Player::err2str(int errnum)
 {
     std::string buf(AV_ERROR_MAX_STRING_SIZE, '\0');
     av_strerror(errnum, buf.data(), buf.size());
     return buf;
 }
 
-std::string player::ts2timestr(int64_t ts, AVRational tb)
+std::string Player::ts2timestr(int64_t ts, AVRational tb)
 {
     std::string buf(AV_TS_MAX_STRING_SIZE, '\0');
     av_ts_make_time_string(buf.data(), ts, &tb);
     return buf;
 }
 
-bool player::InitView()
+bool Player::InitView()
 {
     bool RetVal = false;
     if(m_View)
@@ -218,7 +218,7 @@ bool player::InitView()
     return true;
 }
 
-bool player::UpdateYUVTexture(const yuv& ndata)
+bool Player::UpdateYUVTexture(const yuv& ndata)
 {
     bool RetVal = false;
     if(m_View)
@@ -228,7 +228,7 @@ bool player::UpdateYUVTexture(const yuv& ndata)
     return RetVal;
 }
 
-int player::output_video_frame(UniqueFramePtr frame)
+int Player::output_video_frame(UniqueFramePtr frame)
 {
     if(frame == nullptr)
     {
@@ -247,7 +247,7 @@ int player::output_video_frame(UniqueFramePtr frame)
     return 0;
 }
 
-int player::output_audio_frame(UniqueFramePtr frame)
+int Player::output_audio_frame(UniqueFramePtr frame)
 {
     if(m_AudioOutput)
     {
@@ -260,22 +260,22 @@ int player::output_audio_frame(UniqueFramePtr frame)
     return 0;
 }
 
-int player::Start()
+int Player::Start()
 {
     LOGE("1");
-    m_Demuxer      = std::make_unique<demuxer>(this);
+    m_Demuxer      = std::make_unique<Demuxer>(this);
     LOGE("2");
-    m_VideoDecoder = std::make_unique<videodecoder>(this);
+    m_VideoDecoder = std::make_unique<VideoDecoder>(this);
     LOGE("3");
-    m_AudioDecoder = std::make_unique<audiodecoder>(this);
+    m_AudioDecoder = std::make_unique<AudioDecoder>(this);
     LOGE("4");
-    m_VideoOutput  = std::make_unique<videooutput>(this);
+    m_VideoOutput  = std::make_unique<VideoOutput>(this);
     LOGE("5");
-    m_AudioOutput  = std::make_unique<audiooutput>(this);
+    m_AudioOutput  = std::make_unique<AudioOutput>(this);
     LOGE("6");
-    m_Controller   = std::make_unique<controller>(this);
+    m_Controller   = std::make_unique<Controller>(this);
     LOGE("7");
-    m_View         = std::make_unique<view>();
+    m_View         = std::make_unique<View>();
     LOGI("Create new object success");
     int Ret = -1;
     if(m_Demuxer != nullptr)
@@ -287,7 +287,7 @@ int player::Start()
     return Ret;
 }
 
-bool player::ConfigVideoOutput()
+bool Player::ConfigVideoOutput()
 {
     /* allocate image where the decoded image will be put */
     if(m_VideoOutput && m_VideoDecoder && m_View)
@@ -309,7 +309,7 @@ bool player::ConfigVideoOutput()
     return true;
 }
 
-bool player::ConfigAudioOutput()
+bool Player::ConfigAudioOutput()
 {
     if(m_AudioOutput)
     {
@@ -322,7 +322,7 @@ bool player::ConfigAudioOutput()
     return true;
 }
 
-int player::decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder)
+int Player::decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder)
 {
     if((pkt == nullptr) && (IsFlushDecoder == false))
     {
@@ -352,7 +352,7 @@ int player::decode_packet(UniquePacketPtr pkt, const bool IsFlushDecoder)
     return 0;
 }
 
-double player::GetAudioClock()
+double Player::GetAudioClock()
 {
     double audioclock{};
     if(m_View != nullptr)
@@ -362,7 +362,7 @@ double player::GetAudioClock()
     return audioclock;
 }
 
-AVRational player::GetTimeBaseAudio()
+AVRational Player::GetTimeBaseAudio()
 {
     if(m_Demuxer == nullptr)
     {
@@ -372,7 +372,7 @@ AVRational player::GetTimeBaseAudio()
     return m_Demuxer->GetTimeBaseAudio();
 }
 
-AVRational player::GetTimeBaseVideo()
+AVRational Player::GetTimeBaseVideo()
 {
     if(m_Demuxer == nullptr)
     {
@@ -382,12 +382,12 @@ AVRational player::GetTimeBaseVideo()
     return m_Demuxer->GetTimeBaseVideo();
 }
 
-std::atomic<PlayerState>& player::GetCurrentState()
+std::atomic<PlayerState>& Player::GetCurrentState()
 {
     return m_PlayerState;
 }
 
-bool player::InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par)
+bool Player::InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 {
     if(m_VideoDecoder && (m_VideoDecoder->init_decoder(codecID, codec_par) != 0))
     {
@@ -397,7 +397,7 @@ bool player::InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_
     return true;
 }
 
-bool player::InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par)
+bool Player::InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par)
 {
     if(m_AudioDecoder && (m_AudioDecoder->init_decoder(codecID, codec_par) != 0))
     {
@@ -407,16 +407,16 @@ bool player::InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_
     return true;
 }
 
-void player::PushSDLAudioData(const uint8_t* data, size_t size)
+void Player::PushSDLAudioData(const uint8_t* data, size_t size)
 {
     if(m_View == nullptr)
     {
-        LOGE("view ptr is null");
+        LOGE("View ptr is null");
     }
     m_View->push(data, size);
 }
 
-bool player::AudioConfig(int sample_rate,
+bool Player::AudioConfig(int sample_rate,
                     int channels,
                     SDL_AudioFormat format,
                     int first_pts,

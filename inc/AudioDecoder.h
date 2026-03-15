@@ -2,10 +2,10 @@
 #define _AUDIO_DECODER_
 #include "Decoder.h"
 
-class audiodecoder : public decoder
+class AudioDecoder : public Decoder
 {
 public:
-    audiodecoder(mediator* mediator);
+    AudioDecoder(Mediator* Mediator);
     AVSampleFormat GetSampleFormat();
 };
 
