@@ -8,7 +8,7 @@ View::View()
 
 View::~View()
 {
-    SDLStop();
+    m_AudioDevice.SDLStop();
     //SDL_Quit();
 }
 
@@ -91,24 +91,7 @@ bool View::Config(int sample_rate,
                          int first_pts,
                          int samples)
 {
-    m_SampleRate = sample_rate;
-    m_FirstPts = first_pts;
-    m_Sample = samples;
-    SDL_AudioSpec want{};
-    want.freq = sample_rate;
-    want.channels = channels;
-    want.format = format;
-    want.samples = samples;
-    want.callback = [](void* userdata, Uint8* stream, int len)
-    {static_cast<View*>(userdata)->Callback(stream, len);};
-    want.userdata = this;
-    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
-    LOGI("Open audio device success: {}", m_DeviceId);
-    if(!m_DeviceId)
-    {
-        LOGE("SDL_OpenAudioDevice failed: {}", SDL_GetError());
-        return false;
-    }
+    m_AudioDevice.Config(sample_rate, channels, format, first_pts, samples);
     View::Play();
     return true;
 }
@@ -117,104 +100,37 @@ bool View::Config(int sample_rate,
 void View::Play()
 {
     ControlFunction::Play();
-    View::SDLStart();
+    m_AudioDevice.SDLStart();
     LOGE("View::play");
 }
 
 void View::Pause()
 {
     ControlFunction::Pause();
-    View::SDLPause();
+    m_AudioDevice.SDLPause();
 }
 
 void View::Stop()
 {
     ControlFunction::Stop();
-    Clear();
-    View::SDLStop();
+    m_AudioDevice.Clear();
+    m_AudioDevice.SDLStop();
     SDL_Quit();
 }
 
 void View::Exit()
 {
     ControlFunction::Exit();
-    View::SDLStop();
-    Clear();
-}
-
-void View::SDLStart()
-{
-    LOGE("SDL start");
-    if(m_DeviceId)
-    {
-        SDL_PauseAudioDevice(m_DeviceId, 0);
-    }
-}
-
-void View::SDLPause()
-{
-    if(m_DeviceId)
-    {
-        SDL_PauseAudioDevice(m_DeviceId, 1);
-    }
-}
-
-void View::SDLStop()
-{
-    if(m_DeviceId)
-    {
-        SDL_PauseAudioDevice(m_DeviceId, 1);
-        SDL_CloseAudioDevice(m_DeviceId);
-        m_DeviceId = 0;
-    }
-}
-
-void View::Clear()
-{
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_Deque.clear();
+    m_AudioDevice.SDLStop();
+    m_AudioDevice.Clear();
 }
 
 void View::Push(const uint8_t* data, size_t Size)
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_Deque.insert(m_Deque.end(), data, data + Size);
+    m_AudioDevice.Push(data, Size);
 }
 
-void View::SDLCallback(void* userdata, Uint8* stream, int len)
+std::atomic<double>& View::GetClock()
 {
-    if((userdata == nullptr) || (stream == nullptr))
-    {
-        return;
-    }
-    static_cast<View*>(userdata)->Callback(stream, len);
-}
-
-void View::Callback(Uint8* stream, int len)
-{
-   // LOGE("callback called");
-    std::memset(stream, 0, len); // silence if not enable data
-
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
-    int to_copy = std::min<int>(len, m_Deque.size());
-    for(int i = 0; i < to_copy; ++i) 
-    {
-        stream[i] = m_Deque.front();
-        m_Deque.pop_front();
-    }
-
-    /* calculate audio timestamp */
-
-    m_TotalSamplePlayed += m_Sample;
-    m_Clock.last_frame_pts.store(m_Clock.pts);
-    m_Clock.pts = m_FirstPts + (static_cast<double>(m_TotalSamplePlayed) / m_SampleRate);
-    //LOGW("audio clock = {}", m_Clock.pts.load());
-}
-
-
-
-double View::GetClock()
-{
-    return m_Clock.pts;
+    return m_AudioDevice.GetClock();
 }
