@@ -25,6 +25,9 @@ public:
                              SDL_AudioFormat format,
                              int first_pts,
                              int samples = 1024) = 0;
+    virtual int GetVideoWidth() = 0;
+    virtual int GetVideoHeight() = 0;
+    virtual void VideoConfig(int width, int height) = 0;
 };
 
 #endif /* _MEDIATOR_ */

@@ -63,6 +63,9 @@ private:
                      SDL_AudioFormat format,
                      int first_pts,
                      int samples = 1024) override;
+    int GetVideoWidth() override;
+    int GetVideoHeight() override;
+    void VideoConfig(int width, int height) override;
 
     void EventQuit();
     void EventStop();

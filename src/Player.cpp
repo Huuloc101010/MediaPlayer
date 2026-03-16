@@ -292,9 +292,6 @@ bool Player::ConfigVideoOutput()
     /* allocate image where the decoded image will be put */
     if(m_VideoOutput && m_VideoDecoder && m_View)
     {
-        int m_Width = m_VideoDecoder->GetWidth();
-        int m_Height = m_VideoDecoder->GetHeight();
-        m_View->Config(m_Width, m_Height);
         if(!m_VideoOutput->StartThread())
         {
             LOGE("start thread fail");
@@ -307,6 +304,26 @@ bool Player::ConfigVideoOutput()
         return false;
     }
     return true;
+}
+
+int Player::GetVideoWidth()
+{
+    if(m_VideoDecoder == nullptr)
+    {
+        LOGE("Video Decoder is nullptr");
+        return {};
+    }
+    return m_VideoDecoder->GetWidth();
+}
+
+int Player::GetVideoHeight()
+{
+    if(m_VideoDecoder == nullptr)
+    {
+        LOGE("Video Decoder is nullptr");
+        return {};
+    }
+    return m_VideoDecoder->GetHeight();
 }
 
 bool Player::ConfigAudioOutput()
@@ -428,4 +445,13 @@ bool Player::AudioConfig(int sample_rate,
         return false;
     }
     return m_View->Config(sample_rate, channels, format, first_pts, samples);
+}
+
+void Player::VideoConfig(int width, int height)
+{
+    if(m_View == nullptr)
+    {
+        LOGE("View ptr is null");
+    }
+    m_View->Config(width, height);
 }

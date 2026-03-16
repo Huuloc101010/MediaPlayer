@@ -20,7 +20,9 @@ extern "C"
 #include <libswresample/swresample.h>
 }
 
-#define NAME_WINDOW "Video Media Player"
+#define NAME_WINDOW              "Video Media Player"
+#define DEFAULT_WINDOW_HEIGHT    780 
+#define DEFAULT_WINDOW_WIDTH     1280 
 #define LIMIT_QUEUE_VIDEO_PACKET 50
 #define LIMIT_QUEUE_AUDIO_PACKET 100
 #define LIMIT_QUEUE_VIDEO_FRAME  7

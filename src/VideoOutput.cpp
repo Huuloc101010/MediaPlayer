@@ -73,6 +73,7 @@ void VideoOutput::ThreadProcessFramePtr()
         LOGE("m_Mediator is null");
         return;
     }
+    m_Mediator->VideoConfig(m_Mediator->GetVideoWidth(), m_Mediator->GetVideoHeight());
     if(m_Mediator->InitView() == false)
     {
         return;
