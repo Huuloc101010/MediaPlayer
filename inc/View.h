@@ -6,6 +6,7 @@
 #include "ControlFunction.h"
 #include "AudioDevice.h"
 #include "Window.h"
+#include "VideoRenderer.h"
 
 class View : public ControlFunction
 {
@@ -30,14 +31,11 @@ public:
     std::atomic<double>& GetClock();
 private:
 
+    VideoRenderer        m_VideoRenderer;
     Window               m_Window;
     AudioDevice          m_AudioDevice;
     int                  m_Width    = 0;
     int                  m_Height   = 0;
-    
-    UniqueRenderPtr      m_Renderer = nullptr;
-    UniqueTexturePtr     m_Texture  = nullptr;
-
 };
 
 #endif /* _VIEW */
