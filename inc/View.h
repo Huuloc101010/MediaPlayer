@@ -5,6 +5,7 @@
 #include "Define.h"
 #include "ControlFunction.h"
 #include "AudioDevice.h"
+#include "Window.h"
 
 class View : public ControlFunction
 {
@@ -19,10 +20,8 @@ public:
     void Stop() override;
     void Exit() override;
 
-
-
+    // Audio
     void Push(const uint8_t* data, size_t Size);
-    
     bool ConfigAudioOutput(UniqueFramePtr& frame);
     bool Config(int sample_rate,
         int channels,
@@ -31,10 +30,11 @@ public:
     std::atomic<double>& GetClock();
 private:
 
+    Window               m_Window;
     AudioDevice          m_AudioDevice;
     int                  m_Width    = 0;
     int                  m_Height   = 0;
-    UniqueWindowPtr      m_Window   = nullptr;
+    
     UniqueRenderPtr      m_Renderer = nullptr;
     UniqueTexturePtr     m_Texture  = nullptr;
 

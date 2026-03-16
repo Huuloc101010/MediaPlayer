@@ -21,15 +21,12 @@ bool View::Init()
         return false;
     }
 
-    m_Window.reset(SDL_CreateWindow(NAME_WINDOW,
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_RESIZABLE));
-    if(m_Window == nullptr)
+    if(m_Window.Init(m_Width, m_Height) == false)
     {
-        LOGE("Create window SDL fail: {}", SDL_GetError());
         return false;
     }
     LOGI("Create windows success");
-    m_Renderer.reset(SDL_CreateRenderer(m_Window.get(), -1, SDL_RENDERER_ACCELERATED));
+    m_Renderer.reset(SDL_CreateRenderer(m_Window.Get().get(), -1, SDL_RENDERER_ACCELERATED));
     if(m_Renderer == nullptr)
     {
         std::cerr << "Create renderer SDL fail: " << SDL_GetError() << std::endl;
