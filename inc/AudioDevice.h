@@ -20,7 +20,6 @@ public:
 private:
 
     void Callback(Uint8* stream, int len);
-    void SDLCallback(void* userdata, Uint8* stream, int len);
 
     std::once_flag      m_OnceFlag{};
     SDL_AudioDeviceID   m_DeviceId{0};

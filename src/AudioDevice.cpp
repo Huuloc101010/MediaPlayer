@@ -34,13 +34,31 @@ void AudioDevice::Clear()
     m_Deque.clear();
 }
 
-void AudioDevice::SDLCallback(void* userdata, Uint8* stream, int len)
+bool AudioDevice::Config(int sample_rate,
+                         int channels,
+                         SDL_AudioFormat format,
+                         int first_pts,
+                         int samples)
 {
-    if((userdata == nullptr) || (stream == nullptr))
+    m_SampleRate = sample_rate;
+    m_FirstPts = first_pts;
+    m_Sample = samples;
+    SDL_AudioSpec want{};
+    want.freq = sample_rate;
+    want.channels = channels;
+    want.format = format;
+    want.samples = samples;
+    want.callback = [](void* userdata, Uint8* stream, int len)
+    {static_cast<AudioDevice*>(userdata)->Callback(stream, len);};
+    want.userdata = this;
+    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
+    LOGI("Open audio device success: {}", m_DeviceId);
+    if(!m_DeviceId)
     {
-        return;
+        LOGE("SDL_OpenAudioDevice failed: {}", SDL_GetError());
+        return false;
     }
-    static_cast<AudioDevice*>(userdata)->Callback(stream, len);
+    return true;
 }
 
 void AudioDevice::Callback(Uint8* stream, int len)
@@ -74,32 +92,4 @@ void AudioDevice::Push(const uint8_t* data, size_t Size)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_Deque.insert(m_Deque.end(), data, data + Size);
-}
-
-bool AudioDevice::Config(int sample_rate,
-                         int channels,
-                         SDL_AudioFormat format,
-                         int first_pts,
-                         int samples)
-{
-    m_SampleRate = sample_rate;
-    m_FirstPts = first_pts;
-    m_Sample = samples;
-    SDL_AudioSpec want{};
-    want.freq = sample_rate;
-    want.channels = channels;
-    want.format = format;
-    want.samples = samples;
-    want.callback = [](void* userdata, Uint8* stream, int len)
-    {static_cast<AudioDevice*>(userdata)->Callback(stream, len);};
-    want.userdata = this;
-    m_DeviceId = SDL_OpenAudioDevice(nullptr, 0, &want, &m_Spec, 0);
-    LOGI("Open audio device success: {}", m_DeviceId);
-    if(!m_DeviceId)
-    {
-        LOGE("SDL_OpenAudioDevice failed: {}", SDL_GetError());
-        return false;
-    }
-    //View::Play();
-    return true;
 }

@@ -23,7 +23,6 @@ public:
 
     void Push(const uint8_t* data, size_t Size);
     
-    
     bool ConfigAudioOutput(UniqueFramePtr& frame);
     bool Config(int sample_rate,
         int channels,
@@ -31,7 +30,6 @@ public:
         int samples = 1024);
     std::atomic<double>& GetClock();
 private:
-    void SDLCallback(void* userdata, Uint8* stream, int len);
 
     AudioDevice          m_AudioDevice;
     int                  m_Width    = 0;
