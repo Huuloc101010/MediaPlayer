@@ -75,7 +75,6 @@ void View::Play()
 {
     ControlFunction::Play();
     m_AudioDevice.SDLStart();
-    LOGE("View::play");
 }
 
 void View::Pause()

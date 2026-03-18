@@ -3,7 +3,6 @@
 
 void AudioDevice::SDLStart()
 {
-    LOGE("SDL start");
     if(m_DeviceId)
     {
         SDL_PauseAudioDevice(m_DeviceId, 0);
