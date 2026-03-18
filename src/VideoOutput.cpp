@@ -71,7 +71,6 @@ void VideoOutput::ThreadProcessFramePtr()
             return;
         }
         CheckStateSleep();
-        
         auto retval = m_QueueSafe.Pop();
         if(retval == std::nullopt)
         {
@@ -99,7 +98,6 @@ void VideoOutput::ThreadProcessFramePtr()
         {
             std::this_thread::sleep_for(std::chrono::duration<double>(diff));
         }
-
         // video < audio -> skip frame
         if((video_pts - audio_pts) < -0.04)
         {

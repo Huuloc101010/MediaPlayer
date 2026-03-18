@@ -17,6 +17,7 @@ public:
                 int samples = 1024);
     std::atomic<double>& GetClock();
     void Push(const uint8_t* data, size_t Size);
+    void ClearAudioPts();
 private:
 
     void Callback(Uint8* stream, int len);

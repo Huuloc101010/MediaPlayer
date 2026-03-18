@@ -13,7 +13,8 @@ View::View()
 View::~View()
 {
     m_AudioDevice.SDLStop();
-    //SDL_Quit();
+    m_QueueSafe.Release();
+    SDL_Quit();
 }
 
 
@@ -88,14 +89,14 @@ void View::Stop()
     ControlFunction::Stop();
     m_AudioDevice.Clear();
     m_AudioDevice.SDLStop();
-    SDL_Quit();
 }
 
 void View::Exit()
 {
-    ControlFunction::Exit();
-    m_AudioDevice.SDLStop();
+    m_AudioDevice.SDLPause();
     m_AudioDevice.Clear();
+    m_AudioDevice.ClearAudioPts();
+    m_QueueSafe.Clear();
 }
 
 void View::Push(const uint8_t* data, size_t Size)
