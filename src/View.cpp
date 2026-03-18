@@ -4,6 +4,10 @@
 View::View()
 {
     Init();
+    m_CurrentVideoWidth  = DEFAULT_WINDOW_WIDTH;
+    m_CurrentVideoHeight = DEFAULT_WINDOW_HEIGHT;
+    m_ConfigVideoWidth   = DEFAULT_WINDOW_WIDTH;
+    m_ConfigVideoHeight  = DEFAULT_WINDOW_HEIGHT;
 }
 
 View::~View()
@@ -36,14 +40,11 @@ bool View::Init()
 
 void View::Config(const int Width, const int Height)
 {
-    m_Width = Width;
-    m_Height = Height;
+    std::lock_guard<std::mutex> lock(m_ResizeWindow);
+    m_ConfigVideoWidth  = Width;
+    m_ConfigVideoHeight = Height;
 }
 
-bool View::UpdateYUVTexture(const yuv& ndata)
-{
-    return m_VideoRenderer.UpdateYUVTexture(ndata);
-}
 
 bool View::Config(int sample_rate,
                          int channels,
@@ -56,6 +57,18 @@ bool View::Config(int sample_rate,
     return true;
 }
 
+void View::CheckResizeWindow()
+{
+    std::lock_guard<std::mutex> lock(m_ResizeWindow);
+    if((m_CurrentVideoWidth != m_ConfigVideoWidth)
+     || (m_CurrentVideoHeight != m_ConfigVideoHeight))
+    {
+        m_Window.Resize(m_ConfigVideoWidth, m_ConfigVideoHeight);
+        m_VideoRenderer.Resize(m_Window.Get(), m_ConfigVideoWidth, m_ConfigVideoHeight);
+        m_CurrentVideoWidth  = m_ConfigVideoWidth;
+        m_CurrentVideoHeight = m_ConfigVideoHeight;
+    }
+}
 
 void View::Play()
 {
@@ -93,4 +106,42 @@ void View::Push(const uint8_t* data, size_t Size)
 std::atomic<double>& View::GetClock()
 {
     return m_AudioDevice.GetClock();
+}
+
+void View::ShowVideo()
+{
+    // if Queue has no element -> Porcess other task
+    if(!m_QueueSafe.Size())
+    {
+        return;
+    }
+    auto FrameOpt = m_QueueSafe.Pop();
+    if(FrameOpt == std::nullopt)
+    {
+        LOGE("Null optional");
+        return;
+    }
+    UniqueFramePtr frame = std::move(FrameOpt.value());
+    //if(frame->format == AV_PIX_FMT_YUV420P)
+    // double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
+    // LOGI("video pts:{}", pts);
+    yuv lyuv =
+    {
+        frame->data[0],
+        frame->data[1],
+        frame->data[2],
+        frame->linesize[0],
+        frame->linesize[1],
+        frame->linesize[2]
+    };
+    
+    if(m_VideoRenderer.UpdateYUVTexture(lyuv) == false)
+    {
+        LOGE("Update YUV Texture fail");
+    }
+}
+
+void View::PushVideoFrame(UniqueFramePtr frame)
+{
+    m_QueueSafe.Push(std::move(frame));
 }

@@ -188,6 +188,16 @@ void Player::TheadProcessEvent()
     }
 }
 
+void Player::MainThreadProcess()
+{
+    while(true)
+    {
+        m_View->ShowVideo();
+        m_View->CheckResizeWindow();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
 void Player::Config(const std::string& MediaFile)
 {
     m_CurrentMedia = MediaFile;
@@ -207,14 +217,15 @@ std::string Player::ts2timestr(int64_t ts, AVRational tb)
     return buf;
 }
 
-bool Player::UpdateYUVTexture(const yuv& ndata)
+bool Player::PushVideoFrameToView(UniqueFramePtr frame)
 {
-    bool RetVal = false;
-    if(m_View)
+    if(m_View == nullptr)
     {
-        RetVal = m_View->UpdateYUVTexture(ndata);
+        LOGE("m_View is nullptr");
+        return false;
     }
-    return RetVal;
+    m_View->PushVideoFrame(std::move(frame));
+    return true;
 }
 
 int Player::OutputVideoFrame(UniqueFramePtr frame)

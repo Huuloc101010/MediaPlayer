@@ -18,7 +18,7 @@ public:
     VideoOutput(Mediator* Mediator);
     ~VideoOutput();
     bool UpdateYUVTexture(const yuv& ndata);
-    bool ConvertFramePtrToRawData(UniqueFramePtr frame);
+    bool PushFrameToView(UniqueFramePtr frame);
     void ThreadProcessFramePtr() override;
     void Play() override;
     void Pause() override;

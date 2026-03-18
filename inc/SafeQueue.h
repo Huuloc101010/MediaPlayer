@@ -78,7 +78,7 @@ public:
 
     int Size()
     {
-        std::shared_lock<std::mutex> lock(m_mutex);
+        std::unique_lock<std::mutex> lock(m_mutex);
         return m_queue.size();
     }
 private:

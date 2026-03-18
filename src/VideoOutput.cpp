@@ -37,7 +37,7 @@ void VideoOutput::Exit()
     Output::Exit();
 }
 
-bool VideoOutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
+bool VideoOutput::PushFrameToView(UniqueFramePtr frame)
 {
     if(frame == nullptr)
     {
@@ -46,21 +46,9 @@ bool VideoOutput::ConvertFramePtrToRawData(UniqueFramePtr frame)
     }
     if(frame->format == AV_PIX_FMT_YUV420P)
     {
-        // double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
-        // LOGI("video pts:{}", pts);
-        yuv lyuv =
-        {
-            frame->data[0],
-            frame->data[1],
-            frame->data[2],
-            frame->linesize[0],
-            frame->linesize[1],
-            frame->linesize[2]
-        };
-        
         if(m_Mediator)
         {
-            m_Mediator->UpdateYUVTexture(lyuv);
+            m_Mediator->PushVideoFrameToView(std::move(frame));
         }
     }
     return 0;
@@ -92,7 +80,7 @@ void VideoOutput::ThreadProcessFramePtr()
         }
         UniqueFramePtr FramePtr = std::move(retval.value());
         double audio_pts = m_Mediator->GetAudioClock();
-        LOGE("audio clock: {}", audio_pts);
+        //LOGE("audio clock: {}", audio_pts);
 
         double video_pts = 0;
         if(FramePtr->best_effort_timestamp != AV_NOPTS_VALUE)
@@ -102,7 +90,7 @@ void VideoOutput::ThreadProcessFramePtr()
         }
         m_Clock.last_frame_pts.store(m_Clock.pts.load());
         m_Clock.pts = video_pts;
-        LOGW("video clock: {}", m_Clock.pts.load());
+        //LOGW("video clock: {}", m_Clock.pts.load());
 
         double diff = video_pts - audio_pts;
 
@@ -120,6 +108,6 @@ void VideoOutput::ThreadProcessFramePtr()
         }
 
         // video - audio = ( -0.04 -> 0) show frame
-        ConvertFramePtrToRawData(std::move(FramePtr));
+        PushFrameToView(std::move(FramePtr));
     }
 }
