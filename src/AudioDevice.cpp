@@ -85,7 +85,7 @@ void AudioDevice::ClearAudioPts()
 
 void AudioDevice::Callback(Uint8* stream, int len)
 {
-   // LOGE("callback called");
+    // LOGE("callback called");
     std::memset(stream, 0, len); // silence if not enable data
 
     std::lock_guard<std::mutex> lock(m_Mutex);

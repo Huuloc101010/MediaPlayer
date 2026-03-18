@@ -54,7 +54,7 @@ bool View::Config(int sample_rate,
                          int samples)
 {
     m_AudioDevice.Config(sample_rate, channels, format, first_pts, samples);
-    View::Play();
+    m_AudioDevice.SDLStart();
     return true;
 }
 

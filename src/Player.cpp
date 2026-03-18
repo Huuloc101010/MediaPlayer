@@ -23,10 +23,6 @@ Player::Player() : m_TheadProcessEvent(&Player::TheadProcessEvent, this)
 void Player::EventQuit()
 {
     LOGW("Received event quit");
-    LOGW("Received event quit");
-    LOGW("Received event quit");
-    LOGW("Received event quit");
-    LOGW("Received event quit");
     exit(0);
 }
 
@@ -243,17 +239,11 @@ int Player::OutputAudioFrame(UniqueFramePtr frame)
 
 int Player::Start()
 {
-    LOGE("1");
     m_Demuxer      = std::make_unique<Demuxer>(this);
-    LOGE("2");
     m_VideoDecoder = std::make_unique<VideoDecoder>(this);
-    LOGE("3");
     m_AudioDecoder = std::make_unique<AudioDecoder>(this);
-    LOGE("4");
     m_VideoOutput  = std::make_unique<VideoOutput>(this);
-    LOGE("5");
     m_AudioOutput  = std::make_unique<AudioOutput>(this);
-    LOGE("6");
 
     LOGI("Create new object success");
     int Ret = -1;
