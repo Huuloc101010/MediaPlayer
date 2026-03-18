@@ -3,7 +3,7 @@
 
 View::View()
 {
-    
+    Init();
 }
 
 View::~View()
@@ -21,12 +21,12 @@ bool View::Init()
         return false;
     }
 
-    if(m_Window.Init(m_Width, m_Height) == false)
+    if(m_Window.Init(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT) == false)
     {
         return false;
     }
     LOGI("Create windows success");
-    if(m_VideoRenderer.Init(m_Window.Get(), m_Width, m_Height) == false)
+    if(m_VideoRenderer.Init(m_Window.Get(), DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT) == false)
     {
         return false;
     }

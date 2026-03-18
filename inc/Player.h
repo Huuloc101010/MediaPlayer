@@ -50,7 +50,6 @@ private:
     bool ConfigAudioOutput() override;
     bool InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) override;
     bool InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) override;
-    bool InitView() override;
     bool UpdateYUVTexture(const yuv& ndata) override;
     std::string ts2timestr(int64_t ts, AVRational tb);
     int OutputVideoFrame(UniqueFramePtr frame) override;

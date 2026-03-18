@@ -74,10 +74,6 @@ void VideoOutput::ThreadProcessFramePtr()
         return;
     }
     m_Mediator->VideoConfig(m_Mediator->GetVideoWidth(), m_Mediator->GetVideoHeight());
-    if(m_Mediator->InitView() == false)
-    {
-        return;
-    }
 
     while((m_PlayerState != PlayerState::EXITING) && (m_PlayerState != PlayerState::STOPPED))
     {

@@ -15,6 +15,9 @@ Player::Player() : m_TheadProcessEvent(&Player::TheadProcessEvent, this)
         {PlayerEvent::PAUSE, [this](){EventPause();}},
         {PlayerEvent::PLAY,  [this](){EventPlay();}},
     };
+
+    m_Controller   = std::make_unique<Controller>(this);
+    m_View         = std::make_unique<View>();
 }
 
 void Player::EventQuit()
@@ -204,20 +207,6 @@ std::string Player::ts2timestr(int64_t ts, AVRational tb)
     return buf;
 }
 
-bool Player::InitView()
-{
-    bool RetVal = false;
-    if(m_View)
-    {
-        RetVal = m_View->Init();
-    }
-    if(RetVal == false)
-    {
-        return false;
-    }
-    return true;
-}
-
 bool Player::UpdateYUVTexture(const yuv& ndata)
 {
     bool RetVal = false;
@@ -273,9 +262,7 @@ int Player::Start()
     LOGE("5");
     m_AudioOutput  = std::make_unique<AudioOutput>(this);
     LOGE("6");
-    m_Controller   = std::make_unique<Controller>(this);
-    LOGE("7");
-    m_View         = std::make_unique<View>();
+
     LOGI("Create new object success");
     int Ret = -1;
     if(m_Demuxer != nullptr)
