@@ -16,8 +16,7 @@ public:
     virtual int DecodePacket(UniquePacketPtr pkt, const bool IsFlushDecoder = false) = 0;
     virtual bool InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) = 0;
     virtual bool InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) = 0;
-    virtual bool InitView() = 0;
-    virtual bool UpdateYUVTexture(const yuv& ndata) = 0;
+    virtual bool PushVideoFrameToView(UniqueFramePtr frame) = 0;
     virtual void PushEvent(PlayerEvent Event) = 0;
     virtual void PushSDLAudioData(const uint8_t* data, size_t Size) = 0;
     virtual bool AudioConfig(int sample_rate,

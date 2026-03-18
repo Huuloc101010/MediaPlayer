@@ -8,6 +8,10 @@ void AudioDevice::SDLStart()
     {
         SDL_PauseAudioDevice(m_DeviceId, 0);
     }
+    else
+    {
+        LOGE("m_DeviceId = 0");
+    }
 }
 
 void AudioDevice::SDLPause()
@@ -16,6 +20,10 @@ void AudioDevice::SDLPause()
     {
         SDL_PauseAudioDevice(m_DeviceId, 1);
     }
+    else
+    {
+        LOGE("m_DeviceId = 0");
+    }
 }
 
 void AudioDevice::SDLStop()
@@ -23,8 +31,10 @@ void AudioDevice::SDLStop()
     if(m_DeviceId)
     {
         SDL_PauseAudioDevice(m_DeviceId, 1);
-        SDL_CloseAudioDevice(m_DeviceId);
-        m_DeviceId = 0;
+    }
+    else
+    {
+        LOGE("m_DeviceId = 0");
     }
 }
 
@@ -40,6 +50,11 @@ bool AudioDevice::Config(int sample_rate,
                          int first_pts,
                          int samples)
 {
+    if(m_DeviceId)
+    {
+        SDL_CloseAudioDevice(m_DeviceId);
+        m_DeviceId = 0;
+    }
     m_SampleRate = sample_rate;
     m_FirstPts = first_pts;
     m_Sample = samples;
@@ -61,9 +76,16 @@ bool AudioDevice::Config(int sample_rate,
     return true;
 }
 
+void AudioDevice::ClearAudioPts()
+{
+    m_Clock.pts = m_FirstPts;
+    m_Clock.last_frame_pts = m_FirstPts;
+    m_TotalSamplePlayed = 0;
+}
+
 void AudioDevice::Callback(Uint8* stream, int len)
 {
-   // LOGE("callback called");
+    // LOGE("callback called");
     std::memset(stream, 0, len); // silence if not enable data
 
     std::lock_guard<std::mutex> lock(m_Mutex);
@@ -76,7 +98,6 @@ void AudioDevice::Callback(Uint8* stream, int len)
     }
 
     /* calculate audio timestamp */
-
     m_TotalSamplePlayed += m_Sample;
     m_Clock.last_frame_pts.store(m_Clock.pts);
     m_Clock.pts = m_FirstPts + (static_cast<double>(m_TotalSamplePlayed) / m_SampleRate);

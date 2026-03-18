@@ -39,6 +39,7 @@ public:
     void Config(const std::string& MediaFile);
     int Start();
     void PushEvent(PlayerEvent Event) override;
+    void MainThreadProcess();
 
 private:
     double GetAudioClock() override;
@@ -50,8 +51,7 @@ private:
     bool ConfigAudioOutput() override;
     bool InitVideoDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) override;
     bool InitAudioDecoder(const AVCodecID codecID, AVCodecParameters* codec_par) override;
-    bool InitView() override;
-    bool UpdateYUVTexture(const yuv& ndata) override;
+    bool PushVideoFrameToView(UniqueFramePtr frame) override;
     std::string ts2timestr(int64_t ts, AVRational tb);
     int OutputVideoFrame(UniqueFramePtr frame) override;
     int OutputAudioFrame(UniqueFramePtr frame) override;

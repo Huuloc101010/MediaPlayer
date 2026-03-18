@@ -15,14 +15,13 @@ Player::Player() : m_TheadProcessEvent(&Player::TheadProcessEvent, this)
         {PlayerEvent::PAUSE, [this](){EventPause();}},
         {PlayerEvent::PLAY,  [this](){EventPlay();}},
     };
+
+    m_Controller   = std::make_unique<Controller>(this);
+    m_View         = std::make_unique<View>();
 }
 
 void Player::EventQuit()
 {
-    LOGW("Received event quit");
-    LOGW("Received event quit");
-    LOGW("Received event quit");
-    LOGW("Received event quit");
     LOGW("Received event quit");
     exit(0);
 }
@@ -64,38 +63,19 @@ void Player::EventNext()
         case PlayerState::EXITING:
         {
             m_PlayerState = PlayerState::STOPPED;
-            LOGW("1");
-            if(m_Controller)   m_Controller   ->Stop();
-            LOGW("2");
             if(m_Demuxer)      m_Demuxer      ->Stop();
-            LOGW("3");
             if(m_VideoDecoder) m_VideoDecoder ->Stop();
-            LOGW("4");
             if(m_AudioDecoder) m_AudioDecoder ->Stop();
-            LOGW("5");
             if(m_VideoOutput)  m_VideoOutput  ->Stop();
-            LOGW("6");
             if(m_AudioOutput)  m_AudioOutput  ->Stop();
-            LOGW("7");
-            if(m_View)         m_View         ->Stop();
-            LOGW("8");
 
             m_PlayerState = PlayerState::EXITING;
-            LOGW("9");
-            if(m_Controller)   m_Controller   ->Exit();
-            LOGW("10");
-            if(m_View)         m_View         ->Exit();
-            LOGW("11");
             if(m_VideoOutput)  m_VideoOutput  ->Exit();
-            LOGW("12");
             if(m_AudioOutput)  m_AudioOutput  ->Exit();
-            LOGW("13");
             if(m_AudioDecoder) m_AudioDecoder ->Exit();
-            LOGW("14");
             if(m_VideoDecoder) m_VideoDecoder ->Exit();
-            LOGW("15");
             if(m_Demuxer)      m_Demuxer      ->Exit();
-            LOGW("16");
+            if(m_View)         m_View         ->Exit();
             m_PlayerState = PlayerState::IDLE;
             m_PlayerEvent.Clear();
             Player::Start();
@@ -185,6 +165,16 @@ void Player::TheadProcessEvent()
     }
 }
 
+void Player::MainThreadProcess()
+{
+    while(true)
+    {
+        m_View->ShowVideo();
+        m_View->CheckResizeWindow();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
 void Player::Config(const std::string& MediaFile)
 {
     m_CurrentMedia = MediaFile;
@@ -204,28 +194,15 @@ std::string Player::ts2timestr(int64_t ts, AVRational tb)
     return buf;
 }
 
-bool Player::InitView()
+bool Player::PushVideoFrameToView(UniqueFramePtr frame)
 {
-    bool RetVal = false;
-    if(m_View)
+    if(m_View == nullptr)
     {
-        RetVal = m_View->Init();
-    }
-    if(RetVal == false)
-    {
+        LOGE("m_View is nullptr");
         return false;
     }
+    m_View->PushVideoFrame(std::move(frame));
     return true;
-}
-
-bool Player::UpdateYUVTexture(const yuv& ndata)
-{
-    bool RetVal = false;
-    if(m_View)
-    {
-        RetVal = m_View->UpdateYUVTexture(ndata);
-    }
-    return RetVal;
 }
 
 int Player::OutputVideoFrame(UniqueFramePtr frame)
@@ -262,20 +239,12 @@ int Player::OutputAudioFrame(UniqueFramePtr frame)
 
 int Player::Start()
 {
-    LOGE("1");
     m_Demuxer      = std::make_unique<Demuxer>(this);
-    LOGE("2");
     m_VideoDecoder = std::make_unique<VideoDecoder>(this);
-    LOGE("3");
     m_AudioDecoder = std::make_unique<AudioDecoder>(this);
-    LOGE("4");
     m_VideoOutput  = std::make_unique<VideoOutput>(this);
-    LOGE("5");
     m_AudioOutput  = std::make_unique<AudioOutput>(this);
-    LOGE("6");
-    m_Controller   = std::make_unique<Controller>(this);
-    LOGE("7");
-    m_View         = std::make_unique<View>();
+
     LOGI("Create new object success");
     int Ret = -1;
     if(m_Demuxer != nullptr)
