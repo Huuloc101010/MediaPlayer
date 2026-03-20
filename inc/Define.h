@@ -22,6 +22,7 @@ extern "C"
 
 #define NAME_WINDOW              "Video Media Player"
 #define DEFAULT_WINDOW_HEIGHT    780 
+#define DEFAULT_WINDOW_CONTROL   500 
 #define DEFAULT_WINDOW_WIDTH     1280 
 #define LIMIT_QUEUE_VIDEO_PACKET 50
 #define LIMIT_QUEUE_AUDIO_PACKET 100
@@ -72,6 +73,19 @@ struct yuv
     int linesize_y;
     int linesize_u;
     int linesize_v;
+};
+
+struct Size
+{
+    int Height;
+    int Width;
+    bool operator==(const Size& other) const = default;
+    bool operator!=(const Size& other) const = default;
+    Size& operator=(const Size& other)       = default;
+    explicit operator bool() const
+    {
+        return (Height > 0) || (Width > 0);
+    }
 };
 
 struct AudioS16Buffer

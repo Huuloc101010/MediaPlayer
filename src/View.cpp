@@ -4,10 +4,8 @@
 View::View()
 {
     Init();
-    m_CurrentVideoWidth  = DEFAULT_WINDOW_WIDTH;
-    m_CurrentVideoHeight = DEFAULT_WINDOW_HEIGHT;
-    m_ConfigVideoWidth   = DEFAULT_WINDOW_WIDTH;
-    m_ConfigVideoHeight  = DEFAULT_WINDOW_HEIGHT;
+    m_CurrentVideoSize = {DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH};
+    m_ConfigVideoSize  = m_CurrentVideoSize;
 }
 
 View::~View()
@@ -42,8 +40,7 @@ bool View::Init()
 void View::Config(const int Width, const int Height)
 {
     std::lock_guard<std::mutex> lock(m_ResizeWindow);
-    m_ConfigVideoWidth  = Width;
-    m_ConfigVideoHeight = Height;
+    m_ConfigVideoSize = {Height, Width};
 }
 
 
@@ -61,13 +58,15 @@ bool View::Config(int sample_rate,
 void View::CheckResizeWindow()
 {
     std::lock_guard<std::mutex> lock(m_ResizeWindow);
-    if((m_CurrentVideoWidth != m_ConfigVideoWidth)
-     || (m_CurrentVideoHeight != m_ConfigVideoHeight))
+    if(m_CurrentVideoSize != m_ConfigVideoSize)
     {
-        m_Window.Resize(m_ConfigVideoWidth, m_ConfigVideoHeight);
-        m_VideoRenderer.Resize(m_Window.Get(), m_ConfigVideoWidth, m_ConfigVideoHeight);
-        m_CurrentVideoWidth  = m_ConfigVideoWidth;
-        m_CurrentVideoHeight = m_ConfigVideoHeight;
+        m_Window.Resize(m_ConfigVideoSize.Width, m_ConfigVideoSize.Height);
+        m_VideoRenderer.Resize(m_Window.Get(), m_ConfigVideoSize.Width, m_ConfigVideoSize.Height);
+        m_CurrentVideoSize = m_ConfigVideoSize;
+    }
+    if(m_CurrentVideoSize == m_ConfigVideoSize)
+    {
+        return;
     }
 }
 
