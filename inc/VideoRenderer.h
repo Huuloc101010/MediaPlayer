@@ -6,17 +6,16 @@
 class VideoRenderer
 {
 public:
-    bool Init(const UniqueWindowPtr& Window, const int Width, const int Height);
-    bool Resize(const UniqueWindowPtr& Window,const int width, const int height);
+    bool Init(const UniqueWindowPtr& Window, const Size VideoSize);
+    bool Resize(const UniqueWindowPtr& Window,const Size VideoSize);
     bool UpdateYUVTexture(const yuv& ndata);
 private:
     bool CreateRenderer(const UniqueWindowPtr& Window);
-    bool CreateTexture(const int Width, const int Height);
+    bool CreateTexture(const Size VideoSize);
 
     UniqueRenderPtr      m_Renderer = nullptr;
     UniqueTexturePtr     m_Texture  = nullptr;
-    int                  m_Width    = 0;
-    int                  m_Height   = 0;
+    Size                 m_CurrentVideoSize = {};
 };
 
 #endif /* VIDEO_RENDERER */

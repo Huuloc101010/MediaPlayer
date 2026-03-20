@@ -422,5 +422,5 @@ void Player::VideoConfig(int width, int height)
     {
         LOGE("View ptr is null");
     }
-    m_View->Config(width, height);
+    m_View->Config({height, width});
 }

@@ -15,7 +15,7 @@ public:
     View();
     ~View();
     bool Init();
-    void Config(const int Width, const int Height);
+    void Config(const Size WindowSize);
     void Play() override;
     void Pause()override;
     void Stop() override;
@@ -44,6 +44,7 @@ private:
     AudioDevice          m_AudioDevice;
     Size                 m_CurrentVideoSize     = {};
     Size                 m_ConfigVideoSize      = {};
+    Size                 m_CurrentWindowSize    = {};
 };
 
 #endif /* _VIEW */

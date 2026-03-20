@@ -1,8 +1,8 @@
 #include "VideoRenderer.h"
 
-bool VideoRenderer::Init(const UniqueWindowPtr& Window, const int Width, const int Height)
+bool VideoRenderer::Init(const UniqueWindowPtr& Window, const Size VideoSize)
 {
-    return CreateRenderer(Window) && CreateTexture(Width, Height);
+    return CreateRenderer(Window) && CreateTexture(VideoSize);
 }
 
 bool VideoRenderer::CreateRenderer(const UniqueWindowPtr& Window)
@@ -16,12 +16,11 @@ bool VideoRenderer::CreateRenderer(const UniqueWindowPtr& Window)
     return true;
 }
 
-bool VideoRenderer::CreateTexture(const int Width, const int Height) 
+bool VideoRenderer::CreateTexture(const Size VideoSize) 
 {
-    m_Width = Width;
-    m_Height = Height;
+    m_CurrentVideoSize = VideoSize;
     m_Texture.reset(SDL_CreateTexture(m_Renderer.get(), 
-        SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, Width, Height));
+        SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, VideoSize.Width, VideoSize.Height));
     if(m_Texture == nullptr)
     {
         LOGE("Create texture SDL fail: {}", SDL_GetError());
@@ -30,11 +29,11 @@ bool VideoRenderer::CreateTexture(const int Width, const int Height)
     return true;
 }
 
-bool VideoRenderer::Resize(const UniqueWindowPtr& Window,const int width, const int height)
+bool VideoRenderer::Resize(const UniqueWindowPtr& Window,const Size VideoSize)
 {
     m_Texture.reset();
     m_Renderer.reset();
-    return Init(Window, width, height);
+    return Init(Window, VideoSize);
 }
 
 bool VideoRenderer::UpdateYUVTexture(const yuv& ndata)

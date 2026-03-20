@@ -5,14 +5,13 @@
 class Window
 {
 public:
-    bool Init(const int width = DEFAULT_WINDOW_WIDTH, const int height = DEFAULT_WINDOW_HEIGHT);
-    bool Resize(const int width, const int height);
+    bool Init(const Size WindowSize = {DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH});
+    bool Resize(const Size WindowSize);
     UniqueWindowPtr& Get();
 
 private:
-    UniqueWindowPtr      m_Window   = nullptr;
-    int                  m_Width    = {};
-    int                  m_Height   = {};
+    UniqueWindowPtr      m_Window            = nullptr;
+    Size                 m_CurrentWindowSize = {};
 };
 
 #endif /* WINDOW */
