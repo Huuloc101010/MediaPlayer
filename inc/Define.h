@@ -81,6 +81,8 @@ struct Size
     int Width;
     bool operator==(const Size& other) const = default;
     bool operator!=(const Size& other) const = default;
+    bool operator<=(const Size& other) const = default;
+    bool operator>=(const Size& other) const = default;
     Size& operator=(const Size& other)       = default;
     explicit operator bool() const
     {
