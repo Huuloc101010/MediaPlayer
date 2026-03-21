@@ -31,9 +31,14 @@ bool VideoRenderer::CreateTexture(const Size VideoSize)
 
 bool VideoRenderer::Resize(const UniqueWindowPtr& Window,const Size VideoSize)
 {
+    (void)VideoSize;
     m_Texture.reset();
     m_Renderer.reset();
-    return Init(Window, VideoSize);
+    // Creat Renderer same size with Window
+    int CurrentH, CurrentW;
+    SDL_GetWindowSize(Window.get(), &CurrentW, &CurrentH);
+
+    return Init(Window, {CurrentH, CurrentW});
 }
 
 bool VideoRenderer::UpdateYUVTexture(const yuv& ndata)
