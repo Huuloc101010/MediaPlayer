@@ -32,6 +32,7 @@ bool View::Init()
     {
         return false;
     }
+    m_MaxWindowSize = GetMaxWindowSize();
     LOGI("Create texture success ");
     return true;
 }
@@ -58,17 +59,14 @@ bool View::Config(int sample_rate,
 void View::CheckResizeWindow()
 {
     std::lock_guard<std::mutex> lock(m_ResizeWindow);
-    if(m_CurrentVideoSize != m_ConfigVideoSize)
-    {
-        m_Window.Resize({m_ConfigVideoSize.Height, m_ConfigVideoSize.Width});
-        m_VideoRenderer.Resize(m_Window.Get(), m_ConfigVideoSize);
-        m_CurrentVideoSize = m_ConfigVideoSize;
-        m_CurrentWindowSize = m_ConfigVideoSize;
-    }
     if(m_CurrentVideoSize == m_ConfigVideoSize)
     {
         return;
     }
+    m_Window.Resize({m_ConfigVideoSize.Height, m_ConfigVideoSize.Width});
+    m_VideoRenderer.Resize(m_Window.Get(), m_ConfigVideoSize);
+    m_CurrentVideoSize = m_ConfigVideoSize;
+    m_CurrentWindowSize = m_ConfigVideoSize;
 }
 
 void View::Play()
@@ -144,4 +142,21 @@ void View::ShowVideo()
 void View::PushVideoFrame(UniqueFramePtr frame)
 {
     m_QueueSafe.Push(std::move(frame));
+}
+
+Size View::GetMaxWindowSize()
+{
+    Size Retval{};
+    SDL_DisplayMode mode;
+    if (SDL_GetCurrentDisplayMode(0, &mode) != 0)
+    {
+        LOGE("SDL_GetCurrentDisplayMode failed: {}", SDL_GetError());
+    }
+    else
+    {
+        Retval.Width  = mode.w;
+        Retval.Height = mode.h;
+        LOGI("Max screen size: {}x{}", Retval.Width, Retval.Height);
+    }
+    return Retval;
 }

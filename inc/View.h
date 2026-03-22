@@ -34,6 +34,7 @@ public:
         int samples = 1024);
     std::atomic<double>& GetClock();
     void CheckResizeWindow();
+    Size GetMaxWindowSize();
 private:
 
     SafeQueue<UniqueFramePtr>   m_QueueSafe{};
@@ -45,6 +46,7 @@ private:
     Size                 m_CurrentVideoSize     = {};
     Size                 m_ConfigVideoSize      = {};
     Size                 m_CurrentWindowSize    = {};
+    Size                 m_MaxWindowSize        = {};
 };
 
 #endif /* _VIEW */
