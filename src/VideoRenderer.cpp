@@ -67,11 +67,37 @@ bool VideoRenderer::Resize(const UniqueWindowPtr& Window,const Size VideoSize)
     return Init(Window, m_CurrentVideoSize);
 }
 
+Size VideoRenderer::GetMaxWindowSize()
+{
+    Size Retval{};
+    SDL_DisplayMode mode;
+    if (SDL_GetCurrentDisplayMode(0, &mode) != 0)
+    {
+        LOGE("SDL_GetCurrentDisplayMode failed: {}", SDL_GetError());
+    }
+    else
+    {
+        Retval.Width  = mode.w;
+        Retval.Height = mode.h;
+        LOGI("Max screen size: {}x{}", Retval.Width, Retval.Height);
+    }
+    return Retval;
+}
+
 void VideoRenderer::CalculateRect(const Size CurrentWindowSize)
 {
+    // Calculating scale retio
+    double ratio = std::min(((double)CurrentWindowSize.Width) / m_CurrentVideoSize.Width,
+                            ((double)CurrentWindowSize.Height - DEFAULT_WINDOW_CONTROL) / m_CurrentVideoSize.Height);
+    if(ratio > 1.0)
+    {
+        ratio = 1.0;
+    }
+
     // Creat Renderer same size with Window
-    m_VideoRect.h = m_CurrentVideoSize.Height;
-    m_VideoRect.w = m_CurrentVideoSize.Width;
+    m_VideoRect.x = (CurrentWindowSize.Width - m_CurrentVideoSize.Width * ratio) / 2;
+    m_VideoRect.h = (m_CurrentVideoSize.Height * ratio);
+    m_VideoRect.w = m_CurrentVideoSize.Width * ratio;
     m_ControlAreaRect = {0, CurrentWindowSize.Height - DEFAULT_WINDOW_CONTROL, CurrentWindowSize.Width, DEFAULT_WINDOW_CONTROL};
     // button play
     m_ButtonPlayRect.x = (CurrentWindowSize.Width - 50) / 2;

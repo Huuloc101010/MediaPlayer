@@ -14,6 +14,7 @@ private:
     bool CreateRenderer(const UniqueWindowPtr& Window);
     bool CreateVideoTexture(const Size VideoSize);
     void CalculateRect(const Size CurrentWindowSize);
+    Size GetMaxWindowSize();
 
     UniqueRenderPtr      m_Renderer       = nullptr;
     UniqueTexturePtr     m_VideoTexture   = nullptr;

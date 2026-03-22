@@ -20,7 +20,7 @@ extern "C"
 #include <libswresample/swresample.h>
 }
 
-#define NAME_WINDOW                  "icon/Video Media Player"
+#define NAME_WINDOW                  "Video Media Player"
 #define ICON_BUTTON_PLAY_PATH        "icon/playxanh.png"
 #define ICON_BUTTON_NEXT_PATH        "icon/next.png"
 #define ICON_BUTTON_PRIVIOUS_PATH    "icon/previous.png"

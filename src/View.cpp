@@ -63,7 +63,6 @@ void View::CheckResizeWindow()
     {
         return;
     }
-    m_Window.Resize({m_ConfigVideoSize.Height, m_ConfigVideoSize.Width});
     m_VideoRenderer.Resize(m_Window.Get(), m_ConfigVideoSize);
     m_CurrentVideoSize = m_ConfigVideoSize;
     m_CurrentWindowSize = m_ConfigVideoSize;
