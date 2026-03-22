@@ -2,26 +2,52 @@
 
 bool VideoRenderer::Init(const UniqueWindowPtr& Window, const Size VideoSize)
 {
-    return CreateRenderer(Window) && CreateTexture(VideoSize);
+    return CreateRenderer(Window) && CreateVideoTexture(VideoSize);
 }
 
 bool VideoRenderer::CreateRenderer(const UniqueWindowPtr& Window)
 {
+    // Create video renderer
     m_Renderer.reset(SDL_CreateRenderer(Window.get(), -1, SDL_RENDERER_ACCELERATED));
     if(m_Renderer == nullptr)
     {
         LOGE("Create renderer SDL fail: {}", SDL_GetError());
         return false;
     }
+
+    // Create button play texture
+    m_ButtonPlay.reset(IMG_LoadTexture(m_Renderer.get(), ICON_BUTTON_PLAY_PATH));
+    if(m_ButtonPlay == nullptr)
+    {
+        LOGE("Load image fail");
+        return false;
+    }
+
+    // Create button next texture
+    m_ButtonNext.reset(IMG_LoadTexture(m_Renderer.get(), ICON_BUTTON_NEXT_PATH));
+    if(m_ButtonNext == nullptr)
+    {
+        LOGE("Load image fail");
+        return false;
+    }
+
+    // Create button privious texture
+    m_ButtonPrivious.reset(IMG_LoadTexture(m_Renderer.get(), ICON_BUTTON_PRIVIOUS_PATH));
+    if(m_ButtonNext == nullptr)
+    {
+        LOGE("Load image fail");
+        return false;
+    }
+
     return true;
 }
 
-bool VideoRenderer::CreateTexture(const Size VideoSize) 
+bool VideoRenderer::CreateVideoTexture(const Size VideoSize) 
 {
     m_CurrentVideoSize = VideoSize;
-    m_Texture.reset(SDL_CreateTexture(m_Renderer.get(), 
+    m_VideoTexture.reset(SDL_CreateTexture(m_Renderer.get(), 
         SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, VideoSize.Width, VideoSize.Height));
-    if(m_Texture == nullptr)
+    if(m_VideoTexture == nullptr)
     {
         LOGE("Create texture SDL fail: {}", SDL_GetError());
         return false;
@@ -32,25 +58,55 @@ bool VideoRenderer::CreateTexture(const Size VideoSize)
 bool VideoRenderer::Resize(const UniqueWindowPtr& Window,const Size VideoSize)
 {
     (void)VideoSize;
-    m_Texture.reset();
+    m_CurrentVideoSize = VideoSize;
+    m_VideoTexture.reset();
     m_Renderer.reset();
-    // Creat Renderer same size with Window
-    int CurrentH, CurrentW;
-    SDL_GetWindowSize(Window.get(), &CurrentW, &CurrentH);
+    Size CurrentWindowSize {};
+    SDL_GetWindowSize(Window.get(), &CurrentWindowSize.Width, &CurrentWindowSize.Height);
+    CalculateRect(CurrentWindowSize);
+    return Init(Window, m_CurrentVideoSize);
+}
 
-    return Init(Window, {CurrentH, CurrentW});
+void VideoRenderer::CalculateRect(const Size CurrentWindowSize)
+{
+    // Creat Renderer same size with Window
+    m_VideoRect.h = m_CurrentVideoSize.Height;
+    m_VideoRect.w = m_CurrentVideoSize.Width;
+    m_ControlAreaRect = {0, CurrentWindowSize.Height - DEFAULT_WINDOW_CONTROL, CurrentWindowSize.Width, DEFAULT_WINDOW_CONTROL};
+    // button play
+    m_ButtonPlayRect.x = (CurrentWindowSize.Width - 50) / 2;
+    m_ButtonPlayRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 100) / 2;
+    m_ButtonPlayRect.w = DEFAULT_BUTTON_WIDTH;
+    m_ButtonPlayRect.h = DEFAULT_BUTTON_HEIGHT;
+
+    // button next
+    m_ButtonNextRect.x = m_ButtonPlayRect.x + 100;
+    m_ButtonNextRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 100) / 2;
+    m_ButtonNextRect.w = DEFAULT_BUTTON_WIDTH;
+    m_ButtonNextRect.h = DEFAULT_BUTTON_HEIGHT;
+
+    // button prious
+    m_ButtonPriviousRect.x = m_ButtonPlayRect.x - 100;
+    m_ButtonPriviousRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 100) / 2;
+    m_ButtonPriviousRect.w = DEFAULT_BUTTON_WIDTH;
+    m_ButtonPriviousRect.h = DEFAULT_BUTTON_HEIGHT;
 }
 
 bool VideoRenderer::UpdateYUVTexture(const yuv& ndata)
 {
-    if((m_Texture == nullptr) || (m_Renderer == nullptr))
+    if((m_VideoTexture == nullptr) || (m_Renderer == nullptr))
     {
         LOGE("Fail to upadte YUV Texture");
         return false;
     }
+    if(SDL_RenderClear(m_Renderer.get()) < 0)
+    {
+        LOGE("render clear fail");
+        return false;
+    }
 
     // Push data to GPU
-    if(SDL_UpdateYUVTexture(m_Texture.get(), NULL, 
+    if(SDL_UpdateYUVTexture(m_VideoTexture.get(), nullptr, 
         ndata.plane_y, ndata.linesize_y,           
         ndata.plane_u, ndata.linesize_u,       
         ndata.plane_v, ndata.linesize_v) < 0)
@@ -58,18 +114,24 @@ bool VideoRenderer::UpdateYUVTexture(const yuv& ndata)
         LOGE("update YUV texture fail");
         return false;
     }     
+    // Select color is green
+    // SDL_SetRenderDrawColor(m_Renderer.get(), 0, 0, 255, 255); -> use default
+    // Fill color
+    SDL_RenderFillRect(m_Renderer.get(), &m_ControlAreaRect);
 
-    if(SDL_RenderClear(m_Renderer.get()) < 0)
-    {
-        LOGE("render clear fail");
-        return false;
-    }
-    if(SDL_RenderCopy(m_Renderer.get(), m_Texture.get(), NULL, NULL) < 0)
+
+    // For button
+
+
+    if((SDL_RenderCopy(m_Renderer.get(), m_VideoTexture.get(), NULL, &m_VideoRect) < 0)
+    || (SDL_RenderCopy(m_Renderer.get(), m_ButtonPlay.get(), NULL, &m_ButtonPlayRect) < 0)
+    || (SDL_RenderCopy(m_Renderer.get(), m_ButtonNext.get(), NULL, &m_ButtonNextRect) < 0)
+    || (SDL_RenderCopy(m_Renderer.get(), m_ButtonPrivious.get(), NULL, &m_ButtonPriviousRect) < 0))
     {
         LOGE("Render copy fail");
         return false;
     }
-    
+
     SDL_RenderPresent(m_Renderer.get());
     return true;
 }

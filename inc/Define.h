@@ -20,10 +20,15 @@ extern "C"
 #include <libswresample/swresample.h>
 }
 
-#define NAME_WINDOW              "Video Media Player"
+#define NAME_WINDOW                  "icon/Video Media Player"
+#define ICON_BUTTON_PLAY_PATH        "icon/playxanh.png"
+#define ICON_BUTTON_NEXT_PATH        "icon/next.png"
+#define ICON_BUTTON_PRIVIOUS_PATH    "icon/previous.png"
 #define DEFAULT_WINDOW_HEIGHT    780 
-#define DEFAULT_WINDOW_CONTROL   500 
+#define DEFAULT_WINDOW_CONTROL   200 
 #define DEFAULT_WINDOW_WIDTH     1280 
+#define DEFAULT_BUTTON_HEIGHT    50
+#define DEFAULT_BUTTON_WIDTH     50
 #define LIMIT_QUEUE_VIDEO_PACKET 50
 #define LIMIT_QUEUE_AUDIO_PACKET 100
 #define LIMIT_QUEUE_VIDEO_FRAME  7
