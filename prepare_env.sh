@@ -7,6 +7,7 @@ make \
 g++-13 \
 pkg-config \
 libsdl2-dev \
+libsdl2-image-dev \
 ffmpeg \
 libavcodec-dev \
 libavformat-dev \
