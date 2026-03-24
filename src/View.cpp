@@ -107,41 +107,34 @@ std::atomic<double>& View::GetClock()
 
 void View::ShowVideo()
 {
-    // if Queue has no element -> Porcess other task
-    if(!m_QueueSafe.Size())
-    {
-        return;
-    }
-    auto FrameOpt = m_QueueSafe.Pop();
-    if(FrameOpt == std::nullopt)
-    {
-        LOGE("Null optional");
-        return;
-    }
-    UniqueFramePtr frame = std::move(FrameOpt.value());
-    //if(frame->format == AV_PIX_FMT_YUV420P)
-    // double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
-    // LOGI("video pts:{}", pts);
-    yuv lyuv =
-    {
-        frame->data[0],
-        frame->data[1],
-        frame->data[2],
-        frame->linesize[0],
-        frame->linesize[1],
-        frame->linesize[2]
-    };
-    
     if(m_VideoRenderer.RenderClear() == false)
     {
         LOGE("render clear fail");
     }
-
-    if(m_VideoRenderer.UpdateYUVTexture(lyuv) == false)
+    if(m_QueueSafe.Size())
     {
-        LOGE("Update YUV Texture fail");
+        auto FrameOpt = m_QueueSafe.Pop();
+        if(FrameOpt == std::nullopt)
+        {
+            LOGE("Null optional");
+            return;
+        }
+        UniqueFramePtr frame = std::move(FrameOpt.value());
+        yuv lyuv =
+        {
+            frame->data[0],
+            frame->data[1],
+            frame->data[2],
+            frame->linesize[0],
+            frame->linesize[1],
+            frame->linesize[2]
+        };
+        if(m_VideoRenderer.UpdateYUVTexture(lyuv) == false)
+        {
+            LOGE("Update YUV Texture fail");
+        }
     }
-
+    
     CalculateRect(m_Window.GetCurrentWindowSize());
 
     if(m_VideoRenderer.RenderCopyVideoTexture(m_VideoRect) == false)
