@@ -125,12 +125,6 @@ bool VideoRenderer::UpdateYUVTexture(const yuv& ndata)
         LOGE("Fail to upadte YUV Texture");
         return false;
     }
-    if(SDL_RenderClear(m_Renderer.get()) < 0)
-    {
-        LOGE("render clear fail");
-        return false;
-    }
-
     // Push data to GPU
     if(SDL_UpdateYUVTexture(m_VideoTexture.get(), nullptr, 
         ndata.plane_y, ndata.linesize_y,           
@@ -140,24 +134,40 @@ bool VideoRenderer::UpdateYUVTexture(const yuv& ndata)
         LOGE("update YUV texture fail");
         return false;
     }     
-    // Select color is green
-    // SDL_SetRenderDrawColor(m_Renderer.get(), 0, 0, 255, 255); -> use default
-    // Fill color
-    SDL_RenderFillRect(m_Renderer.get(), &m_ControlAreaRect);
+    return true;
+}
 
-
-    // For button
-
-
-    if((SDL_RenderCopy(m_Renderer.get(), m_VideoTexture.get(), NULL, &m_VideoRect) < 0)
-    || (SDL_RenderCopy(m_Renderer.get(), m_ButtonPlay.get(), NULL, &m_ButtonPlayRect) < 0)
-    || (SDL_RenderCopy(m_Renderer.get(), m_ButtonNext.get(), NULL, &m_ButtonNextRect) < 0)
-    || (SDL_RenderCopy(m_Renderer.get(), m_ButtonPrivious.get(), NULL, &m_ButtonPriviousRect) < 0))
+bool VideoRenderer::RenderClear()
+{
+    if(SDL_RenderClear(m_Renderer.get()) < 0)
     {
-        LOGE("Render copy fail");
+        LOGE("render clear fail");
         return false;
     }
-
-    SDL_RenderPresent(m_Renderer.get());
     return true;
+}
+
+bool VideoRenderer::RenderCopyVideoTexture(const SDL_Rect& Rect)
+{
+    return (SDL_RenderCopy(m_Renderer.get(), m_VideoTexture.get(), NULL, &Rect) == 0);
+}
+
+bool VideoRenderer::RenderCopyButtonPlay(const SDL_Rect& Rect)
+{
+    return (SDL_RenderCopy(m_Renderer.get(), m_ButtonPlay.get(), NULL, &Rect) == 0);
+}
+
+bool VideoRenderer::RenderCopyButtonNext(const SDL_Rect& Rect)
+{
+    return (SDL_RenderCopy(m_Renderer.get(), m_ButtonNext.get(), NULL, &Rect) == 0);
+}
+
+bool VideoRenderer::RenderCopyButtonPrivious(const SDL_Rect& Rect)
+{
+    return (SDL_RenderCopy(m_Renderer.get(), m_ButtonPrivious.get(), NULL, &Rect) == 0);
+}
+
+void VideoRenderer::Present()
+{
+    SDL_RenderPresent(m_Renderer.get());
 }

@@ -34,8 +34,12 @@ public:
         int samples = 1024);
     std::atomic<double>& GetClock();
     void CheckResizeWindow();
-    Size GetMaxWindowSize();
+    Rect CheckInWhichButton(const Position position);
 private:
+    
+    Size GetMaxWindowSize();
+    void CalculateRect(const Size CurrentWindowSize);
+    bool CheckInRect(const SDL_Rect& rect, const Position position);
 
     SafeQueue<UniqueFramePtr>   m_QueueSafe{};
     
@@ -47,6 +51,13 @@ private:
     Size                 m_ConfigVideoSize      = {};
     Size                 m_CurrentWindowSize    = {};
     Size                 m_MaxWindowSize        = {};
+
+    // Retangle
+    SDL_Rect             m_VideoRect           = {};
+    SDL_Rect             m_ControlAreaRect     = {};
+    SDL_Rect             m_ButtonPlayRect      = {};
+    SDL_Rect             m_ButtonNextRect      = {};
+    SDL_Rect             m_ButtonPriviousRect  = {};
 };
 
 #endif /* _VIEW */

@@ -10,6 +10,12 @@ public:
     bool Init(const UniqueWindowPtr& Window, const Size VideoSize);
     bool Resize(const UniqueWindowPtr& Window,const Size VideoSize);
     bool UpdateYUVTexture(const yuv& ndata);
+    bool RenderClear();
+    bool RenderCopyVideoTexture(const SDL_Rect& Rect);
+    bool RenderCopyButtonPlay(const SDL_Rect& Rect);
+    bool RenderCopyButtonNext(const SDL_Rect& Rect);
+    bool RenderCopyButtonPrivious(const SDL_Rect& Rect);
+    void Present();
 private:
     bool CreateRenderer(const UniqueWindowPtr& Window);
     bool CreateVideoTexture(const Size VideoSize);

@@ -40,6 +40,7 @@ void Player::EventStop()
             if(m_VideoDecoder) m_VideoDecoder->Stop();
             if(m_AudioDecoder) m_AudioDecoder->Stop();
             if(m_View)         m_View        ->Stop();
+            if(m_Controller)   m_Controller  ->Stop();
             break;
         }
         default:
@@ -68,6 +69,7 @@ void Player::EventNext()
             if(m_AudioDecoder) m_AudioDecoder ->Stop();
             if(m_VideoOutput)  m_VideoOutput  ->Stop();
             if(m_AudioOutput)  m_AudioOutput  ->Stop();
+            if(m_Controller)   m_Controller   ->Stop();
 
             m_PlayerState = PlayerState::EXITING;
             if(m_VideoOutput)  m_VideoOutput  ->Exit();
@@ -103,6 +105,7 @@ void Player::EventPause()
             if(m_VideoDecoder) m_VideoDecoder ->Pause();
             if(m_AudioDecoder) m_AudioDecoder ->Pause();
             if(m_View)         m_View         ->Pause();
+            if(m_Controller)   m_Controller   ->Pause();
             break;
         }
         default:
@@ -128,6 +131,7 @@ void Player::EventPlay()
             if(m_VideoDecoder) m_VideoDecoder->Play();
             if(m_AudioDecoder) m_AudioDecoder->Play();
             if(m_View)         m_View        ->Play();
+            if(m_Controller)   m_Controller  ->Play();
             break;
         }
         default:
@@ -421,6 +425,17 @@ void Player::VideoConfig(int width, int height)
     if(m_View == nullptr)
     {
         LOGE("View ptr is null");
+        return;
     }
     m_View->Config({height, width});
+}
+
+Rect Player::CheckInWhichButton(const Position postion)
+{
+    if(m_View == nullptr)
+    {
+        LOGE("View ptr is null");
+        return Rect::NONE;
+    }
+    return m_View->CheckInWhichButton(postion);
 }

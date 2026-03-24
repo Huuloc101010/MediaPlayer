@@ -21,7 +21,7 @@ extern "C"
 }
 
 #define NAME_WINDOW                  "Video Media Player"
-#define ICON_BUTTON_PLAY_PATH        "icon/playxanh.png"
+#define ICON_BUTTON_PLAY_PATH        "icon/play.png"
 #define ICON_BUTTON_NEXT_PATH        "icon/next.png"
 #define ICON_BUTTON_PRIVIOUS_PATH    "icon/previous.png"
 #define DEFAULT_WINDOW_HEIGHT    780 
@@ -95,6 +95,11 @@ struct Size
     }
 };
 
+struct Position
+{
+    int x, y;
+};
+
 struct AudioS16Buffer
 {
     uint8_t* data = nullptr;
@@ -123,5 +128,13 @@ enum class PlayerEvent : uint8_t
     NEXT,
     PAUSE,
     PLAY,
+};
+
+enum class Rect : uint8_t
+{
+    NONE,
+    PLAY,
+    NEXT,
+    PRIVIOUS,
 };
 #endif /*_DEFINE_*/

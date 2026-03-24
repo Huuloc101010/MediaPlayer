@@ -17,6 +17,7 @@ public:
     void Exit() override;
 private:
     void CheckEvent();
+    void HandleClick(const Position Position);
     Mediator*          m_Mediator = nullptr;
     std::jthread       m_ThreadCheckEvent;
 

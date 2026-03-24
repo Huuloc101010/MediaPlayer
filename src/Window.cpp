@@ -29,3 +29,27 @@ UniqueWindowPtr& Window::Get()
 {
     return m_Window;
 }
+
+Size Window::GetMaxWindowSize()
+{
+    Size Retval{};
+    SDL_DisplayMode mode;
+    if (SDL_GetCurrentDisplayMode(0, &mode) != 0)
+    {
+        LOGE("SDL_GetCurrentDisplayMode failed: {}", SDL_GetError());
+    }
+    else
+    {
+        Retval.Width  = mode.w;
+        Retval.Height = mode.h;
+        LOGI("Max screen size: {}x{}", Retval.Width, Retval.Height);
+    }
+    return Retval;
+}
+
+Size Window::GetCurrentWindowSize()
+{
+    Size CurrentWindowSize {};
+    SDL_GetWindowSize(m_Window.get(), &CurrentWindowSize.Width, &CurrentWindowSize.Height);
+    return CurrentWindowSize;
+}
