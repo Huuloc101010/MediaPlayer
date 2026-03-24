@@ -107,35 +107,56 @@ std::atomic<double>& View::GetClock()
 
 void View::ShowVideo()
 {
-    // if Queue has no element -> Porcess other task
-    if(!m_QueueSafe.Size())
+    if(m_VideoRenderer.RenderClear() == false)
     {
-        return;
+        LOGE("render clear fail");
     }
-    auto FrameOpt = m_QueueSafe.Pop();
-    if(FrameOpt == std::nullopt)
+    if(m_QueueSafe.Size())
     {
-        LOGE("Null optional");
-        return;
+        auto FrameOpt = m_QueueSafe.Pop();
+        if(FrameOpt == std::nullopt)
+        {
+            LOGE("Null optional");
+            return;
+        }
+        UniqueFramePtr frame = std::move(FrameOpt.value());
+        yuv lyuv =
+        {
+            frame->data[0],
+            frame->data[1],
+            frame->data[2],
+            frame->linesize[0],
+            frame->linesize[1],
+            frame->linesize[2]
+        };
+        if(m_VideoRenderer.UpdateYUVTexture(lyuv) == false)
+        {
+            LOGE("Update YUV Texture fail");
+        }
     }
-    UniqueFramePtr frame = std::move(FrameOpt.value());
-    //if(frame->format == AV_PIX_FMT_YUV420P)
-    // double pts = frame->best_effort_timestamp * av_q2d(m_video_stream->time_base);
-    // LOGI("video pts:{}", pts);
-    yuv lyuv =
-    {
-        frame->data[0],
-        frame->data[1],
-        frame->data[2],
-        frame->linesize[0],
-        frame->linesize[1],
-        frame->linesize[2]
-    };
     
-    if(m_VideoRenderer.UpdateYUVTexture(lyuv) == false)
+    CalculateRect(m_Window.GetCurrentWindowSize());
+
+    if(m_VideoRenderer.RenderCopyVideoTexture(m_VideoRect) == false)
     {
-        LOGE("Update YUV Texture fail");
+        LOGE("render video texture fail");
     }
+
+    if(m_VideoRenderer.RenderCopyButtonPlay(m_ButtonPlayRect) == false)
+    {
+        LOGE("render button play fail");
+    }
+
+    if(m_VideoRenderer.RenderCopyButtonNext(m_ButtonNextRect) == false)
+    {
+        LOGE("render button next fail");
+    }
+    if(m_VideoRenderer.RenderCopyButtonPrivious(m_ButtonPriviousRect) == false)
+    {
+        LOGE("render button privious fail");
+    }
+
+    m_VideoRenderer.Present();
 }
 
 void View::PushVideoFrame(UniqueFramePtr frame)
@@ -158,4 +179,54 @@ Size View::GetMaxWindowSize()
         LOGI("Max screen size: {}x{}", Retval.Width, Retval.Height);
     }
     return Retval;
+}
+
+void View::CalculateRect(const Size CurrentWindowSize)
+{
+    // Calculating scale retio
+    double ratio = std::min(((double)CurrentWindowSize.Width) / m_CurrentVideoSize.Width,
+                            ((double)CurrentWindowSize.Height - DEFAULT_WINDOW_CONTROL) / m_CurrentVideoSize.Height);
+    if(ratio > 1.0)
+    {
+        ratio = 1.0;
+    }
+
+    // Creat Renderer same size with Window
+    m_VideoRect.x = (CurrentWindowSize.Width - m_CurrentVideoSize.Width * ratio) / 2;
+    m_VideoRect.h = (m_CurrentVideoSize.Height * ratio);
+    m_VideoRect.w = m_CurrentVideoSize.Width * ratio;
+    m_ControlAreaRect = {0, CurrentWindowSize.Height - DEFAULT_WINDOW_CONTROL, CurrentWindowSize.Width, DEFAULT_WINDOW_CONTROL};
+    // button play
+    m_ButtonPlayRect.x = (CurrentWindowSize.Width - 50) / 2;
+    m_ButtonPlayRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 100) / 2;
+    m_ButtonPlayRect.w = DEFAULT_BUTTON_WIDTH;
+    m_ButtonPlayRect.h = DEFAULT_BUTTON_HEIGHT;
+
+    // button next
+    m_ButtonNextRect.x = m_ButtonPlayRect.x + 100;
+    m_ButtonNextRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 100) / 2;
+    m_ButtonNextRect.w = DEFAULT_BUTTON_WIDTH;
+    m_ButtonNextRect.h = DEFAULT_BUTTON_HEIGHT;
+
+    // button prious
+    m_ButtonPriviousRect.x = m_ButtonPlayRect.x - 100;
+    m_ButtonPriviousRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 100) / 2;
+    m_ButtonPriviousRect.w = DEFAULT_BUTTON_WIDTH;
+    m_ButtonPriviousRect.h = DEFAULT_BUTTON_HEIGHT;
+}
+
+bool View::CheckInRect(const SDL_Rect& rect, const Position position)
+{
+    return (position.x >= rect.x)
+        && (position.x <= (rect.x + rect.w))
+        && (position.y >= rect.y)
+        && (position.y <= (rect.y + rect.h));
+}
+
+Rect View::CheckInWhichButton(const Position position)
+{
+    if(CheckInRect(m_ButtonPlayRect, position))    return Rect::PLAY;
+    if(CheckInRect(m_ButtonNextRect, position))    return Rect::NEXT;
+    if(CheckInRect(m_ButtonPriviousRect, position))return Rect::PRIVIOUS;
+    return Rect::NONE;
 }

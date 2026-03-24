@@ -21,9 +21,9 @@ Controller::Controller(Mediator* Mediator) : m_Mediator(Mediator)
 void Controller::CheckEvent()
 {
     SDL_Event Event{};
-    while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::STOPPED))
+    while((m_PlayerState.load() != PlayerState::EXITING))
     {
-        while((m_PlayerState.load() != PlayerState::EXITING) && (m_PlayerState.load() != PlayerState::STOPPED) && (SDL_PollEvent(&Event)))
+        while((m_PlayerState.load() != PlayerState::EXITING) && (SDL_PollEvent(&Event)))
         {
             switch(Event.type)
             {
@@ -42,6 +42,13 @@ void Controller::CheckEvent()
                     }
                     break;
                 }
+
+                case SDL_MOUSEBUTTONDOWN:
+                {
+                    LOGI("Received event mouse click");
+                    HandleClick({Event.button.x, Event.button.y});
+                    break;
+                }
             }
         }
         // decrease cpu workload
@@ -55,5 +62,51 @@ void Controller::Exit()
     if(m_ThreadCheckEvent.joinable())
     {
         m_ThreadCheckEvent.join();
+    }
+}
+
+void Controller::HandleClick(const Position Position)
+{
+    LOGW("Received event x:{}, y:{}", Position.x, Position.y);
+    if(m_Mediator == nullptr)
+    {
+        return;
+    }
+    Rect CurrentRect = m_Mediator->CheckInWhichButton(Position);
+    switch(CurrentRect)
+    {
+        case Rect::NEXT:
+        {
+            m_Mediator->PushEvent(PlayerEvent::NEXT);
+            break;
+        }
+
+        case Rect::PRIVIOUS:
+        {
+            m_Mediator->PushEvent(PlayerEvent::NEXT);
+            break;
+        }
+
+        case Rect::PLAY:
+        {
+            //if(m_PlayerState == PlayerState::PAUSED)
+            if(m_PlayerState == PlayerState::PLAYING)
+            {
+                LOGE("CALLED PAUSE");
+                m_Mediator->PushEvent(PlayerEvent::PAUSE);
+            }
+            else
+            {
+                LOGE("CALLED PLAY");
+                m_Mediator->PushEvent(PlayerEvent::PLAY);
+            }
+            break;
+        }
+
+        default:
+        {
+            // Do not thing
+            break;
+        }
     }
 }
