@@ -67,7 +67,7 @@ void Controller::Exit()
 
 void Controller::HandleClick(const Position Position)
 {
-    LOGW("Received event x:{}, y:{}", Position.x, Position.y);
+    LOGD("Received event x:{}, y:{}", Position.x, Position.y);
     if(m_Mediator == nullptr)
     {
         return;
@@ -89,15 +89,12 @@ void Controller::HandleClick(const Position Position)
 
         case Rect::PLAY:
         {
-            //if(m_PlayerState == PlayerState::PAUSED)
             if(m_PlayerState == PlayerState::PLAYING)
             {
-                LOGE("CALLED PAUSE");
                 m_Mediator->PushEvent(PlayerEvent::PAUSE);
             }
             else
             {
-                LOGE("CALLED PLAY");
                 m_Mediator->PushEvent(PlayerEvent::PLAY);
             }
             break;

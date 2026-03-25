@@ -33,10 +33,16 @@ std::string PlayList::GetCurrentMedia()
 
 void PlayList::Next()
 {
-    m_IDCurrentMedia++;
+    if(static_cast<size_t>(m_IDCurrentMedia) < (m_ListMedia.size() - 1))
+    {
+        m_IDCurrentMedia++;
+    }
 }
 
 void PlayList::Privious()
 {
-    m_IDCurrentMedia--;
+    if(m_IDCurrentMedia > 0)
+    {
+        m_IDCurrentMedia--;
+    }
 }

@@ -51,7 +51,7 @@ void Player::EventStop()
         }
     }
     m_PlayerState = PlayerState::STOPPED;
-    LOGW("Received event stop");
+    LOGD("Received event stop");
 }
 
 void Player::EventNext()
@@ -102,7 +102,7 @@ void Player::PlayOtherMedia()
             break;
         }
     }
-    LOGW("Received event next");
+    LOGD("Received event next");
 }
 
 void Player::EventPause()
@@ -128,7 +128,7 @@ void Player::EventPause()
         }
     }
     m_PlayerState = PlayerState::PAUSED;
-    LOGW("Received event pause");
+    LOGD("Received event pause");
 }
 
 void Player::EventPlay()
@@ -155,7 +155,7 @@ void Player::EventPlay()
 
     }
     m_PlayerState = PlayerState::PLAYING;
-    LOGW("Received event play");
+    LOGD("Received event play");
 }
 
 void Player::PushEvent(PlayerEvent Event)
@@ -194,7 +194,7 @@ void Player::MainThreadProcess()
 
 void Player::Config(const std::string& MediaDirectory)
 {
-    // Set current media director
+    // Scan list media in directory
     m_PlayList.Scan(MediaDirectory);
 }
 
