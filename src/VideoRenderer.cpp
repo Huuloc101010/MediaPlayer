@@ -1,3 +1,4 @@
+#include <vector>
 #include "VideoRenderer.h"
 
 bool VideoRenderer::Init(const UniqueWindowPtr& Window, const Size VideoSize)
@@ -52,7 +53,24 @@ bool VideoRenderer::CreateVideoTexture(const Size VideoSize)
         LOGE("Create texture SDL fail: {}", SDL_GetError());
         return false;
     }
+    // Clear texture
+    ClearYUVBlack();
     return true;
+}
+
+void VideoRenderer::ClearYUVBlack()
+{
+    int w = m_CurrentVideoSize.Width;
+    int h = m_CurrentVideoSize.Height;
+
+    std::vector<uint8_t> y(w * h, 16);
+    std::vector<uint8_t> u(w * h / 4, 128);
+    std::vector<uint8_t> v(w * h / 4, 128);
+
+    SDL_UpdateYUVTexture(m_VideoTexture.get(), nullptr,
+        y.data(), w,
+        u.data(), w / 2,
+        v.data(), w / 2);
 }
 
 bool VideoRenderer::Resize(const UniqueWindowPtr& Window,const Size VideoSize)

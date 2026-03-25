@@ -21,6 +21,7 @@ private:
     bool CreateVideoTexture(const Size VideoSize);
     void CalculateRect(const Size CurrentWindowSize);
     Size GetMaxWindowSize();
+    void ClearYUVBlack();
 
     UniqueRenderPtr      m_Renderer       = nullptr;
     UniqueTexturePtr     m_VideoTexture   = nullptr;
