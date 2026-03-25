@@ -4,9 +4,9 @@
 
 bool PlayList::Scan(const std::string& Directory)
 {
-    if(!std::filesystem::exists(Directory))
+    if(std::filesystem::exists(Directory) == false)
     {
-        LOGE("Current directory not exist");
+        LOGE("Current directory not exist :[{}]", Directory);
         return false;
     }
 
@@ -25,7 +25,7 @@ std::string PlayList::GetCurrentMedia()
 {
     if(m_IDCurrentMedia < 0 || static_cast<size_t>(m_IDCurrentMedia) >= m_ListMedia.size())
     {
-        LOGE("Out range of list media");
+        LOGE("Out range of list media {}", m_IDCurrentMedia);
         return {};
     }
     return m_ListMedia.at(m_IDCurrentMedia);

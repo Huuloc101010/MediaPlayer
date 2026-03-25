@@ -15,6 +15,7 @@
 #include "ControlFunction.h"
 #include "VideoOutput.h"
 #include "AudioOutput.h"
+#include "PlayList.h"
 
 extern "C"
 {
@@ -36,7 +37,7 @@ public:
     Player();
     ~Player() = default;
 
-    void Config(const std::string& MediaFile);
+    void Config(const std::string& MediaDirectory);
     int Start();
     void PushEvent(PlayerEvent Event) override;
     void MainThreadProcess();
@@ -84,7 +85,7 @@ private:
     std::unique_ptr<Controller>     m_Controller   = nullptr;
     std::unique_ptr<View>           m_View         = nullptr;
     SafeQueue<PlayerEvent>          m_PlayerEvent  = {};
-    std::string                     m_CurrentMedia = {};
+    PlayList                        m_PlayList     = {};
     std::jthread                    m_TheadProcessEvent;
 
     std::map<PlayerEvent, std::function<void()>>     m_MapProcessing = {};

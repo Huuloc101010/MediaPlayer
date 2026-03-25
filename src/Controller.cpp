@@ -83,7 +83,7 @@ void Controller::HandleClick(const Position Position)
 
         case Rect::PRIVIOUS:
         {
-            m_Mediator->PushEvent(PlayerEvent::NEXT);
+            m_Mediator->PushEvent(PlayerEvent::PRIVIOUS);
             break;
         }
 

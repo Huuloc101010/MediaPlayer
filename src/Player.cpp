@@ -56,11 +56,13 @@ void Player::EventStop()
 
 void Player::EventNext()
 {
+    m_PlayList.Next();
     PlayOtherMedia();
 }
 
 void Player::EventPrivious()
 {
+    m_PlayList.Privious();
     PlayOtherMedia();
 }
 
@@ -190,9 +192,10 @@ void Player::MainThreadProcess()
     }
 }
 
-void Player::Config(const std::string& MediaFile)
+void Player::Config(const std::string& MediaDirectory)
 {
-    m_CurrentMedia = MediaFile;
+    // Set current media director
+    m_PlayList.Scan(MediaDirectory);
 }
 
 std::string Player::err2str(int errnum)
@@ -264,7 +267,7 @@ int Player::Start()
     int Ret = -1;
     if(m_Demuxer != nullptr)
     {
-        Ret = m_Demuxer->StartPlay(m_CurrentMedia);
+        Ret = m_Demuxer->StartPlay(m_PlayList.GetCurrentMedia());
     }
     
     LOGI("Demuxing succeeded");
