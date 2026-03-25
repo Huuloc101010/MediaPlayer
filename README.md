@@ -151,9 +151,12 @@ MediaPlayer/
 
 ## Build & Run
 
-```bash
-./prepare_env.sh
-make
-./player sample
 
-<img width="1285" height="963" alt="image" src="https://github.com/user-attachments/assets/23ecc3cd-110e-4d13-8b22-3e1298a73f1a" />
+$ ./prepare_env.sh
+make
+$ ./player sample
+
+```
+
+<img width="1280" height="962" alt="image" src="https://github.com/user-attachments/assets/889a22e1-4616-41a4-96e2-b5b6dbfcd8d5" />
+
