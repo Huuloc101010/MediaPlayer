@@ -71,6 +71,8 @@ private:
     void EventQuit();
     void EventStop();
     void EventNext();
+    void EventPrivious();
+    void PlayOtherMedia();
     void EventPause();
     void EventPlay();
 

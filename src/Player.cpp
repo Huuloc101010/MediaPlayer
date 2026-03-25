@@ -9,11 +9,12 @@ Player::Player() : m_TheadProcessEvent(&Player::TheadProcessEvent, this)
 {
     m_MapProcessing =
     {
-        {PlayerEvent::QUIT,  [this](){EventQuit();}},
-        {PlayerEvent::STOP,  [this](){EventStop();}},
-        {PlayerEvent::NEXT,  [this](){EventNext();}},
-        {PlayerEvent::PAUSE, [this](){EventPause();}},
-        {PlayerEvent::PLAY,  [this](){EventPlay();}},
+        {PlayerEvent::QUIT,    [this](){EventQuit();}},
+        {PlayerEvent::STOP,    [this](){EventStop();}},
+        {PlayerEvent::NEXT,    [this](){EventNext();}},
+        {PlayerEvent::PRIVIOUS,[this](){EventPrivious();}},
+        {PlayerEvent::PAUSE,   [this](){EventPause();}},
+        {PlayerEvent::PLAY,    [this](){EventPlay();}},
     };
 
     m_Controller   = std::make_unique<Controller>(this);
@@ -54,6 +55,16 @@ void Player::EventStop()
 }
 
 void Player::EventNext()
+{
+    PlayOtherMedia();
+}
+
+void Player::EventPrivious()
+{
+    PlayOtherMedia();
+}
+
+void Player::PlayOtherMedia()
 {
     switch(m_PlayerState.load())
     {

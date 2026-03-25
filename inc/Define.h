@@ -126,6 +126,7 @@ enum class PlayerEvent : uint8_t
     QUIT,
     STOP,
     NEXT,
+    PRIVIOUS,
     PAUSE,
     PLAY,
 };
