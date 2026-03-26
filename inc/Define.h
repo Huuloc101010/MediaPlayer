@@ -145,6 +145,7 @@ enum class PlayerEvent : uint8_t
     PRIVIOUS,
     PAUSE,
     PLAY,
+    SEEK,
 };
 
 enum class Rect : uint8_t

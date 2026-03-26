@@ -158,6 +158,11 @@ void Player::EventPlay()
     LOGD("Received event play");
 }
 
+void Player::EventSeek()
+{
+
+}
+
 void Player::PushEvent(PlayerEvent Event)
 {
     m_PlayerEvent.Push(Event);
@@ -452,16 +457,6 @@ Rect Player::CheckInWhichButton(const Position postion)
         return Rect::NONE;
     }
     return m_View->CheckInWhichButton(postion);
-}
-
-std::optional<double> Player::CheckSeekPercent(const Position position)
-{
-    if(m_View == nullptr)
-    {
-        LOGE("View ptr is null");
-        return std::nullopt;;
-    }
-    return m_View->CheckSeekPercent(position);
 }
 
 double Player::GetTotalVideoTime()

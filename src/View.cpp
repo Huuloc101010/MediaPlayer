@@ -264,15 +264,15 @@ Rect View::CheckInWhichButton(const Position position)
     if(CheckInRect(m_ButtonPlayRect, position))    return Rect::PLAY;
     if(CheckInRect(m_ButtonNextRect, position))    return Rect::NEXT;
     if(CheckInRect(m_ButtonPriviousRect, position))return Rect::PRIVIOUS;
+    if(CheckInRect(m_SeekBar, position))
+    {
+        m_SeekPercentRequest = (static_cast<double>(position.x - m_SeekBar.x) / m_SeekBar.w);
+        return Rect::SEEK;
+    }
     return Rect::NONE;
 }
 
-std::optional<double> View::CheckSeekPercent(const Position position)
+const std::atomic<double>& View::GetSeekPercent()
 {
-    if(CheckInRect(m_SeekBar, position) == false)
-    {
-        return std::nullopt;
-    }
-    // Calculate percent
-    return (static_cast<double>(position.x - m_SeekBar.x) / m_SeekBar.w);
+    return m_SeekPercentRequest;
 }

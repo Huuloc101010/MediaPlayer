@@ -37,7 +37,7 @@ public:
     std::atomic<double>& GetClock();
     void CheckResizeWindow();
     Rect CheckInWhichButton(const Position position);
-    std::optional<double> CheckSeekPercent(const Position position);
+    const std::atomic<double>& GetSeekPercent();
 private:
     
     Size GetMaxWindowSize();
@@ -45,6 +45,7 @@ private:
     bool CheckInRect(const SDL_Rect& rect, const Position position);
 
     SafeQueue<UniqueFramePtr>   m_QueueSafe{};
+    std::atomic<double>  m_SeekPercentRequest   = {};
     Mediator*            m_Mediator             = {};
     std::mutex           m_ResizeWindow;
     VideoRenderer        m_VideoRenderer;
