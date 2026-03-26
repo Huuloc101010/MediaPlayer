@@ -153,5 +153,6 @@ enum class Rect : uint8_t
     PLAY,
     NEXT,
     PRIVIOUS,
+    SEEK,
 };
 #endif /*_DEFINE_*/

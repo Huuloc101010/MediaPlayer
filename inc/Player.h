@@ -68,6 +68,7 @@ private:
     int GetVideoHeight() override;
     void VideoConfig(int width, int height) override;
     Rect CheckInWhichButton(const Position postion) override;
+    std::optional<double> CheckSeekPercent(const Position position) override;
     double GetTotalVideoTime() override;
 
     void EventQuit();

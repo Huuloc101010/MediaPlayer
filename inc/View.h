@@ -37,6 +37,7 @@ public:
     std::atomic<double>& GetClock();
     void CheckResizeWindow();
     Rect CheckInWhichButton(const Position position);
+    std::optional<double> CheckSeekPercent(const Position position);
 private:
     
     Size GetMaxWindowSize();

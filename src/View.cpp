@@ -238,9 +238,6 @@ void View::CalculateRect(const Size CurrentWindowSize)
         TotalVideoTime = m_Mediator->GetTotalVideoTime();
     }
     double Percent = TotalVideoTime ? (GetClock().load() / TotalVideoTime) : 0;
-    LOGW("Now {}", GetClock().load());
-    LOGW("total {}", TotalVideoTime);
-    LOGW("Percent {}", Percent);
 
     m_ProgressBar.x = m_SeekBar.x;
     m_ProgressBar.y = m_SeekBar.y;
@@ -268,4 +265,14 @@ Rect View::CheckInWhichButton(const Position position)
     if(CheckInRect(m_ButtonNextRect, position))    return Rect::NEXT;
     if(CheckInRect(m_ButtonPriviousRect, position))return Rect::PRIVIOUS;
     return Rect::NONE;
+}
+
+std::optional<double> View::CheckSeekPercent(const Position position)
+{
+    if(CheckInRect(m_SeekBar, position) == false)
+    {
+        return std::nullopt;
+    }
+    // Calculate percent
+    return (static_cast<double>(position.x - m_SeekBar.x) / m_SeekBar.w);
 }

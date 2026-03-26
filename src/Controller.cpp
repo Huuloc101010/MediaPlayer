@@ -73,6 +73,13 @@ void Controller::HandleClick(const Position Position)
         return;
     }
     Rect CurrentRect = m_Mediator->CheckInWhichButton(Position);
+    double SeekPercent = 0.0;
+    auto SeekPercentOpt = m_Mediator->CheckSeekPercent(Position);
+    if(SeekPercentOpt != std::nullopt)
+    {
+        CurrentRect = Rect::SEEK;
+        SeekPercent = SeekPercentOpt.value();
+    }
     switch(CurrentRect)
     {
         case Rect::NEXT:
@@ -97,6 +104,12 @@ void Controller::HandleClick(const Position Position)
             {
                 m_Mediator->PushEvent(PlayerEvent::PLAY);
             }
+            break;
+        }
+
+        case Rect::SEEK:
+        {
+            LOGE("Seek {} %", SeekPercent * 100);
             break;
         }
 
