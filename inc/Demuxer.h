@@ -18,6 +18,7 @@ public:
     AVRational GetTimeBaseAudio();
     int GetVideoStreamIndex();
     int GetAudioStreamIndex();
+    double GetTotalVideoTime();
     void Exit() override;
 
 private:

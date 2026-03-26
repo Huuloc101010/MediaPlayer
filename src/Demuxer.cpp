@@ -196,3 +196,18 @@ int Demuxer::GetAudioStreamIndex()
 {
     return m_AudioStreamIndex;
 }
+
+double Demuxer::GetTotalVideoTime()
+{
+    if(m_FormatContext == nullptr)
+    {
+        LOGE("Format context is null");
+        return 0.0;
+    }
+    if (m_FormatContext->duration == AV_NOPTS_VALUE)
+    {
+        LOGE("Duration not available");
+        return 0.0;
+    }
+    return (m_FormatContext->duration / (double)AV_TIME_BASE);
+}

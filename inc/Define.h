@@ -24,15 +24,23 @@ extern "C"
 #define ICON_BUTTON_PLAY_PATH        "icon/play.png"
 #define ICON_BUTTON_NEXT_PATH        "icon/next.png"
 #define ICON_BUTTON_PRIVIOUS_PATH    "icon/previous.png"
+#define ICON_CIRCLE                  "icon/circle.png"
 #define DEFAULT_WINDOW_HEIGHT    780 
 #define DEFAULT_WINDOW_CONTROL   150 
 #define DEFAULT_WINDOW_WIDTH     1280 
 #define DEFAULT_BUTTON_HEIGHT    75
 #define DEFAULT_BUTTON_WIDTH     75
+#define DEFAULT_SEEK_BAR_HEIGHT  7
+#define DEFAULT_SEEK_BAR_WIDTH   700
+#define DEFAULT_CIRCLE_HEIGHT    20
+#define DEFAULT_CIRCLE_WIDTH     20
 #define LIMIT_QUEUE_VIDEO_PACKET 50
 #define LIMIT_QUEUE_AUDIO_PACKET 100
 #define LIMIT_QUEUE_VIDEO_FRAME  7
 #define LIMIT_QUEUE_AUDIO_FRAME  20
+#define COLOR_BLACK              RGBA{0, 0, 0, 255}
+#define COLOR_WHITE              RGBA{255, 255, 255, 255}
+#define COLOR_GREEN              RGBA{33, 150, 243, 255}
 
 template<typename T, void(*FreeFunction)(T*)>
 struct UniquePtrDeleterLevel1
@@ -98,6 +106,14 @@ struct Size
 struct Position
 {
     int x, y;
+};
+
+struct RGBA
+{
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    uint8_t alpha;
 };
 
 struct AudioS16Buffer

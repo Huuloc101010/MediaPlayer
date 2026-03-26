@@ -18,7 +18,7 @@ Player::Player() : m_TheadProcessEvent(&Player::TheadProcessEvent, this)
     };
 
     m_Controller   = std::make_unique<Controller>(this);
-    m_View         = std::make_unique<View>();
+    m_View         = std::make_unique<View>(this);
 }
 
 void Player::EventQuit()
@@ -452,4 +452,14 @@ Rect Player::CheckInWhichButton(const Position postion)
         return Rect::NONE;
     }
     return m_View->CheckInWhichButton(postion);
+}
+
+double Player::GetTotalVideoTime()
+{
+    if(m_Demuxer == nullptr)
+    {
+        LOGE("View ptr is null");
+        return 0.0;
+    }
+    return m_Demuxer->GetTotalVideoTime();
 }

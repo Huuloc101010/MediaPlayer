@@ -39,6 +39,14 @@ bool VideoRenderer::CreateRenderer(const UniqueWindowPtr& Window)
         LOGE("Load image fail");
         return false;
     }
+    
+    // Create circle texture
+    m_CircleTexture.reset(IMG_LoadTexture(m_Renderer.get(), ICON_CIRCLE));
+    if(m_CircleTexture == nullptr)
+    {
+        LOGE("Load image fail");
+        return false;
+    }
 
     return true;
 }
@@ -81,7 +89,6 @@ bool VideoRenderer::Resize(const UniqueWindowPtr& Window,const Size VideoSize)
     m_Renderer.reset();
     Size CurrentWindowSize {};
     SDL_GetWindowSize(Window.get(), &CurrentWindowSize.Width, &CurrentWindowSize.Height);
-    CalculateRect(CurrentWindowSize);
     return Init(Window, m_CurrentVideoSize);
 }
 
@@ -102,39 +109,6 @@ Size VideoRenderer::GetMaxWindowSize()
     return Retval;
 }
 
-void VideoRenderer::CalculateRect(const Size CurrentWindowSize)
-{
-    // Calculating scale retio
-    double ratio = std::min(((double)CurrentWindowSize.Width) / m_CurrentVideoSize.Width,
-                            ((double)CurrentWindowSize.Height - DEFAULT_WINDOW_CONTROL) / m_CurrentVideoSize.Height);
-    if(ratio > 1.0)
-    {
-        ratio = 1.0;
-    }
-
-    // Creat Renderer same size with Window
-    m_VideoRect.x = (CurrentWindowSize.Width - m_CurrentVideoSize.Width * ratio) / 2;
-    m_VideoRect.h = (m_CurrentVideoSize.Height * ratio);
-    m_VideoRect.w = m_CurrentVideoSize.Width * ratio;
-    m_ControlAreaRect = {0, CurrentWindowSize.Height - DEFAULT_WINDOW_CONTROL, CurrentWindowSize.Width, DEFAULT_WINDOW_CONTROL};
-    // button play
-    m_ButtonPlayRect.x = (CurrentWindowSize.Width - 50) / 2;
-    m_ButtonPlayRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 100) / 2;
-    m_ButtonPlayRect.w = DEFAULT_BUTTON_WIDTH;
-    m_ButtonPlayRect.h = DEFAULT_BUTTON_HEIGHT;
-
-    // button next
-    m_ButtonNextRect.x = m_ButtonPlayRect.x + 100;
-    m_ButtonNextRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 100) / 2;
-    m_ButtonNextRect.w = DEFAULT_BUTTON_WIDTH;
-    m_ButtonNextRect.h = DEFAULT_BUTTON_HEIGHT;
-
-    // button prious
-    m_ButtonPriviousRect.x = m_ButtonPlayRect.x - 100;
-    m_ButtonPriviousRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 100) / 2;
-    m_ButtonPriviousRect.w = DEFAULT_BUTTON_WIDTH;
-    m_ButtonPriviousRect.h = DEFAULT_BUTTON_HEIGHT;
-}
 
 bool VideoRenderer::UpdateYUVTexture(const yuv& ndata)
 {
@@ -185,7 +159,33 @@ bool VideoRenderer::RenderCopyButtonPrivious(const SDL_Rect& Rect)
     return (SDL_RenderCopy(m_Renderer.get(), m_ButtonPrivious.get(), NULL, &Rect) == 0);
 }
 
+bool VideoRenderer::RenderCopySeekBar(const SDL_Rect& Rect)
+{
+    // fill white fort seek bar
+    return FillColorRect(Rect, COLOR_WHITE);
+}
+
+bool VideoRenderer::RenderCopyProgressBar(const SDL_Rect& Rect)
+{
+    // fill white fort seek bar
+    return FillColorRect(Rect, COLOR_GREEN);
+}
+
+bool VideoRenderer::RenderCircle(const SDL_Rect& Rect)
+{
+    return (SDL_RenderCopy(m_Renderer.get(), m_CircleTexture.get(), NULL, &Rect) == 0);
+}
+
 void VideoRenderer::Present()
 {
     SDL_RenderPresent(m_Renderer.get());
+}
+
+bool VideoRenderer::FillColorRect(const SDL_Rect& Rect, const RGBA Color)
+{
+    // Draw white color in seek bar
+    SDL_SetRenderDrawColor(m_Renderer.get(), Color.red, Color.green, Color.blue, Color.alpha);
+    SDL_RenderFillRect(m_Renderer.get(), &Rect);
+    // Reset color to black
+    return (SDL_SetRenderDrawColor(m_Renderer.get(), 0, 0, 0, 255) == 0);
 }

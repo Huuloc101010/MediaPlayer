@@ -68,6 +68,7 @@ private:
     int GetVideoHeight() override;
     void VideoConfig(int width, int height) override;
     Rect CheckInWhichButton(const Position postion) override;
+    double GetTotalVideoTime() override;
 
     void EventQuit();
     void EventStop();

@@ -28,6 +28,7 @@ public:
     virtual int GetVideoHeight() = 0;
     virtual void VideoConfig(int width, int height) = 0;
     virtual Rect CheckInWhichButton(const Position postion) = 0;
+    virtual double GetTotalVideoTime() = 0;
 };
 
 #endif /* _MEDIATOR_ */
