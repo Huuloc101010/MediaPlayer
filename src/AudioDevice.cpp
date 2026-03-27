@@ -103,7 +103,10 @@ void AudioDevice::Callback(Uint8* stream, int len)
     }
 
     /* calculate audio timestamp */
-    m_TotalSamplePlayed += m_Sample;
+    int bytes_per_sample = SDL_AUDIO_BITSIZE(m_Spec.format) / 8;
+    int samples = to_copy / (bytes_per_sample * m_Spec.channels);
+
+    m_TotalSamplePlayed += samples;
     m_Clock.last_frame_pts.store(m_Clock.pts);
     m_Clock.pts = m_FirstPts + (static_cast<double>(m_TotalSamplePlayed) / m_SampleRate);
     //LOGW("audio clock = {}", m_Clock.pts.load());
