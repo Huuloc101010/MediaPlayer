@@ -276,3 +276,9 @@ const std::atomic<double>& View::GetSeekPercent()
 {
     return m_SeekPercentRequest;
 }
+
+void View::FlushData()
+{
+    m_QueueSafe.Clear();
+    m_AudioDevice.Clear();
+}

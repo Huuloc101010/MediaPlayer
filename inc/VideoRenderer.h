@@ -32,7 +32,6 @@ private:
     UniqueTexturePtr     m_ButtonPlay     = nullptr;
     UniqueTexturePtr     m_ButtonNext     = nullptr;
     UniqueTexturePtr     m_ButtonPrivious = nullptr;
-    //UniqueTexturePtr     m_SeekBar        = nullptr;
     Size                 m_CurrentVideoSize = {};
 
 };

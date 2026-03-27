@@ -19,6 +19,8 @@ public:
     int GetVideoStreamIndex();
     int GetAudioStreamIndex();
     double GetTotalVideoTime();
+    void FlushDemuxer();
+    void Seek(double Time);
     void Exit() override;
 
 private:

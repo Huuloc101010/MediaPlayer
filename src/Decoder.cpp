@@ -179,3 +179,13 @@ void Decoder::Exit()
         m_ThreadDecode.join();
     }
 }
+
+void Decoder::FlushDecoder()
+{
+    avcodec_flush_buffers(m_CodecContext);
+}
+
+void Decoder::FlushData()
+{
+    m_QueueSafe.Clear();
+}

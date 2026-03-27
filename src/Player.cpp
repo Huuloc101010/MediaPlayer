@@ -161,7 +161,36 @@ void Player::EventPlay()
 
 void Player::EventSeek()
 {
-    LOGE("Seek called");
+    // Get seek percent
+    if((m_View == nullptr)
+    || (m_Demuxer == nullptr)
+    || (m_VideoDecoder == nullptr )
+    || (m_AudioDecoder == nullptr))
+    {
+        LOGE("Seek fail");
+        return;
+    }
+    // Pause video
+    EventPause();
+    // Request seek in demuxer
+    double SeekPercent = m_View->GetSeekPercent();
+    m_Demuxer->Seek(SeekPercent);
+    // Flush demuxer and decoder
+    m_Demuxer->FlushDemuxer();
+    m_VideoDecoder->FlushDecoder();
+    m_AudioDecoder->FlushDecoder();
+    // Flush queue
+    if(m_Demuxer)      m_Demuxer     ->FlushData();
+    if(m_VideoOutput)  m_VideoOutput ->FlushData();
+    if(m_AudioOutput)  m_AudioOutput ->FlushData();
+    if(m_VideoDecoder) m_VideoDecoder->FlushData();
+    if(m_AudioDecoder) m_AudioDecoder->FlushData();
+    if(m_View)         m_View        ->FlushData();
+    if(m_Controller)   m_Controller  ->FlushData();
+    // Reset audio timestamp
+    
+    // Replay video
+    EventPlay();
 }
 
 void Player::PushEvent(PlayerEvent Event)

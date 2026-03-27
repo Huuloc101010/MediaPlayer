@@ -38,6 +38,7 @@ public:
     void CheckResizeWindow();
     Rect CheckInWhichButton(const Position position);
     const std::atomic<double>& GetSeekPercent();
+    void FlushData() override;
 private:
     
     Size GetMaxWindowSize();

@@ -211,3 +211,29 @@ double Demuxer::GetTotalVideoTime()
     }
     return (m_FormatContext->duration / (double)AV_TIME_BASE);
 }
+
+void Demuxer::Seek(double Time)
+{
+    LOGE("Seek called {} %", Time);
+    int64_t TimeStamp = Time * GetTotalVideoTime() * AV_TIME_BASE;
+    int Retval = avformat_seek_file(
+                m_FormatContext.get(),
+                -1,               // all streams
+                INT64_MIN,        // min
+                TimeStamp,        // target
+                INT64_MAX,        // max
+                AVSEEK_FLAG_BACKWARD);
+    if(Retval == 0)
+    {
+        LOGI("Seek file success");
+    }
+    else
+    {
+        LOGE("Seek file fail");
+    }
+}
+
+void Demuxer::FlushDemuxer()
+{
+    avformat_flush(m_FormatContext.get());
+}
