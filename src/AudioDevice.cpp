@@ -122,3 +122,11 @@ void AudioDevice::Push(const uint8_t* data, size_t Size)
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_Deque.insert(m_Deque.end(), data, data + Size);
 }
+
+void AudioDevice::SetClockBase(double time)
+{
+    m_FirstPts = time;
+    m_TotalSamplePlayed = 0;
+    m_Clock.pts = time;
+    m_Clock.last_frame_pts = time;
+}

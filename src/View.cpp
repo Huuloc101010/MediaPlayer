@@ -282,3 +282,8 @@ void View::FlushData()
     m_QueueSafe.Clear();
     m_AudioDevice.Clear();
 }
+
+void View::SetClockBase(double time)
+{
+    m_AudioDevice.SetClockBase(time);
+}

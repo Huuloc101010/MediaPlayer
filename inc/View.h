@@ -39,6 +39,7 @@ public:
     Rect CheckInWhichButton(const Position position);
     const std::atomic<double>& GetSeekPercent();
     void FlushData() override;
+    void SetClockBase(double time);
 private:
     
     Size GetMaxWindowSize();

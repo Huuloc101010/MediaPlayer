@@ -188,7 +188,8 @@ void Player::EventSeek()
     if(m_View)         m_View        ->FlushData();
     if(m_Controller)   m_Controller  ->FlushData();
     // Reset audio timestamp
-    
+    double TimeStamp = SeekPercent * m_Demuxer->GetTotalVideoTime();
+    m_View->SetClockBase(TimeStamp);
     // Replay video
     EventPlay();
 }

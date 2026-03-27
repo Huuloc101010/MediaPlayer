@@ -18,6 +18,7 @@ public:
     std::atomic<double>& GetClock();
     void Push(const uint8_t* data, size_t Size);
     void ClearAudioPts();
+    void SetClockBase(double time);
 private:
 
     void Callback(Uint8* stream, int len);
