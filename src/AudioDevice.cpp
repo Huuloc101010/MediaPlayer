@@ -57,6 +57,11 @@ bool AudioDevice::Config(int sample_rate,
     m_SampleRate = sample_rate;
     m_FirstPts = first_pts;
     m_Sample = samples;
+    m_Channel = channels;
+    LOGD("m_SampleRate {}", m_SampleRate);
+    LOGD("m_FirstPts {}", m_FirstPts);
+    LOGD("m_Sample {}", m_Sample);
+    LOGD("m_Channel {}", m_Channel);
     SDL_AudioSpec want{};
     want.freq = sample_rate;
     want.channels = channels;
@@ -77,6 +82,7 @@ bool AudioDevice::Config(int sample_rate,
 
 void AudioDevice::ClearAudioPts()
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
     m_Clock.pts = m_FirstPts;
     m_Clock.last_frame_pts = m_FirstPts;
     m_TotalSamplePlayed = 0;

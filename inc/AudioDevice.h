@@ -28,6 +28,7 @@ private:
     int                 m_FirstPts{};
     int                 m_SampleRate{};
     int                 m_Sample{};
+    int                 m_Channel;
     int64_t             m_TotalSamplePlayed{};
     std::deque<uint8_t> m_Deque;
     std::mutex          m_Mutex;
