@@ -15,6 +15,7 @@ Player::Player() : m_TheadProcessEvent(&Player::TheadProcessEvent, this)
         {PlayerEvent::PRIVIOUS,[this](){EventPrivious();}},
         {PlayerEvent::PAUSE,   [this](){EventPause();}},
         {PlayerEvent::PLAY,    [this](){EventPlay();}},
+        {PlayerEvent::SEEK,    [this](){EventSeek();}},
     };
 
     m_Controller   = std::make_unique<Controller>(this);
@@ -160,7 +161,7 @@ void Player::EventPlay()
 
 void Player::EventSeek()
 {
-
+    LOGE("Seek called");
 }
 
 void Player::PushEvent(PlayerEvent Event)
