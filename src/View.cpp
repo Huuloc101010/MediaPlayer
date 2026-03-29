@@ -238,6 +238,11 @@ void View::CalculateRect(const Size CurrentWindowSize)
         TotalVideoTime = m_Mediator->GetTotalVideoTime();
     }
     double Percent = TotalVideoTime ? (GetClock().load() / TotalVideoTime) : 0;
+    if(Percent > 1.0)
+    {
+        Percent = 0;
+        LOGW("Progress bar {} %", Percent * 100);
+    }
 
     m_ProgressBar.x = m_SeekBar.x;
     m_ProgressBar.y = m_SeekBar.y;
