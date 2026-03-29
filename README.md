@@ -1,3 +1,5 @@
+<img width="1275" height="964" alt="image" src="https://github.com/user-attachments/assets/eff8db41-2b4b-49b7-acba-a95257977670" />
+
 # MediaPlayer
 
 # C++ Media Player (FFmpeg + SDL2)
@@ -157,6 +159,4 @@ make
 $ ./player sample
 
 ```
-
-<img width="1280" height="962" alt="image" src="https://github.com/user-attachments/assets/889a22e1-4616-41a4-96e2-b5b6dbfcd8d5" />
 
