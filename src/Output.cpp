@@ -46,3 +46,8 @@ double Output::GetClock()
     LOGW("Not Implement");
     return {};
 }
+
+void Output::FlushData()
+{
+    m_QueueSafe.Clear();
+}

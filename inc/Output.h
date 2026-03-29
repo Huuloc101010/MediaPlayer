@@ -18,11 +18,12 @@ public:
     virtual bool StartThread();
     virtual void Stop() override;
     virtual void Exit() override;
+    void FlushData() override;
 protected:
     virtual void ThreadProcessFramePtr() = 0;
 
     Clock                        m_Clock{};
-    SafeQueue<UniqueFramePtr>   m_QueueSafe{};
+    SafeQueue<UniqueFramePtr>    m_QueueSafe{};
     std::jthread                 m_ThreadShow;
 };
 

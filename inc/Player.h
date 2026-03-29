@@ -68,6 +68,7 @@ private:
     int GetVideoHeight() override;
     void VideoConfig(int width, int height) override;
     Rect CheckInWhichButton(const Position postion) override;
+    double GetTotalVideoTime() override;
 
     void EventQuit();
     void EventStop();
@@ -76,6 +77,7 @@ private:
     void PlayOtherMedia();
     void EventPause();
     void EventPlay();
+    void EventSeek();
 
     std::unique_ptr<Demuxer>        m_Demuxer      = nullptr;
     std::unique_ptr<VideoOutput>    m_VideoOutput  = nullptr;

@@ -9,10 +9,12 @@
 #include "VideoRenderer.h"
 #include "SafeQueue.h"
 
+class Mediator;
+
 class View : public ControlFunction
 {
 public:
-    View();
+    View(Mediator* mediator);
     ~View();
     bool Init();
     void Config(const Size WindowSize);
@@ -35,6 +37,9 @@ public:
     std::atomic<double>& GetClock();
     void CheckResizeWindow();
     Rect CheckInWhichButton(const Position position);
+    const std::atomic<double>& GetSeekPercent();
+    void FlushData() override;
+    void SetClockBase(double time);
 private:
     
     Size GetMaxWindowSize();
@@ -42,7 +47,8 @@ private:
     bool CheckInRect(const SDL_Rect& rect, const Position position);
 
     SafeQueue<UniqueFramePtr>   m_QueueSafe{};
-    
+    std::atomic<double>  m_SeekPercentRequest   = {};
+    Mediator*            m_Mediator             = {};
     std::mutex           m_ResizeWindow;
     VideoRenderer        m_VideoRenderer;
     Window               m_Window;
@@ -58,6 +64,9 @@ private:
     SDL_Rect             m_ButtonPlayRect      = {};
     SDL_Rect             m_ButtonNextRect      = {};
     SDL_Rect             m_ButtonPriviousRect  = {};
+    SDL_Rect             m_SeekBar             = {};
+    SDL_Rect             m_ProgressBar         = {};
+    SDL_Rect             m_Circle              = {};
 };
 
 #endif /* _VIEW */

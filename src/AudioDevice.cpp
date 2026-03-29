@@ -40,7 +40,10 @@ void AudioDevice::SDLStop()
 void AudioDevice::Clear()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
+    SDL_LockAudioDevice(m_DeviceId);
     m_Deque.clear();
+    SDL_ClearQueuedAudio(m_DeviceId); 
+    SDL_UnlockAudioDevice(m_DeviceId);
 }
 
 bool AudioDevice::Config(int sample_rate,
@@ -57,6 +60,15 @@ bool AudioDevice::Config(int sample_rate,
     m_SampleRate = sample_rate;
     m_FirstPts = first_pts;
     m_Sample = samples;
+    m_Channel = channels;
+    LOGD("m_SampleRate {}", m_SampleRate);
+    LOGD("m_FirstPts {}", m_FirstPts);
+    LOGD("m_Sample {}", m_Sample);
+    LOGD("m_Channel {}", m_Channel);
+    // Reset member value
+    m_TotalSamplePlayed = 0;
+    m_Clock.pts = 0.0;
+    m_Clock.last_frame_pts = 0.0;
     SDL_AudioSpec want{};
     want.freq = sample_rate;
     want.channels = channels;
@@ -77,6 +89,7 @@ bool AudioDevice::Config(int sample_rate,
 
 void AudioDevice::ClearAudioPts()
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
     m_Clock.pts = m_FirstPts;
     m_Clock.last_frame_pts = m_FirstPts;
     m_TotalSamplePlayed = 0;
@@ -97,7 +110,10 @@ void AudioDevice::Callback(Uint8* stream, int len)
     }
 
     /* calculate audio timestamp */
-    m_TotalSamplePlayed += m_Sample;
+    int bytes_per_sample = SDL_AUDIO_BITSIZE(m_Spec.format) / 8;
+    int samples = to_copy / (bytes_per_sample * m_Spec.channels);
+
+    m_TotalSamplePlayed += samples;
     m_Clock.last_frame_pts.store(m_Clock.pts);
     m_Clock.pts = m_FirstPts + (static_cast<double>(m_TotalSamplePlayed) / m_SampleRate);
     //LOGW("audio clock = {}", m_Clock.pts.load());
@@ -112,4 +128,12 @@ void AudioDevice::Push(const uint8_t* data, size_t Size)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_Deque.insert(m_Deque.end(), data, data + Size);
+}
+
+void AudioDevice::SetClockBase(double time)
+{
+    m_FirstPts = time;
+    m_TotalSamplePlayed = 0;
+    m_Clock.pts = time;
+    m_Clock.last_frame_pts = time;
 }

@@ -1,6 +1,7 @@
 #include "View.h"
+#include "Mediator.h"
 
-View::View()
+View::View(Mediator* mediator) : m_Mediator(mediator)
 {
     Init();
     m_CurrentVideoSize = {DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH};
@@ -155,7 +156,18 @@ void View::ShowVideo()
     {
         LOGE("render button privious fail");
     }
-
+    if(m_VideoRenderer.RenderCopySeekBar(m_SeekBar) == false)
+    {
+        LOGE("render seek bar fail");
+    }
+    if(m_VideoRenderer.RenderCopyProgressBar(m_ProgressBar) == false)
+    {
+        LOGE("render seek bar fail");
+    }
+    if(m_VideoRenderer.RenderCircle(m_Circle) == false)
+    {
+        LOGE("render progress bar fail");
+    }
     m_VideoRenderer.Present();
 }
 
@@ -213,6 +225,30 @@ void View::CalculateRect(const Size CurrentWindowSize)
     m_ButtonPriviousRect.y = m_ControlAreaRect.y + (DEFAULT_WINDOW_CONTROL - 10) / 2;
     m_ButtonPriviousRect.w = DEFAULT_BUTTON_WIDTH;
     m_ButtonPriviousRect.h = DEFAULT_BUTTON_HEIGHT;
+
+    // seek bar
+    m_SeekBar.x = (CurrentWindowSize.Width - DEFAULT_SEEK_BAR_WIDTH) / 2;
+    m_SeekBar.y = (CurrentWindowSize.Height - DEFAULT_WINDOW_CONTROL) + (DEFAULT_WINDOW_CONTROL / 4);
+    m_SeekBar.h = DEFAULT_SEEK_BAR_HEIGHT;
+    m_SeekBar.w = DEFAULT_SEEK_BAR_WIDTH;
+    // progress bar
+    double TotalVideoTime = 0.0;
+    if(m_Mediator)
+    {
+        TotalVideoTime = m_Mediator->GetTotalVideoTime();
+    }
+    double Percent = TotalVideoTime ? (GetClock().load() / TotalVideoTime) : 0;
+
+    m_ProgressBar.x = m_SeekBar.x;
+    m_ProgressBar.y = m_SeekBar.y;
+    m_ProgressBar.h = m_SeekBar.h;
+    m_ProgressBar.w = (m_SeekBar.w * Percent);
+
+    // Circle in progress bar
+    m_Circle.x = m_ProgressBar.x + m_ProgressBar.w;
+    m_Circle.y = m_ProgressBar.y - 6;
+    m_Circle.h = DEFAULT_CIRCLE_HEIGHT;
+    m_Circle.w = DEFAULT_CIRCLE_WIDTH;
 }
 
 bool View::CheckInRect(const SDL_Rect& rect, const Position position)
@@ -228,5 +264,26 @@ Rect View::CheckInWhichButton(const Position position)
     if(CheckInRect(m_ButtonPlayRect, position))    return Rect::PLAY;
     if(CheckInRect(m_ButtonNextRect, position))    return Rect::NEXT;
     if(CheckInRect(m_ButtonPriviousRect, position))return Rect::PRIVIOUS;
+    if(CheckInRect(m_SeekBar, position))
+    {
+        m_SeekPercentRequest = (static_cast<double>(position.x - m_SeekBar.x) / m_SeekBar.w);
+        return Rect::SEEK;
+    }
     return Rect::NONE;
+}
+
+const std::atomic<double>& View::GetSeekPercent()
+{
+    return m_SeekPercentRequest;
+}
+
+void View::FlushData()
+{
+    m_QueueSafe.Clear();
+    m_AudioDevice.Clear();
+}
+
+void View::SetClockBase(double time)
+{
+    m_AudioDevice.SetClockBase(time);
 }

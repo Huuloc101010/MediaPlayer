@@ -12,6 +12,7 @@ public:
     virtual void Exit() ;
     virtual void CheckStateSleep();
     virtual bool CheckStateExit();
+    virtual void FlushData() {};
 
 protected:
     std::atomic<PlayerState> m_PlayerState  = PlayerState::IDLE;

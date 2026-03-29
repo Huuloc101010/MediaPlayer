@@ -77,13 +77,13 @@ void Demuxer::ThreadReadFrame()
         LOGE("FormatContext is null");
         return;
     }
-    while (av_read_frame(m_FormatContext.get(), Packet.get()) >= 0)
+    while(!CheckStateExit())
     {
-        if(CheckStateExit())
-        {
-            return;
-        }
         CheckStateSleep();
+        if((av_read_frame(m_FormatContext.get(), Packet.get()) < 0))
+        {
+            continue;
+        }
 
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it
@@ -195,4 +195,45 @@ int Demuxer::GetVideoStreamIndex()
 int Demuxer::GetAudioStreamIndex()
 {
     return m_AudioStreamIndex;
+}
+
+double Demuxer::GetTotalVideoTime()
+{
+    if(m_FormatContext == nullptr)
+    {
+        LOGE("Format context is null");
+        return 0.0;
+    }
+    if (m_FormatContext->duration == AV_NOPTS_VALUE)
+    {
+        LOGE("Duration not available");
+        return 0.0;
+    }
+    return (m_FormatContext->duration / (double)AV_TIME_BASE);
+}
+
+void Demuxer::Seek(double Time)
+{
+    LOGE("Seek called {} %", Time);
+    int64_t TimeStamp = Time * GetTotalVideoTime() * AV_TIME_BASE;
+    int Retval = avformat_seek_file(
+                m_FormatContext.get(),
+                -1,               // all streams
+                INT64_MIN,        // min
+                TimeStamp,        // target
+                INT64_MAX,        // max
+                AVSEEK_FLAG_BACKWARD);
+    if(Retval == 0)
+    {
+        LOGI("Seek file success");
+    }
+    else
+    {
+        LOGE("Seek file fail");
+    }
+}
+
+void Demuxer::FlushDemuxer()
+{
+    avformat_flush(m_FormatContext.get());
 }

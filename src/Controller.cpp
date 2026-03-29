@@ -100,6 +100,12 @@ void Controller::HandleClick(const Position Position)
             break;
         }
 
+        case Rect::SEEK:
+        {
+            m_Mediator->PushEvent(PlayerEvent::SEEK);
+            break;
+        }
+
         default:
         {
             // Do not thing

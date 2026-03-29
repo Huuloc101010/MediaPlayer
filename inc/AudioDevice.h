@@ -18,6 +18,7 @@ public:
     std::atomic<double>& GetClock();
     void Push(const uint8_t* data, size_t Size);
     void ClearAudioPts();
+    void SetClockBase(double time);
 private:
 
     void Callback(Uint8* stream, int len);
@@ -28,6 +29,7 @@ private:
     int                 m_FirstPts{};
     int                 m_SampleRate{};
     int                 m_Sample{};
+    int                 m_Channel;
     int64_t             m_TotalSamplePlayed{};
     std::deque<uint8_t> m_Deque;
     std::mutex          m_Mutex;

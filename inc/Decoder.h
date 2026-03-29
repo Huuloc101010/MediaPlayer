@@ -18,14 +18,16 @@ public:
     std::string err2str(int errnum);
     void PushPacket(UniquePacketPtr Packet);
     virtual void SetLimitQueueDecoder(const int LimitValue);
+    void FlushDecoder();
     void Stop() override;
-    void Exit() override; 
+    void Exit() override;
+    void FlushData() override;
 protected:
     void ThreadDecode();
     int DecodePacket(UniquePacketPtr pkt);
     Mediator*                    m_mediator = nullptr;
     AVCodecContext*              m_CodecContext = nullptr;
-    SafeQueue<UniquePacketPtr>  m_QueueSafe{};
+    SafeQueue<UniquePacketPtr>   m_QueueSafe{};
     std::jthread                 m_ThreadDecode{};
 };
 

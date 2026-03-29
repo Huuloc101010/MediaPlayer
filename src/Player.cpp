@@ -15,10 +15,11 @@ Player::Player() : m_TheadProcessEvent(&Player::TheadProcessEvent, this)
         {PlayerEvent::PRIVIOUS,[this](){EventPrivious();}},
         {PlayerEvent::PAUSE,   [this](){EventPause();}},
         {PlayerEvent::PLAY,    [this](){EventPlay();}},
+        {PlayerEvent::SEEK,    [this](){EventSeek();}},
     };
 
     m_Controller   = std::make_unique<Controller>(this);
-    m_View         = std::make_unique<View>();
+    m_View         = std::make_unique<View>(this);
 }
 
 void Player::EventQuit()
@@ -156,6 +157,41 @@ void Player::EventPlay()
     }
     m_PlayerState = PlayerState::PLAYING;
     LOGD("Received event play");
+}
+
+void Player::EventSeek()
+{
+    // Get seek percent
+    if((m_View == nullptr)
+    || (m_Demuxer == nullptr)
+    || (m_VideoDecoder == nullptr )
+    || (m_AudioDecoder == nullptr))
+    {
+        LOGE("Seek fail");
+        return;
+    }
+    // Pause video
+    EventPause();
+    // Request seek in demuxer
+    double SeekPercent = m_View->GetSeekPercent();
+    m_Demuxer->Seek(SeekPercent);
+    // Flush demuxer and decoder
+    m_Demuxer->FlushDemuxer();
+    m_VideoDecoder->FlushDecoder();
+    m_AudioDecoder->FlushDecoder();
+    // Flush queue
+    if(m_Demuxer)      m_Demuxer     ->FlushData();
+    if(m_VideoOutput)  m_VideoOutput ->FlushData();
+    if(m_AudioOutput)  m_AudioOutput ->FlushData();
+    if(m_VideoDecoder) m_VideoDecoder->FlushData();
+    if(m_AudioDecoder) m_AudioDecoder->FlushData();
+    if(m_View)         m_View        ->FlushData();
+    if(m_Controller)   m_Controller  ->FlushData();
+    // Reset audio timestamp
+    double TimeStamp = SeekPercent * m_Demuxer->GetTotalVideoTime();
+    m_View->SetClockBase(TimeStamp);
+    // Replay video
+    EventPlay();
 }
 
 void Player::PushEvent(PlayerEvent Event)
@@ -452,4 +488,14 @@ Rect Player::CheckInWhichButton(const Position postion)
         return Rect::NONE;
     }
     return m_View->CheckInWhichButton(postion);
+}
+
+double Player::GetTotalVideoTime()
+{
+    if(m_Demuxer == nullptr)
+    {
+        LOGE("View ptr is null");
+        return 0.0;
+    }
+    return m_Demuxer->GetTotalVideoTime();
 }
