@@ -161,6 +161,9 @@ void Player::EventPlay()
 
 void Player::EventSeek()
 {
+    // Note: Limitation in feature seek
+    // Todo: Fix bug feature seek and uncomment this code
+    /*
     // Get seek percent
     if((m_View == nullptr)
     || (m_Demuxer == nullptr)
@@ -192,6 +195,7 @@ void Player::EventSeek()
     m_View->SetClockBase(TimeStamp);
     // Replay video
     EventPlay();
+    */
 }
 
 void Player::PushEvent(PlayerEvent Event)
