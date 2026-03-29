@@ -77,13 +77,13 @@ void Demuxer::ThreadReadFrame()
         LOGE("FormatContext is null");
         return;
     }
-    while (av_read_frame(m_FormatContext.get(), Packet.get()) >= 0)
+    while(!CheckStateExit())
     {
-        if(CheckStateExit())
-        {
-            return;
-        }
         CheckStateSleep();
+        if((av_read_frame(m_FormatContext.get(), Packet.get()) < 0))
+        {
+            continue;
+        }
 
         // check if the packet belongs to a stream we are interested in, otherwise
         // skip it

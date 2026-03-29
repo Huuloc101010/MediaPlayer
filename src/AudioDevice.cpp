@@ -40,7 +40,10 @@ void AudioDevice::SDLStop()
 void AudioDevice::Clear()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
+    SDL_LockAudioDevice(m_DeviceId);
     m_Deque.clear();
+    SDL_ClearQueuedAudio(m_DeviceId); 
+    SDL_UnlockAudioDevice(m_DeviceId);
 }
 
 bool AudioDevice::Config(int sample_rate,
@@ -62,6 +65,10 @@ bool AudioDevice::Config(int sample_rate,
     LOGD("m_FirstPts {}", m_FirstPts);
     LOGD("m_Sample {}", m_Sample);
     LOGD("m_Channel {}", m_Channel);
+    // Reset member value
+    m_TotalSamplePlayed = 0;
+    m_Clock.pts = 0.0;
+    m_Clock.last_frame_pts = 0.0;
     SDL_AudioSpec want{};
     want.freq = sample_rate;
     want.channels = channels;
