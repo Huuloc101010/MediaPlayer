@@ -18,10 +18,9 @@ public:
 private:
     void CheckEvent();
     void HandleClick(const Position Position);
+    void HandleKey(const SDL_Keycode KeyCode);
     Mediator*          m_Mediator = nullptr;
     std::jthread       m_ThreadCheckEvent;
-
-    std::unordered_map<SDL_Keycode, PlayerEvent> m_KeyCodeMap = {};
 };
 
 #endif /* _CONTROLLER */

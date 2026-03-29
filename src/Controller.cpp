@@ -8,14 +8,6 @@ Controller::Controller(Mediator* Mediator) : m_Mediator(Mediator)
                                            , m_ThreadCheckEvent(&Controller::CheckEvent, this)
 
 {
-    m_KeyCodeMap =
-    {
-        {SDLK_ESCAPE,PlayerEvent::QUIT},
-        {SDLK_UP,    PlayerEvent::STOP},
-        {SDLK_RIGHT, PlayerEvent::NEXT},
-        {SDLK_LEFT,  PlayerEvent::PAUSE},
-        {SDLK_DOWN,  PlayerEvent::PLAY}
-    };
 }
 
 void Controller::CheckEvent()
@@ -35,11 +27,7 @@ void Controller::CheckEvent()
 
                 case SDL_KEYDOWN:
                 {
-                    if(m_KeyCodeMap.count(Event.key.keysym.sym))
-                    {
-                        PlayerEvent PlayerEvent = m_KeyCodeMap[Event.key.keysym.sym];
-                        if(m_Mediator) m_Mediator->PushEvent(PlayerEvent);
-                    }
+                    HandleKey(Event.key.keysym.sym);
                     break;
                 }
 
@@ -53,6 +41,61 @@ void Controller::CheckEvent()
         }
         // decrease cpu workload
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+void Controller::HandleKey(const SDL_Keycode KeyCode)
+{
+    PlayerEvent Event{};
+    bool IsNeedPushEvent{};
+    switch(KeyCode)
+    {
+        case SDLK_ESCAPE:
+        {
+            Event = PlayerEvent::QUIT;
+            IsNeedPushEvent = true;
+            break;
+        }
+        case SDLK_RIGHT:
+        {
+            Event = PlayerEvent::NEXT;
+            IsNeedPushEvent = true;
+            break;
+        }
+        case SDLK_LEFT:
+        {
+            Event = PlayerEvent::PRIVIOUS;
+            IsNeedPushEvent = true;
+            break;
+        }
+        case SDLK_SPACE:
+        {
+            if(m_PlayerState == PlayerState::PLAYING)
+            {
+                Event = PlayerEvent::PAUSE;
+            }
+            else
+            {
+                Event = PlayerEvent::PLAY;
+            }
+            IsNeedPushEvent = true;
+            break;
+        }
+        case SDLK_UP:
+        {
+            Event = PlayerEvent::STOP;
+            IsNeedPushEvent = true;
+            break;
+        }
+        default:
+        {
+            IsNeedPushEvent = false;
+            break;
+        }
+    }
+    if(IsNeedPushEvent)
+    {
+        if(m_Mediator) m_Mediator->PushEvent(Event);
     }
 }
 
